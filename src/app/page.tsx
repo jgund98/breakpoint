@@ -4,14 +4,13 @@ import { TheCenter } from "@/components/home/TheCenter";
 import { NoticeClock } from "@/components/home/NoticeClock";
 import { HowItWorks } from "@/components/home/HowItWorks";
 import { Wedge } from "@/components/home/Wedge";
-import { OwnerStrip } from "@/components/home/Audiences";
 
 /**
- * Home = the retailer pitch, six beats, no filler:
+ * Home = the tenant pitch, six beats, no filler:
  * hook → the detection gap → the interactive proof → the urgency
  * mechanism → how it works (compact, links to /platform) → why it's a
- * category, then the owner application as a clearly secondary coda.
- * Onboarding detail lives on /demo; the full pipeline on /platform.
+ * category. Onboarding detail lives on /tenants and /demo; the full
+ * pipeline on /platform.
  */
 export default function HomePage() {
   return (
@@ -22,7 +21,6 @@ export default function HomePage() {
       <NoticeClock />
       <HowItWorks />
       <Wedge />
-      <OwnerStrip />
     </>
   );
 }

@@ -13,7 +13,7 @@ import { coexistsWith } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Platform — how co-tenancy monitoring works",
   description:
-    "Breakpoint abstracts co-tenancy clauses from your leases, reconstructs each center's occupancy, evaluates every test nightly, and assembles the claim packet when one fails.",
+    "Breakpoint abstracts co-tenancy clauses from your leases, assembles each center's occupancy record, re-evaluates every test as conditions change, and builds the review package when one appears to fail.",
   alternates: { canonical: "/platform" },
 };
 
@@ -55,8 +55,8 @@ export default function PlatformPage() {
         lede={
           <>
             Your lease system holds the clause. Property data holds the center.
-            Breakpoint reads both, runs the test between them every night, and
-            tells you the day the answer changes.
+            Breakpoint reads both, re-runs the tests between them as verified
+            conditions change, and tells you the day an answer moves.
           </>
         }
         cta={{ href: "/demo", label: "Book a walkthrough" }}
@@ -112,10 +112,10 @@ export default function PlatformPage() {
         <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16">
           <div>
             <Eyebrow>03 — Trigger</Eyebrow>
-            <SectionTitle>Evaluated nightly. Escalated once.</SectionTitle>
+            <SectionTitle>Re-evaluated as conditions change. Escalated once.</SectionTitle>
             <Lede>
-              Every test in every lease runs against the current state of its
-              center each night. Nothing fires until an answer actually changes —
+              Every test in every lease re-runs as verified information about its
+              center changes. Nothing fires until an answer actually moves —
               and when one does, it goes to the person who can act on it, not
               into a monthly report.
             </Lede>
@@ -131,22 +131,23 @@ export default function PlatformPage() {
       </Section>
 
       {/* 04 */}
-      <Section tone="sunk" grid id="claim">
+      <Section tone="sunk" grid id="package">
         <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-16">
           <ClaimPacket />
           <div>
-            <Eyebrow>04 — Claim</Eyebrow>
+            <Eyebrow>04 — Package</Eyebrow>
             <SectionTitle>Evidence assembled, not requested</SectionTitle>
             <Lede>
               The reason valid claims die is that assembling the proof takes
-              weeks nobody has. Breakpoint builds the packet the moment the test
-              fails: the notice letter, the clause abstract with citations, the
-              dated occupancy record, the named-tenant log and the
-              alternative-rent workings.
+              weeks nobody has. Breakpoint builds the package the moment a test
+              appears to fail: the draft notice, the clause abstract with
+              citations, the dated occupancy record, the named-tenant log and
+              the alternative-rent calculations.
             </Lede>
             <p className="no-orphan mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
-              Your counsel reviews and sends it. From that month, the remedy
-              runs.
+              Whether and when to serve is your call, made with counsel. If
+              notice goes out, the clock starts — and Breakpoint keeps tracking
+              whether the condition stays active, gets cured, or is disputed.
             </p>
           </div>
         </div>
@@ -163,8 +164,8 @@ export default function PlatformPage() {
             </span>
           </SectionTitle>
           <p className="lede no-orphan mt-6 max-w-2xl text-cream-soft">
-            This product tells people they are owed money. That obligates us to
-            be checkable at every step.
+            This product tells people they may be owed money. That obligates us
+            to be checkable at every step.
           </p>
         </div>
 

@@ -38,16 +38,16 @@ const youBring = [
 ];
 
 const weBring = [
-  "Occupancy by GLA, rebuilt month by month",
+  "Occupancy by GLA, assembled month by month",
   "Which named tenants are open, and the date each went dark",
   "Anchor closure filings and replacement activity",
-  "The tests, run nightly, with dated evidence attached",
+  "The tests, re-run as conditions change, with dated evidence attached",
 ];
 
 const timeline = [
   { at: "Hour 0", what: "Lease and store list received" },
   { at: "Hour 12", what: "Clause abstracted, every field cited and reviewed" },
-  { at: "Hour 36", what: "Center reconstructed and back-dated" },
+  { at: "Hour 36", what: "Center conditions assembled and dated" },
   { at: "Hour 48", what: "First evaluation in your hands" },
 ];
 

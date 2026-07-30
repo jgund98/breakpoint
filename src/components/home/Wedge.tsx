@@ -13,7 +13,7 @@ const weKnow = [
   "Which named tenants are trading, and the date each went dark",
   "Occupied GLA, assembled month by month",
   "Whether the landlord's cure window has run",
-  "What the failure is worth against your own sales",
+  "The estimated value of a failure against your own sales",
   "The evidence behind every one of those answers",
 ];
 
@@ -25,14 +25,15 @@ export function Wedge() {
         <SectionTitle>
           Your lease platform holds half the problem.{" "}
           <span className="display-em text-petrol-700">
-            It has never held the other half.
+            It was never built for the other half.
           </span>
         </SectionTitle>
         <Lede>
-          Every enterprise lease suite will tell you it tracks co&#8209;tenancy.
-          What it tracks is the clause — a field in a record, entered once. The
-          trigger lives outside the document, in a center that changes every
-          week, and no lease system was ever pointed at it.
+          Most lease suites will tell you they track co&#8209;tenancy. What
+          they typically track is the clause — a field in a record, entered
+          once. The trigger lives outside the document, in a center that
+          changes every week, and traditional lease systems were never pointed
+          at it.
         </Lede>
       </div>
 
@@ -49,7 +50,8 @@ export function Wedge() {
             ))}
           </ul>
           <p className="mt-8 border-t border-line pt-5 text-sm leading-relaxed text-muted">
-            All of it necessary. None of it tells you the day a test failed.
+            All of it necessary. None of it is designed to tell you the day a
+            test may have failed.
           </p>
         </div>
 

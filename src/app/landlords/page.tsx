@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   description:
     "A separately packaged owner-side product for modeling co-tenancy exposure, cure periods and redevelopment scenarios is under development. Distinct workflows, strictly isolated data.",
   alternates: { canonical: "/landlords" },
-  robots: { index: true, follow: true },
+  // Unlinked and unindexed by design — the public site is tenant-side.
+  robots: { index: false, follow: false },
 };
 
 const willDo = [
@@ -19,7 +20,7 @@ const willDo = [
   },
   {
     k: "Scenario planning",
-    v: "Model an anchor departure, phased construction or a demalling programme before committing — with the abatement cost in the pro forma, not discovered after it.",
+    v: "Model an anchor departure, phased construction or a demalling program before committing — with the abatement cost in the pro forma, not discovered after it.",
   },
   {
     k: "Cure management",

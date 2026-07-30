@@ -133,7 +133,7 @@ export default function CoTenancyPage() {
             <div className="mt-8 rounded-xl border border-line bg-surface p-5">
               <p className="no-orphan text-sm leading-relaxed text-ink-soft">
                 Want yours read properly? Send one lease and we&#8217;ll abstract
-                its co&#8209;tenancy language inside 48 hours.
+                its co&#8209;tenancy language inside 48&nbsp;hours.
               </p>
               <Button href="/demo" size="md" className="mt-4 w-full">
                 Book a walkthrough

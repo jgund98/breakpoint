@@ -13,37 +13,21 @@ import { cn } from "@/lib/cn";
  * this collects anything real.
  */
 
-type Side = "retailer" | "owner";
+const sizes = ["1 – 10 locations", "11 – 50", "51 – 250", "250+"];
 
-const sizes: Record<Side, string[]> = {
-  retailer: ["Under 50 stores", "50 – 250", "250 – 1,000", "1,000+"],
-  owner: ["1 – 5 centers", "6 – 25", "26 – 100", "100+"],
-};
-
-const situations: Record<Side, string[]> = {
-  retailer: [
-    "A center I'm worried about",
-    "An anchor just closed",
-    "Occupancy is sliding",
-    "Renewals coming up",
-    "We've never checked",
-    "Just exploring",
-  ],
-  owner: [
-    "Planning a redevelopment",
-    "An anchor is leaving",
-    "Pricing downtime",
-    "Renewals coming up",
-    "Quantifying exposure",
-    "Just exploring",
-  ],
-};
+const situations = [
+  "A center I'm worried about",
+  "An anchor just closed",
+  "Occupancy is sliding",
+  "One lease I want checked",
+  "Renewals coming up",
+  "We've never checked",
+];
 
 const STEPS = ["Who you are", "What's happening", "Where to send it"];
 
 export function DemoForm() {
   const [step, setStep] = useState(0);
-  const [side, setSide] = useState<Side | null>(null);
   const [size, setSize] = useState<string | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [fields, setFields] = useState({
@@ -60,7 +44,7 @@ export function DemoForm() {
     setPicked((p) => (p.includes(s) ? p.filter((x) => x !== s) : [...p, s]));
 
   const canAdvance =
-    step === 0 ? Boolean(side && size) : step === 1 ? picked.length > 0 : true;
+    step === 0 ? Boolean(size) : step === 1 ? picked.length > 0 : true;
 
   const submit = () => {
     const next: Record<string, string> = {};
@@ -72,7 +56,7 @@ export function DemoForm() {
     if (Object.keys(next).length) return;
 
     // TODO: post to a real endpoint before shipping.
-    console.log("demo request", { side, size, picked, ...fields });
+    console.log("demo request", { size, picked, ...fields });
     setDone(true);
     requestAnimationFrame(() =>
       doneRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }),
@@ -141,67 +125,27 @@ export function DemoForm() {
           {/* ---------- step 1 ---------- */}
           {step === 0 && (
             <>
-              <h3 className="text-[1.375rem]">Which side of the table?</h3>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {(
-                  [
-                    ["retailer", "I'm a retailer", "I lease space in centers"],
-                    ["owner", "I'm an owner", "I own or operate centers"],
-                  ] as const
-                ).map(([id, title, sub]) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      setSide(id);
-                      setSize(null);
-                      setPicked([]);
-                    }}
-                    className={cn(
-                      "rounded-xl border p-5 text-left transition-all duration-300",
-                      side === id
-                        ? "border-petrol-800 bg-petrol-50"
-                        : "border-line hover:border-petrol-300 hover:bg-petrol-50/50",
-                    )}
-                  >
-                    <span className="block font-medium text-ink">{title}</span>
-                    <span className="mt-1 block text-sm text-muted">{sub}</span>
-                  </button>
+              <h3 className="text-[1.375rem]">How many leased locations?</h3>
+              <p className="mt-2 text-[0.9375rem] text-muted">
+                One is plenty — the evaluation starts with a single lease.
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-2.5">
+                {sizes.map((s) => (
+                  <Chip key={s} on={size === s} onClick={() => setSize(s)} label={s} />
                 ))}
               </div>
-
-              {side && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="mt-7"
-                >
-                  <h3 className="text-[1.375rem]">How big is the estate?</h3>
-                  <div className="mt-4 grid grid-cols-2 gap-2.5">
-                    {sizes[side].map((s) => (
-                      <Chip
-                        key={s}
-                        on={size === s}
-                        onClick={() => setSize(s)}
-                        label={s}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
             </>
           )}
 
           {/* ---------- step 2 ---------- */}
-          {step === 1 && side && (
+          {step === 1 && (
             <>
               <h3 className="text-[1.375rem]">What&#8217;s prompting this?</h3>
               <p className="mt-2 text-[0.9375rem] text-muted">
                 Pick anything that applies.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2.5">
-                {situations[side].map((s) => (
+                {situations.map((s) => (
                   <Chip
                     key={s}
                     on={picked.includes(s)}

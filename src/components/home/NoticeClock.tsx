@@ -35,12 +35,13 @@ export function NoticeClock() {
             </span>
           </h2>
           <p className="lede no-orphan mt-6 max-w-2xl text-cream-soft">
-            Alternative rent commences on the first day of the month{" "}
+            In this lease — as in many — alternative rent commences on the first
+            day of the month{" "}
             <em className="text-cream not-italic underline decoration-brass-400/60 underline-offset-4">
               following written notice
             </em>
-            . Not the day the anchor went dark. Not the day occupancy crossed the
-            floor. Which makes detection speed the entire product.
+            . Not the day the anchor went dark. Not the day occupancy crossed
+            the floor. Which makes detection speed the entire&nbsp;product.
           </p>
         </div>
 
@@ -119,19 +120,22 @@ export function NoticeClock() {
           <div className="mt-20 grid gap-5 sm:mt-24 sm:grid-cols-2">
             <div className="rounded-xl border border-white/12 bg-white/4 p-6">
               <span className="label text-cream-faint">
-                Nine months of silence
+                Potential savings missed before notice
               </span>
               <p className="tnum mt-3 font-display text-[clamp(2rem,4.4vw,2.75rem)] leading-none text-cream-faint line-through decoration-clay-500/70 decoration-2">
                 {usd(forgone)}
               </p>
               <p className="no-orphan mt-3 text-sm leading-relaxed text-cream-soft">
-                Contractually owed the whole time. Unrecoverable, because no
-                notice was served.
+                The condition appears to have existed for nine months — but the
+                remedy only begins after written notice. Undetected, those
+                months can&#8217;t be captured.
               </p>
             </div>
 
             <div className="rounded-xl border border-brass-500/40 bg-brass-500/10 p-6">
-              <span className="label text-brass-400">From notice forward</span>
+              <span className="label text-brass-400">
+                Savings available from notice forward
+              </span>
               <p className="tnum mt-3 font-display text-[clamp(2rem,4.4vw,2.75rem)] leading-none text-brass-200">
                 {usd(recovered)}
               </p>
@@ -143,8 +147,9 @@ export function NoticeClock() {
           </div>
 
           <p className="mt-6 text-xs text-cream-faint">
-            Illustrative, based on the sample lease used throughout this site:{" "}
-            {usd(monthly)}/mo delta on a 3,850 SF store.
+            Illustrative, based on the sample lease used throughout this site:
+            an estimated {usd(monthly)}/mo rent difference on a 3,850 SF store.
+            Whether a remedy applies depends on the executed lease.
           </p>
         </div>
       </div>

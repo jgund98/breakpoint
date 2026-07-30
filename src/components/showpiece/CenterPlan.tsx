@@ -185,7 +185,7 @@ export function CenterPlan() {
               Swipe the plan to explore · tap any storefront to close it.
             </span>
             <span className="hidden sm:inline">
-              Click any storefront to take it dark. Fill colour is the
+              Click any storefront to take it dark. Fill color is the
               merchandising category.
             </span>{" "}
             Fictional center and tenants; the clause mechanics are real.
@@ -290,7 +290,7 @@ export function CenterPlan() {
                     v={`${usd(leaseEconomics.alternativeRentMonthly)}/mo`}
                   />
                   <Line k="Occupancy cost" v="11.1% → 4.0%" accent />
-                  <Line k="Annualised" v={usd(leaseEconomics.monthlyDelta * 12)} accent />
+                  <Line k="Annualized" v={usd(leaseEconomics.monthlyDelta * 12)} accent />
                   <p className="pt-1 text-[0.6875rem] leading-relaxed text-muted">
                     Flagged for your team and counsel to review — Breakpoint
                     identifies the potential event and builds the evidence.
@@ -321,14 +321,16 @@ export function CenterPlan() {
                 className="overflow-hidden"
               >
                 <div className="rounded-xl border border-clay-100 bg-clay-50 p-5">
-                  <span className="label text-clay-700">Already forgone</span>
+                  <span className="label text-clay-700">
+                    Potential savings missed
+                  </span>
                   <p className="tnum mt-2 font-display text-[2rem] leading-none text-clay-700">
                     {usd(animatedForgone)}
                   </p>
                   <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                    The remedy runs from the month after notice is delivered, not
-                    from the day the test failed. {monthsElapsed} months went by.
-                    That money is gone.
+                    In this lease the remedy begins the month after notice is
+                    delivered. {monthsElapsed} months passed before anyone
+                    looked — savings that can no longer be captured.
                   </p>
                 </div>
               </motion.div>

@@ -5,7 +5,7 @@
  *
  * Everything here is illustrative sample data for a fictional center.
  * The center, its tenants, and the lease are invented. The *mechanics*
- * are not: the clause language, the test structure, the cure behaviour
+ * are not: the clause language, the test structure, the cure behavior
  * and the remedy math all follow how real retail co-tenancy provisions
  * actually operate.
  *
@@ -369,7 +369,7 @@ export const scenarios: Scenario[] = [
     dark: [],
     elapsedDays: 0,
     lesson:
-      "A healthy center. Three vacancies, every named tenant trading, occupancy comfortably above the floor. Nothing is owed — and this is the state almost every lease file quietly assumes is still true.",
+      "A healthy center. Three vacancies, every named tenant trading, occupancy comfortably above the floor. Nothing to claim — and this is the state almost every lease file quietly assumes is still true.",
   },
   {
     id: "anchor",
@@ -409,7 +409,7 @@ export const scenarios: Scenario[] = [
     ],
     elapsedDays: 120,
     lesson:
-      "The owner's own move. The north wing comes offline to make room for the new format. Occupancy halves, and every remaining tenant with a co-tenancy clause can claim against it — abatement that belongs in the redevelopment pro forma whether or not anyone modelled it.",
+      "The owner's own move. The north wing comes offline to make room for the new format. Occupancy halves, and every remaining tenant with a co-tenancy clause can claim against it — abatement that belongs in the redevelopment pro forma whether or not anyone modeled it.",
   },
 ];
 
@@ -425,8 +425,8 @@ export function applyScenario(scenario: Scenario): Unit[] {
    ------------------------------------------------------------------ */
 
 /**
- * Merchandising colours. Leasing plans are colour-coded by category —
- * this is how the industry actually reads a centre at a glance, and it
+ * Merchandising colors. Leasing plans are color-coded by category —
+ * this is how the industry actually reads a center at a glance, and it
  * makes the mix legible without a single label.
  */
 export const categoryColor: Record<UnitCategory, string> = {

@@ -39,7 +39,14 @@ export function Header() {
         )}
       >
         <div className="mx-auto flex h-18 max-w-[1400px] items-center gap-8 px-5 sm:px-8">
-          <Link href="/" aria-label="Breakpoint — home" className="text-ink">
+          <Link
+            href="/"
+            aria-label="Breakpoint — home"
+            className={cn(
+              "transition-colors duration-500",
+              scrolled ? "text-ink" : "text-cream",
+            )}
+          >
             <Logo />
           </Link>
 
@@ -52,9 +59,13 @@ export function Header() {
                   href={item.href}
                   className={cn(
                     "relative rounded-full px-3.5 py-2 text-[0.9375rem] transition-colors duration-300",
-                    active
-                      ? "text-petrol-800"
-                      : "text-ink-soft hover:text-petrol-800",
+                    scrolled
+                      ? active
+                        ? "text-petrol-800"
+                        : "text-ink-soft hover:text-petrol-800"
+                      : active
+                        ? "text-cream"
+                        : "text-cream-soft hover:text-cream",
                   )}
                 >
                   {item.label}
@@ -72,7 +83,12 @@ export function Header() {
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Link
               href="/demo"
-              className="hidden items-center rounded-full bg-petrol-800 px-5 py-2.5 text-[0.9375rem] font-medium text-cream transition-colors hover:bg-petrol-700 sm:inline-flex"
+              className={cn(
+                "hidden items-center rounded-full px-5 py-2.5 text-[0.9375rem] font-medium transition-colors duration-500 sm:inline-flex",
+                scrolled
+                  ? "bg-petrol-800 text-cream hover:bg-petrol-700"
+                  : "bg-cream text-petrol-950 hover:bg-white",
+              )}
             >
               Book a walkthrough
             </Link>
@@ -84,7 +100,11 @@ export function Header() {
               aria-expanded={open}
               className={cn(
                 "relative z-50 grid h-11 w-11 place-items-center rounded-full transition-colors duration-300 lg:hidden",
-                open ? "text-cream" : "text-ink hover:bg-surface-sunk",
+                open
+                  ? "text-cream"
+                  : scrolled
+                    ? "text-ink hover:bg-surface-sunk"
+                    : "text-cream hover:bg-white/10",
               )}
             >
               <span className="flex h-4 w-5 flex-col justify-between">

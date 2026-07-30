@@ -17,7 +17,7 @@ export const site = {
   url: "https://breakpoint.re",
   tagline: "Know the hour it breaks.",
   description:
-    "Breakpoint monitors co-tenancy clauses across every center you occupy, detects the day a test fails, and hands your team the calculation and the evidence.",
+    "Breakpoint monitors co-tenancy clauses across the centers you occupy, flags when a lease test may have failed, and hands your team the estimated impact with the evidence behind it.",
   email: "hello@breakpoint.re",
   builtBy: {
     name: "Epic Dev Solutions",
@@ -40,7 +40,7 @@ export const footerNav = [
       { label: "Clause abstraction", href: "/platform#abstract" },
       { label: "Center monitoring", href: "/platform#watch" },
       { label: "Trigger detection", href: "/platform#trigger" },
-      { label: "Claim packages", href: "/platform#claim" },
+      { label: "Review packages", href: "/platform#package" },
       { label: "Security & trust", href: "/security" },
     ],
   },
@@ -50,7 +50,7 @@ export const footerNav = [
       { label: "Retail tenants", href: "/tenants" },
       { label: "Lease accounting", href: "/tenants#accounting" },
       { label: "Real estate teams", href: "/tenants" },
-      { label: "Owner solution — roadmap", href: "/landlords" },
+      { label: "Finance & legal", href: "/tenants#accounting" },
     ],
   },
   {

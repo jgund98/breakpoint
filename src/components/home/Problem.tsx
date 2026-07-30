@@ -40,10 +40,10 @@ export function Problem() {
           </SectionTitle>
 
           <p className="lede no-orphan mt-7 text-ink-soft">
-            Every enterprise lease platform stores your co&#8209;tenancy clause.
-            None of them know what your center looks like this morning. So the
-            trigger event — the thing actually worth money — gets spotted by
-            whoever happens to walk the mall.
+            Traditional lease platforms store your co&#8209;tenancy clause. What
+            they don&#8217;t hold is what your center looks like right now. So
+            the trigger event — the thing actually worth money — gets spotted
+            by whoever happens to walk the mall.
           </p>
 
           <figure className="mt-9 border-l-2 border-brass-500 pl-6">

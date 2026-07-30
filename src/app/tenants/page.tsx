@@ -37,7 +37,7 @@ const roles = [
 ];
 
 const scale = [
-  { k: "Stores in scope", v: "50 – 5,000" },
+  { k: "Portfolio size", v: "one lease to 5,000+ stores" },
   { k: "Typical inline rent", v: "$60 – $140 / SF" },
   { k: "Occupancy cost target", v: "10 – 15% of sales" },
   { k: "Alternative rent", v: "commonly 2 – 6% of sales" },
@@ -185,12 +185,13 @@ export default function TenantsPage() {
           <div>
             <Eyebrow>Who this is for</Eyebrow>
             <SectionTitle>
-              Built for estates where nobody can walk every center.
+              One lease to a national portfolio.
             </SectionTitle>
             <Lede>
-              If you operate fifty stores you can just about hold it in your
-              head. At five hundred you cannot, and at five thousand the clause
-              is effectively unenforced across most of the portfolio.
+              A single-location tenant can send us one lease and get a straight
+              answer. But the case sharpens with scale: at fifty stores nobody
+              can hold every center in their head, and at five thousand the
+              clause is effectively unenforced across most of the portfolio.
             </Lede>
             <dl className="mt-9 grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {scale.map((item) => (

@@ -15,8 +15,8 @@ export function TheCenter() {
         <Lede>
           One lease, in one center, evaluated against the three tests written
           into its co&#8209;tenancy clause. Close a store and the arithmetic
-          moves in front of you — the same arithmetic Breakpoint runs nightly
-          against every center you occupy.
+          moves in front of you — the same arithmetic Breakpoint re&#8209;runs
+          across every center you occupy as verified conditions change.
         </Lede>
       </div>
 

@@ -5,7 +5,7 @@
 /* ============================================================
    BREAKPOINT — design system
 
-   Warm cream canvas, Fraunces display, confident colour.
+   White canvas, Inter Tight display, confident color.
    Petrol green carries the brand, brass carries money, clay
    carries exposure. Dark is an accent band, never the ground.
    ============================================================ */
@@ -37,7 +37,7 @@
   --color-petrol-100: #cfe5df;
   --color-petrol-50: #e6f1ee;
 
-  /* --- brass: the money colour. Claims, remedies, upside. --- */
+  /* --- brass: the money color. Claims, remedies, upside. --- */
   --color-brass-700: #96601a;
   --color-brass-600: #b87d1f;
   --color-brass-500: #d99a2b;
@@ -63,9 +63,10 @@
   --color-cream-soft: #c3d1cc;
   --color-cream-faint: #86988f;
 
-  /* --- type --- */
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* --- type: the modern SaaS system. Inter Tight carries display,
+         Inter carries text — one DNA, two optical cuts. --- */
+  --font-display: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* --- shape --- */
   --radius-card: 20px;
@@ -117,10 +118,16 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.028em;
-  line-height: 1.04;
-  font-optical-sizing: auto;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.03;
+}
+
+/* Anywhere the display face is used outside a heading (the big
+   numerals, the logotype) it should carry display weight too. */
+.font-display {
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
 
 ::selection {
@@ -153,11 +160,11 @@ h4 {
   }
 }
 
-/* Display serif italic as an accent voice inside a headline. */
+/* The second voice inside a headline — true italic, same family. */
 .display-em {
   font-style: italic;
-  font-weight: 400;
-  padding-right: 0.06em;
+  font-weight: 600;
+  padding-right: 0.04em;
 }
 
 .tnum {
@@ -237,6 +244,28 @@ h4 {
 
 .anim-pulse-dot {
   animation: bp-pulse 2.4s var(--ease-lux) infinite;
+}
+
+/* A slow survey beam that sweeps the hero photograph. */
+@keyframes bp-scan {
+  0% {
+    transform: translateX(-40vw);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(140vw);
+    opacity: 0;
+  }
+}
+
+.anim-scan {
+  animation: bp-scan 11s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .anim-marquee {

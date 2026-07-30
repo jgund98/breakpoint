@@ -2,7 +2,7 @@ import { cn } from "@/lib/cn";
 
 /**
  * The wire — what the product actually emits. A visitor should
- * recognise the shape of their own portfolio in these lines before
+ * recognize the shape of their own portfolio in these lines before
  * they scroll past.
  */
 
@@ -11,18 +11,18 @@ type Kind = "fail" | "watch" | "clear" | "info";
 const events: { kind: Kind; tag: string; body: string }[] = [
   {
     kind: "fail",
-    tag: "Test failed",
-    body: "Fairmount Collection · occupancy 67.8% against a 70.0% floor · $18,917/mo claimable",
+    tag: "Potential trigger",
+    body: "Fairmount Collection · occupancy 67.8% against a 70.0% floor · est. $18,917/mo · review ready",
   },
   {
     kind: "watch",
     tag: "Named tenant dark",
-    body: "Brookfield Court · 7,400 SF · named inline count 4 → 3",
+    body: "Brookfield Court · 7,400 SF · named inline count 4 → 3 · verified",
   },
   {
     kind: "fail",
-    tag: "Cure expired",
-    body: "Redwood Galleria · 90-day landlord cure elapsed · remedy live",
+    tag: "Cure window expired",
+    body: "Redwood Galleria · 90-day landlord cure elapsed · remedy available pending notice",
   },
   {
     kind: "info",
@@ -31,13 +31,13 @@ const events: { kind: Kind; tag: string; body: string }[] = [
   },
   {
     kind: "clear",
-    tag: "Occupancy recovered",
-    body: "Ashford Crossing · 71.4% · remedy ends at month close",
+    tag: "Condition cured",
+    body: "Ashford Crossing · occupancy 71.4% · remedy period ends at month close",
   },
   {
     kind: "info",
-    tag: "Notice package ready",
-    body: "Fairmount Collection · store 4412 · clause, evidence and calculation attached",
+    tag: "Review package ready",
+    body: "Fairmount Collection · store 4412 · clause, evidence and calculations for counsel",
   },
   {
     kind: "watch",

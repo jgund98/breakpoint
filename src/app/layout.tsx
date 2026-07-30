@@ -1,15 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces } from "next/font/google";
-import { GeistSans } from "geist/font/sans";
+import { Inter, Inter_Tight } from "next/font/google";
 import { site } from "@/lib/site";
 import { Header } from "@/components/chrome/Header";
 import { Footer } from "@/components/chrome/Footer";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const interTight = Inter_Tight({
   // latin-ext for the dotless ı the wordmark is built on
   subsets: ["latin", "latin-ext"],
-  variable: "--font-fraunces",
+  variable: "--font-inter-tight",
   style: ["normal", "italic"],
   display: "swap",
 });
@@ -99,7 +104,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${GeistSans.variable}`}
+      className={`${inter.variable} ${interTight.variable}`}
     >
       <body className="bg-canvas text-ink antialiased">
         <script

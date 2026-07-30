@@ -24,8 +24,8 @@ const steps = [
   },
   {
     n: "04",
-    k: "Claim",
-    v: "The notice, citations, evidence and workings arrive as one packet, ready for counsel.",
+    k: "Package",
+    v: "The notice materials, citations, evidence and calculations arrive as one package for your team and counsel.",
   },
 ];
 

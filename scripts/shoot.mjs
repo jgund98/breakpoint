@@ -105,9 +105,13 @@ async function main() {
         for (const el of document.querySelectorAll(sel)) {
           const text = el.textContent?.trim() || "";
           if (!text || text.length < 24) continue;
-          const node = [...el.childNodes].find(
+          // The LAST substantial text node — a paragraph's final line
+          // lives there. Measuring the first node false-positives on any
+          // paragraph containing <em>/<span> breaks.
+          const nodes = [...el.childNodes].filter(
             (n) => n.nodeType === 3 && n.textContent.trim().length > 20,
           );
+          const node = nodes[nodes.length - 1];
           if (!node) continue;
           range.selectNodeContents(node);
           const rects = [...range.getClientRects()];

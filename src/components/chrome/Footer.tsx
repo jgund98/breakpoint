@@ -17,14 +17,14 @@ export function Footer() {
             <h2 className="mt-5 text-[clamp(2rem,5vw,3.5rem)] text-cream">
               Send us one lease.{" "}
               <span className="display-em block text-brass-200">
-                We&#8217;ll tell you what it&#8217;s owed.
+                We&#8217;ll tell you what it may be owed.
               </span>
             </h2>
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">
               Pick the center you have the worst feeling about. We&#8217;ll
-              abstract the co&#8209;tenancy language, rebuild the center&#8217;s
-              occupancy history, and show you whether a test has already failed
-              — inside 48 hours.
+              abstract the co&#8209;tenancy language, assemble the center&#8217;s
+              occupancy history, and show you whether a test appears to have
+              failed — inside 48 hours.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -44,8 +44,8 @@ export function Footer() {
 
           <div className="relative aspect-4/3 overflow-hidden rounded-xl lg:aspect-3/2">
             <Image
-              src="/photos/mall-greenery-shops.jpg"
-              alt="Shoppers in a modern open shopping center"
+              src="/photos/shoppers-browsing.jpg"
+              alt="Shoppers browsing in a bright retail store"
               fill
               sizes="(max-width: 1024px) 100vw, 40vw"
               className="object-cover"

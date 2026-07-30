@@ -20,7 +20,7 @@ const bring = [
 const timeline = [
   ["Hour 0", "You send one lease"],
   ["Hour 12", "Clause abstracted and reviewed, every field cited"],
-  ["Hour 36", "Center reconstructed and back-dated"],
+  ["Hour 36", "Center conditions assembled and dated"],
   ["Hour 48", "We walk you through what we found"],
 ];
 
@@ -38,14 +38,14 @@ export default function DemoPage() {
               <h1 className="balance mt-5 text-[clamp(2.25rem,5.4vw,3.75rem)] text-cream">
                 Send one lease.{" "}
                 <span className="display-em block text-brass-200">
-                  We&#8217;ll tell you what it&#8217;s owed.
+                  We&#8217;ll tell you what it may be owed.
                 </span>
               </h1>
               <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">
                 Not a slide deck. Pick the center you have the worst feeling
                 about and we&#8217;ll run it properly — the clause, the
-                occupancy history, and a straight answer about whether a test has
-                already failed.
+                occupancy history, and a straight answer about whether a test
+                appears to have failed.
               </p>
 
               <div className="mt-10">

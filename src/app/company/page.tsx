@@ -25,8 +25,8 @@ const beliefs = [
     v: "We tell people they are owed money. If a lease administrator cannot trace every figure back to a sentence and a date, we have produced a liability rather than a claim.",
   },
   {
-    k: "One engine, separate applications",
-    v: "The retailer product and the owner application share arithmetic, not data. Customer information is isolated, the workflows are distinct products, and nothing one customer sends us ever informs another's output.",
+    k: "Tenant-side, by design",
+    v: "Tenant information is private and isolated. Your leases, sales and findings serve your evaluations and nothing else — no other party's product, no model training, no exceptions.",
   },
 ];
 
@@ -83,9 +83,8 @@ export default function CompanyPage() {
             </p>
             <p className="no-orphan">
               Breakpoint is that report, turned into a system, pointed at every
-              center at once — and put first in the hands of the retailers who
-              were owed the money. An owner application, built on the same
-              engine, follows.
+              center at once — and put in the hands of the tenants whose money
+              was being left on the table.
             </p>
           </div>
         </div>

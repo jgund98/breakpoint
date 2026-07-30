@@ -134,7 +134,7 @@ export function TriggerAlert() {
     <div className="rounded-xl border border-line bg-surface lift">
       <div className="flex items-center gap-2.5 border-b border-line px-5 py-3.5">
         <span className="h-2 w-2 rounded-full bg-brass-500 anim-pulse-dot" />
-        <span className="label text-brass-700">Co-tenancy failure</span>
+        <span className="label text-brass-700">Potential co-tenancy trigger</span>
         <span className="ml-auto text-xs text-faint">2 min ago</span>
       </div>
 
@@ -160,7 +160,7 @@ export function TriggerAlert() {
         </ul>
 
         <div className="mt-4 rounded-lg bg-brass-50 px-4 py-3">
-          <span className="label text-brass-700">Monthly delta</span>
+          <span className="label text-brass-700">Estimated monthly delta</span>
           <p className="tnum mt-1 font-display text-2xl leading-none text-brass-700">
             {usd(leaseEconomics.monthlyDelta)}
           </p>
@@ -168,7 +168,7 @@ export function TriggerAlert() {
 
         <div className="mt-4 flex gap-2">
           <span className="flex-1 rounded-full bg-petrol-800 px-4 py-2.5 text-center text-[0.8125rem] font-medium text-cream">
-            Open claim packet
+            Open review package
           </span>
           <span className="rounded-full border border-line px-4 py-2.5 text-center text-[0.8125rem] font-medium text-ink-soft">
             Assign
@@ -195,7 +195,7 @@ export function ClaimPacket() {
   return (
     <div className="rounded-xl border border-line bg-surface p-5 lift sm:p-6">
       <div className="flex items-baseline justify-between gap-4 border-b border-line pb-4">
-        <span className="label text-muted">Claim packet</span>
+        <span className="label text-muted">Review package</span>
         <span className="text-xs text-faint">Store 4412</span>
       </div>
 
