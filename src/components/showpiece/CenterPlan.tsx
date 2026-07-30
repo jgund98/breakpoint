@@ -5,13 +5,13 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   allUnits,
   categoryColor,
-  categoryLegend,
   center,
   evaluate,
   leaseEconomics,
   scenarios,
   usd,
   sf,
+  type Evaluation,
   type Scenario,
   type TestStatus,
   type Unit,
@@ -21,10 +21,10 @@ import { useCountUp } from "@/lib/useCountUp";
 import { cn } from "@/lib/cn";
 
 /**
- * The retailer's view of one center: take a storefront dark and watch
- * the clause tests, the occupancy meter and the money move. This is
- * the product demonstration — everything else on the site explains
- * what this widget shows.
+ * The guided demonstration: one center, one lease. Close a storefront
+ * and Breakpoint re-runs the lease's co-tenancy tests, leading with the
+ * business outcome — was a potential trigger detected, and what is it
+ * worth — before the supporting math.
  */
 export function CenterPlan() {
   const [scenarioId, setScenarioId] = useState<Scenario["id"]>("today");
@@ -50,15 +50,8 @@ export function CenterPlan() {
   );
 
   const placed = useMemo(() => layoutPlan(units), [units]);
-
-  const animatedHeadline = useCountUp(evaluation.monthlyDelta);
-  const animatedOccupancy = useCountUp(evaluation.occupancyPct * 100, 0.7);
-
+  const darkCount = units.filter((u) => u.status === "dark").length;
   const monthsElapsed = touched ? 0 : Math.floor(scenario.elapsedDays / 30);
-  const forgone = evaluation.triggered
-    ? leaseEconomics.monthlyDelta * monthsElapsed
-    : 0;
-  const animatedForgone = useCountUp(forgone);
 
   const selectScenario = (id: string) => {
     setScenarioId(id);
@@ -66,7 +59,7 @@ export function CenterPlan() {
   };
 
   const toggleUnit = (unit: Unit) => {
-    if (unit.status === "vacant") return;
+    if (unit.status === "vacant" || unit.subject) return;
     setOverrides((prev) => ({
       ...prev,
       [unit.id]: !(prev[unit.id] ?? scenario.dark.includes(unit.id)),
@@ -75,8 +68,8 @@ export function CenterPlan() {
 
   const hoveredUnit = placed.find((p) => p.unit.id === hovered);
 
-  // On phones the plan pans horizontally. Open it centered on the
-  // viewer's own store, and retire the swipe hint once they've moved.
+  // Phones pan the plan horizontally: open centered on the viewer's
+  // store, retire the swipe hint once they've moved.
   const scrollRef = useRef<HTMLDivElement>(null);
   const [hinted, setHinted] = useState(true);
   useEffect(() => {
@@ -96,19 +89,20 @@ export function CenterPlan() {
 
   return (
     <div className="relative">
-      {/* ---------------- controls ---------------- */}
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+      {/* ---------------- header ---------------- */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h3 className="text-[clamp(1.5rem,3.2vw,2.125rem)]">{center.name}</h3>
-          <p className="mt-2 text-[0.9375rem] text-muted">
-            {center.market} · {center.type} · 628,000 SF
+          <h3 className="text-[clamp(1.4rem,3vw,2rem)]">{center.name}</h3>
+          <p className="mt-1.5 text-[0.9375rem] text-muted">
+            {center.market} · 628,000 SF · fictional center, real clause
+            mechanics
           </p>
         </div>
-        <p className="label text-muted lg:pb-1.5">Your store · Unit 214</p>
       </div>
 
-      <div className="scroll-x-clean mt-7 -mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
-        <div className="flex min-w-max gap-2 sm:min-w-0 sm:flex-wrap">
+      {/* scenario switcher — single-line segmented control */}
+      <div className="scroll-x-clean mt-6 -mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0">
+        <div className="inline-flex min-w-max rounded-full border border-line bg-surface p-1.5 shadow-[0_1px_2px_rgba(20,20,46,0.05)]">
           {scenarios.map((s) => {
             const active = s.id === scenarioId && !touched;
             return (
@@ -117,73 +111,82 @@ export function CenterPlan() {
                 type="button"
                 onClick={() => selectScenario(s.id)}
                 className={cn(
-                  "rounded-xl border px-4 py-3 text-left transition-all duration-300",
-                  active
-                    ? "border-petrol-800 bg-petrol-800 text-cream"
-                    : "border-line bg-surface text-ink hover:border-petrol-300 hover:bg-petrol-50",
+                  "relative rounded-full px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors duration-300 sm:px-5",
+                  active ? "text-cream" : "text-ink-soft hover:text-ink",
                 )}
               >
-                <span className="block text-sm font-medium">{s.label}</span>
-                <span
-                  className={cn(
-                    "mt-0.5 block whitespace-nowrap text-xs",
-                    active ? "text-cream-soft" : "text-muted",
-                  )}
-                >
-                  {s.blurb}
-                </span>
+                {active && (
+                  <motion.span
+                    layoutId="scenario-pill"
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                    className="absolute inset-0 rounded-full bg-petrol-800"
+                  />
+                )}
+                <span className="relative">{s.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* ---------------- plan + panel ---------------- */}
+      {/* ---------------- outcome + plan ---------------- */}
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_384px] xl:gap-8">
-        <div>
+        {/* plan column — second on phones so the outcome leads */}
+        <div className="order-2 xl:order-1">
+          <p className="mb-3 flex items-center gap-2.5 text-sm font-medium text-petrol-800">
+            <span className="anim-pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-petrol-600" />
+            <span className="sm:hidden">
+              Tap any storefront to close it — everything recalculates.
+            </span>
+            <span className="hidden sm:inline">
+              Click any storefront to close it — everything recalculates
+              instantly.
+            </span>
+          </p>
+
           <div className="relative">
             <div
               ref={scrollRef}
               className="scroll-x-clean -mx-5 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
             >
               <div className="min-w-[760px] sm:min-w-0">
-              <div
-                className="relative aspect-1000/620 w-full overflow-hidden rounded-xl border border-line bg-surface lift"
-                onMouseLeave={() => setHovered(null)}
-              >
-                <div className="plan-grid absolute inset-0 opacity-60" />
+                <div
+                  className="relative aspect-1000/620 w-full overflow-hidden rounded-xl border border-line bg-surface lift"
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <div className="plan-grid absolute inset-0 opacity-60" />
 
-                {[corridor, northCourt, southCourt].map((c, i) => (
-                  <div
-                    key={i}
-                    className="absolute rounded-sm bg-surface-sunk"
-                    style={{
-                      left: `${c.left}%`,
-                      top: `${c.top}%`,
-                      width: `${c.width}%`,
-                      height: `${c.height}%`,
-                    }}
-                  />
-                ))}
+                  {[corridor, northCourt, southCourt].map((c, i) => (
+                    <div
+                      key={i}
+                      className="absolute rounded-sm bg-surface-sunk"
+                      style={{
+                        left: `${c.left}%`,
+                        top: `${c.top}%`,
+                        width: `${c.width}%`,
+                        height: `${c.height}%`,
+                      }}
+                    />
+                  ))}
 
-                {placed.map((p) => (
-                  <UnitBox
-                    key={p.unit.id}
-                    placed={p}
+                  {placed.map((p) => (
+                    <UnitBox
+                      key={p.unit.id}
+                      placed={p}
+                      breached={evaluation.triggered}
+                      onHover={setHovered}
+                      onToggle={toggleUnit}
+                      isHovered={hovered === p.unit.id}
+                    />
+                  ))}
+
+                  <SubjectMarker
+                    placed={placed.find((p) => p.unit.subject)}
                     breached={evaluation.triggered}
-                    onHover={setHovered}
-                    onToggle={toggleUnit}
-                    isHovered={hovered === p.unit.id}
                   />
-                ))}
 
-                <SubjectMarker
-                  placed={placed.find((p) => p.unit.subject)}
-                  breached={evaluation.triggered}
-                />
-
-                {hoveredUnit && <Tooltip placed={hoveredUnit} />}
-              </div>
+                  {hoveredUnit && <Tooltip placed={hoveredUnit} />}
+                </div>
               </div>
             </div>
 
@@ -195,189 +198,50 @@ export function CenterPlan() {
                 <motion.span
                   exit={{ opacity: 0, y: 6 }}
                   transition={{ duration: 0.3 }}
-                  className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-petrol-900/90 px-3.5 py-1.5 text-[0.6875rem] font-semibold text-cream shadow-lg backdrop-blur-sm sm:hidden"
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-petrol-900/90 px-3.5 py-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-cream shadow-lg backdrop-blur-sm sm:hidden"
                 >
-                  ⟷ Swipe the plan · tap a store
+                  ⟷ Swipe to see the whole center
                 </motion.span>
               )}
             </AnimatePresence>
           </div>
 
-          {/* legend sits below the plan so nothing clips on a phone */}
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <LegendKey swatch="bg-petrol-900" label="Dark" />
-            <LegendKey swatch="border border-dashed border-muted" label="Vacant" />
-            <LegendKey swatch="bg-brass-500" label="Named in lease" />
-            <span className="hidden h-3 w-px bg-line sm:block" />
-            {categoryLegend.map((c) => (
-              <LegendKey
-                key={c.label}
-                swatch="ring-1 ring-inset ring-petrol-800/25"
-                style={{ backgroundColor: c.color }}
-                label={c.label}
-              />
-            ))}
+          {/* plain-language legend */}
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2.5">
+            <LegendKey label="Your store">
+              <span className="h-3 w-3 rounded-[3px] bg-surface ring-2 ring-petrol-700" />
+            </LegendKey>
+            <LegendKey label="Open (color = category)">
+              <span className="flex -space-x-0.5">
+                <span className="h-3 w-2 rounded-l-[3px]" style={{ backgroundColor: categoryColor.Apparel }} />
+                <span className="h-3 w-2" style={{ backgroundColor: categoryColor.Beauty }} />
+                <span className="h-3 w-2 rounded-r-[3px]" style={{ backgroundColor: categoryColor.Home }} />
+              </span>
+            </LegendKey>
+            <LegendKey label="Closed">
+              <span className="h-3 w-3 rounded-[3px] bg-petrol-900" />
+            </LegendKey>
+            <LegendKey label="Vacant">
+              <span className="h-3 w-3 rounded-[3px] border border-dashed border-muted" />
+            </LegendKey>
+            <LegendKey label="Named in your lease">
+              <span className="h-3 w-3 rounded-[3px] bg-brass-500" />
+            </LegendKey>
           </div>
-
-          <p className="mt-3 text-[0.8125rem] text-muted">
-            <span className="sm:hidden">
-              Swipe the plan to explore · tap any storefront to close it.
-            </span>
-            <span className="hidden sm:inline">
-              Click any storefront to take it dark. Fill color is the
-              merchandising category.
-            </span>{" "}
-            Fictional center and tenants; the clause mechanics are real.
-          </p>
         </div>
 
-        {/* PANEL */}
-        <div className="flex flex-col gap-4">
-          <div className="rounded-xl border border-line bg-surface p-5 lift">
-            <div className="flex items-baseline justify-between">
-              <span className="label text-muted">Occupied GLA</span>
-              <span className="text-xs text-faint">excl. anchors</span>
-            </div>
-            <div className="mt-3 flex items-end gap-1.5">
-              <span
-                className={cn(
-                  "tnum font-display text-[3.25rem] leading-none transition-colors duration-500",
-                  evaluation.occupancyPct < 0.7 ? "text-brass-600" : "text-petrol-800",
-                )}
-              >
-                {animatedOccupancy.toFixed(1)}
-              </span>
-              <span className="pb-1.5 text-lg text-muted">%</span>
-            </div>
-
-            <div className="relative mt-4 h-2.5 overflow-hidden rounded-full bg-surface-sunk">
-              <motion.div
-                className={cn(
-                  "absolute inset-y-0 left-0 rounded-full transition-colors duration-500",
-                  evaluation.occupancyPct < 0.7 ? "bg-brass-500" : "bg-open-600",
-                )}
-                animate={{ width: `${evaluation.occupancyPct * 100}%` }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              />
-              <div
-                className="absolute inset-y-0 w-px bg-ink/45"
-                style={{ left: "70%" }}
-              />
-            </div>
-            <div className="relative mt-1.5 h-4">
-              <div className="absolute top-0 -translate-x-1/2" style={{ left: "70%" }}>
-                <span className="block whitespace-nowrap text-[0.625rem] font-medium tracking-wide text-muted">
-                  70% floor
-                </span>
-              </div>
-            </div>
-
-            <p className="tnum mt-4 border-t border-line pt-3 text-xs text-muted">
-              {sf(evaluation.occupiedInlineGla)} of {sf(evaluation.totalInlineGla)}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-line bg-surface p-5 lift">
-            <div className="flex items-baseline justify-between">
-              <span className="label text-muted">Clause tests</span>
-              <span className="text-xs text-faint">§ 4.3</span>
-            </div>
-            <ul className="mt-4 space-y-3.5">
-              {evaluation.tests.map((t) => (
-                <li key={t.id}>
-                  <TestRow {...t} />
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div
-            className={cn(
-              "rounded-xl border p-5 transition-colors duration-700",
-              evaluation.triggered
-                ? "border-brass-200 bg-brass-50"
-                : "border-line bg-surface lift",
-            )}
-          >
-            <span className="label text-muted">Potentially claimable — this store</span>
-
-            <div className="mt-3 flex items-baseline gap-1.5">
-              <span
-                className={cn(
-                  "tnum font-display text-[2.75rem] leading-none transition-colors duration-500",
-                  evaluation.triggered ? "text-brass-700" : "text-faint",
-                )}
-              >
-                {usd(animatedHeadline)}
-              </span>
-              <span className="text-sm text-muted">/mo</span>
-            </div>
-
-            <AnimatePresence mode="wait">
-              {evaluation.triggered ? (
-                <motion.div
-                  key="hit"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-4 space-y-2.5 border-t border-current/12 pt-4"
-                >
-                  <Line k="Minimum rent" v={`${usd(leaseEconomics.baseRentMonthly)}/mo`} />
-                  <Line
-                    k="Alternative rent (4% of sales)"
-                    v={`${usd(leaseEconomics.alternativeRentMonthly)}/mo`}
-                  />
-                  <Line k="Occupancy cost" v="11.1% → 4.0%" accent />
-                  <Line k="Annualized" v={usd(leaseEconomics.monthlyDelta * 12)} accent />
-                  <p className="pt-1 text-[0.6875rem] leading-relaxed text-muted">
-                    Flagged for your team and counsel to review — Breakpoint
-                    identifies the potential event and builds the evidence.
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.p
-                  key="clear"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="mt-3 text-sm leading-relaxed text-muted"
-                >
-                  Every test satisfied. Nothing is claimable against this lease
-                  today.
-                </motion.p>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <AnimatePresence>
-            {evaluation.triggered && monthsElapsed > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="overflow-hidden"
-              >
-                <div className="rounded-xl border border-clay-100 bg-clay-50 p-5">
-                  <span className="label text-clay-700">
-                    Potential savings missed
-                  </span>
-                  <p className="tnum mt-2 font-display text-[2rem] leading-none text-clay-700">
-                    {usd(animatedForgone)}
-                  </p>
-                  <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                    In this lease the remedy begins the month after notice is
-                    delivered. {monthsElapsed} months passed before anyone
-                    looked — savings that can no longer be captured.
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* outcome rail — first on phones */}
+        <div className="order-1 flex flex-col gap-4 xl:order-2">
+          <OutcomeCard
+            evaluation={evaluation}
+            darkCount={darkCount}
+            monthsElapsed={monthsElapsed}
+          />
+          <LeaseMathCard evaluation={evaluation} />
         </div>
       </div>
 
+      {/* ---------------- narration ---------------- */}
       <AnimatePresence mode="wait">
         <motion.div
           key={touched ? "custom" : scenario.id}
@@ -385,7 +249,7 @@ export function CenterPlan() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-8 border-t border-line pt-7"
+          className="mt-7 border-t border-line pt-6"
         >
           <p className="no-orphan max-w-3xl text-[1.0625rem] leading-relaxed text-ink-soft">
             {touched ? (
@@ -394,7 +258,8 @@ export function CenterPlan() {
                   Your scenario.{" "}
                 </span>
                 Breakpoint re-runs every test as the center changes — the same
-                arithmetic, on a recurring schedule, across every lease you hold.
+                arithmetic, across every lease you hold, from one store to
+                thousands.
               </>
             ) : (
               scenario.lesson
@@ -402,6 +267,192 @@ export function CenterPlan() {
           </p>
         </motion.div>
       </AnimatePresence>
+    </div>
+  );
+}
+
+/* ==================================================================
+   The outcome — the business answer, before the math
+   ================================================================== */
+
+function OutcomeCard({
+  evaluation,
+  darkCount,
+  monthsElapsed,
+}: {
+  evaluation: Evaluation;
+  darkCount: number;
+  monthsElapsed: number;
+}) {
+  const status = evaluation.triggered
+    ? "trigger"
+    : evaluation.curing
+      ? "cure"
+      : "clear";
+  const amount = useCountUp(evaluation.monthlyDelta);
+  const failed = evaluation.tests.filter((t) => t.status === "breached");
+  const forgone = leaseEconomics.monthlyDelta * monthsElapsed;
+
+  return (
+    <motion.div
+      layout
+      className={cn(
+        "rounded-xl border p-5 transition-colors duration-500 sm:p-6",
+        status === "trigger"
+          ? "border-brass-500/60 bg-brass-50"
+          : status === "cure"
+            ? "border-brass-200 bg-surface lift"
+            : "border-line bg-surface lift",
+      )}
+    >
+      <div className="flex items-center gap-2.5">
+        <span
+          className={cn(
+            "h-2 w-2 shrink-0 rounded-full",
+            status === "trigger"
+              ? "anim-pulse-dot bg-brass-500"
+              : status === "cure"
+                ? "bg-brass-400"
+                : "bg-open-600",
+          )}
+        />
+        <span
+          className={cn(
+            "label",
+            status === "trigger"
+              ? "text-brass-700"
+              : status === "cure"
+                ? "text-brass-700"
+                : "text-open-700",
+          )}
+        >
+          {status === "trigger"
+            ? "Potential trigger detected"
+            : status === "cure"
+              ? "Cure window running"
+              : "No potential remedy detected"}
+        </span>
+      </div>
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={status}
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="mt-3 flex items-baseline gap-1.5">
+            <span
+              className={cn(
+                "tnum font-display text-[2.75rem] leading-none",
+                status === "trigger" ? "text-brass-700" : "text-faint",
+              )}
+            >
+              {usd(amount)}
+            </span>
+            <span className="text-sm text-muted">/mo est.</span>
+          </div>
+
+          {status === "trigger" ? (
+            <div className="mt-4 space-y-3 border-t border-brass-200 pt-4">
+              <p className="text-sm leading-relaxed text-ink-soft">
+                ≈ <span className="tnum font-semibold text-ink">{usd(evaluation.annualDelta)}</span>{" "}
+                per year in potential rent relief on this store.
+              </p>
+              <div>
+                <span className="label text-muted">What changed</span>
+                <ul className="mt-2 space-y-1.5">
+                  <li className="text-[0.8125rem] leading-snug text-ink-soft">
+                    {darkCount} storefront{darkCount === 1 ? "" : "s"} closed in
+                    this scenario
+                  </li>
+                  {failed.map((t) => (
+                    <li key={t.id} className="text-[0.8125rem] leading-snug text-ink-soft">
+                      <span className="font-medium text-ink">{t.label}</span> —{" "}
+                      {t.observed}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {monthsElapsed > 0 && (
+                <p className="rounded-lg bg-clay-50 px-3 py-2 text-[0.8125rem] leading-snug text-clay-700">
+                  ≈ {usd(forgone)} in potential savings already missed —{" "}
+                  {monthsElapsed} months undetected before this evaluation.
+                </p>
+              )}
+              <p className="text-[0.8125rem] leading-relaxed text-muted">
+                Any remedy would begin only after written notice. Breakpoint
+                would assemble the review package for your team and counsel.
+              </p>
+            </div>
+          ) : status === "cure" ? (
+            <p className="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
+              A test would fail, but the landlord&#8217;s{" "}
+              {90}
+              -day cure window is still open — nothing is claimable yet.
+              Breakpoint tracks the window so the day it lapses, you know.
+            </p>
+          ) : (
+            <p className="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
+              Every co-tenancy test in this lease is currently satisfied. Close
+              a storefront on the map — or pick a scenario above — and watch
+              the lease react.
+            </p>
+          )}
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+/* ==================================================================
+   The math — credibility on demand, beneath the outcome
+   ================================================================== */
+
+function LeaseMathCard({ evaluation }: { evaluation: Evaluation }) {
+  const occupancy = useCountUp(evaluation.occupancyPct * 100, 0.7);
+  return (
+    <div className="rounded-xl border border-line bg-surface p-5 lift sm:p-6">
+      <div className="flex items-baseline justify-between">
+        <span className="label text-muted">The lease math</span>
+        <span className="text-xs text-faint">§ 4.3</span>
+      </div>
+
+      <div className="mt-4 flex items-baseline justify-between gap-3">
+        <span className="text-sm text-ink-soft">Occupied space</span>
+        <span
+          className={cn(
+            "tnum font-display text-xl leading-none",
+            evaluation.occupancyPct < 0.7 ? "text-brass-600" : "text-petrol-800",
+          )}
+        >
+          {occupancy.toFixed(1)}%
+        </span>
+      </div>
+      <div className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-surface-sunk">
+        <motion.div
+          className={cn(
+            "absolute inset-y-0 left-0 rounded-full transition-colors duration-500",
+            evaluation.occupancyPct < 0.7 ? "bg-brass-500" : "bg-open-600",
+          )}
+          animate={{ width: `${evaluation.occupancyPct * 100}%` }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        />
+        <div className="absolute inset-y-0 w-px bg-ink/45" style={{ left: "70%" }} />
+      </div>
+      <p className="tnum mt-1.5 text-[0.6875rem] text-muted">
+        {sf(evaluation.occupiedInlineGla)} of {sf(evaluation.totalInlineGla)}{" "}
+        non-anchor space · lease floor 70%
+      </p>
+
+      <ul className="mt-5 space-y-3.5 border-t border-line pt-4">
+        {evaluation.tests.map((t) => (
+          <li key={t.id}>
+            <TestRow {...t} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -436,10 +487,11 @@ function UnitBox({
       aria-label={`${unit.name} — ${unit.status}`}
       className={cn(
         "absolute overflow-hidden rounded-[3px] text-left ring-1 ring-inset transition-shadow duration-300",
-        !isVacant && "cursor-pointer",
+        !isVacant && !unit.subject && "cursor-pointer",
+        unit.subject && "cursor-default",
         isDark ? "ring-petrol-950" : "ring-petrol-800/30",
         isVacant && "ring-0",
-        isHovered && "z-20 shadow-[0_0_0_2px_var(--color-petrol-600)]",
+        isHovered && !unit.subject && "z-20 shadow-[0_0_0_2px_var(--color-petrol-600)]",
       )}
       style={{
         left: `${left}%`,
@@ -450,9 +502,11 @@ function UnitBox({
       animate={{
         backgroundColor: isVacant
           ? "rgba(0,0,0,0)"
-          : isDark
-            ? "#191553"
-            : categoryColor[unit.category],
+          : unit.subject
+            ? "#ffffff"
+            : isDark
+              ? "#191553"
+              : categoryColor[unit.category],
       }}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
     >
@@ -473,8 +527,10 @@ function UnitBox({
         <>
           <span
             className={cn(
-              "absolute inset-0 rounded-[3px] ring-2 ring-inset transition-colors duration-500",
-              breached ? "ring-brass-500" : "ring-petrol-800",
+              "absolute inset-0 rounded-[3px] ring-inset transition-all duration-500",
+              breached
+                ? "ring-[2.5px] ring-brass-500 shadow-[0_0_0_4px_rgba(217,154,43,0.25)]"
+                : "ring-[2.5px] ring-petrol-700 shadow-[0_0_0_4px_rgba(79,70,229,0.15)]",
             )}
           />
           {breached && (
@@ -519,11 +575,11 @@ function SubjectMarker({
     >
       <span
         className={cn(
-          "rounded-md px-2 py-1 text-[0.625rem] font-semibold whitespace-nowrap transition-colors duration-500",
+          "rounded-md px-2 py-1 text-[0.625rem] font-semibold whitespace-nowrap shadow-md transition-colors duration-500",
           breached ? "bg-brass-500 text-petrol-950" : "bg-petrol-800 text-cream",
         )}
       >
-        Your store · Unit 214
+        Your store
       </span>
       <span
         className={cn(
@@ -536,18 +592,23 @@ function SubjectMarker({
 }
 
 function Tooltip({ placed }: { placed: ReturnType<typeof layoutPlan>[number] }) {
-  const { unit, left, top, width } = placed;
+  const { unit, left, top, width, height } = placed;
+  // The plan clips its overflow, so a tooltip above a top-row unit
+  // would be cut off — flip it underneath instead.
+  const flipDown = top < 24;
   return (
     <div
       className="pointer-events-none absolute z-30"
       style={{
         left: `${Math.min(Math.max(left + width / 2, 13), 87)}%`,
-        top: `${top}%`,
-        transform: "translate(-50%, -112%)",
+        top: flipDown ? `${top + height}%` : `${top}%`,
+        transform: flipDown ? "translate(-50%, 10px)" : "translate(-50%, -112%)",
       }}
     >
       <div className="min-w-44 rounded-lg border border-line bg-petrol-900 px-3 py-2.5 shadow-xl">
-        <p className="text-[0.8125rem] font-medium text-cream">{unit.name}</p>
+        <p className="text-[0.8125rem] font-medium text-cream">
+          {unit.subject ? "Your store · Unit 214" : unit.name}
+        </p>
         <p className="tnum mt-0.5 text-[0.6875rem] text-cream-faint">
           {unit.category} · {sf(unit.gla)}
         </p>
@@ -566,12 +627,12 @@ function Tooltip({ placed }: { placed: ReturnType<typeof layoutPlan>[number] }) 
             {unit.status === "open"
               ? "Open & operating"
               : unit.status === "dark"
-                ? "Gone dark"
+                ? "Closed"
                 : "Vacant"}
           </span>
         </div>
         {unit.named && (
-          <p className="label mt-1.5 text-brass-400">Named in § 4.3</p>
+          <p className="label mt-1.5 text-brass-400">Named in your lease</p>
         )}
       </div>
     </div>
@@ -596,7 +657,7 @@ function TestRow({
       ? { dot: "bg-open-600", text: "text-open-700", word: "Satisfied" }
       : status === "cure"
         ? { dot: "bg-brass-400", text: "text-brass-700", word: "In cure" }
-        : { dot: "bg-brass-500", text: "text-brass-700", word: "Failed" };
+        : { dot: "bg-brass-500", text: "text-brass-700", word: "Not met" };
 
   return (
     <div className="flex gap-3">
@@ -616,36 +677,16 @@ function TestRow({
 }
 
 function LegendKey({
-  swatch,
   label,
-  style,
+  children,
 }: {
-  swatch: string;
   label: string;
-  style?: React.CSSProperties;
+  children: React.ReactNode;
 }) {
   return (
-    <span className="flex items-center gap-1.5">
-      <span className={cn("h-2.5 w-2.5 shrink-0 rounded-[2px]", swatch)} style={style} />
-      <span className="text-[0.625rem] font-medium tracking-wide text-muted uppercase">
-        {label}
-      </span>
+    <span className="flex items-center gap-2">
+      {children}
+      <span className="text-xs font-medium text-ink-soft">{label}</span>
     </span>
-  );
-}
-
-function Line({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3">
-      <span className="text-xs text-muted">{k}</span>
-      <span
-        className={cn(
-          "tnum shrink-0 text-xs",
-          accent ? "font-semibold text-ink" : "text-ink-soft",
-        )}
-      >
-        {v}
-      </span>
-    </div>
   );
 }

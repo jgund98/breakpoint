@@ -38,12 +38,19 @@ const MARKERS: Marker[] = [
     name: "Fairmount Collection",
     value: "70.4%",
     state: "watch",
-    escalated: { value: "67.8%", note: "§4.3(c) potential failure · review ready" },
+    escalated: { value: "67.8%", note: "Potential trigger · est. $18,917/mo relief" },
   },
   { id: "m4", x: 77, y: 46, name: "Kestrel Pointe", value: "71.2%", state: "watch", minor: true, flip: true },
 ];
 
-const CYCLE_MS = 4200;
+/**
+ * The escalation is synced to the survey beam (bp-scan, 9s): the beam
+ * crosses Fairmount mid-sweep and *that* is when the test trips —
+ * cause and effect, on loop.
+ */
+const BEAM_MS = 9000;
+const TRIP_AT = 4200;
+const RESET_AT = 8600;
 
 export function HeroScene({ className }: { className?: string }) {
   const [escalated, setEscalated] = useState(false);
@@ -54,8 +61,18 @@ export function HeroScene({ className }: { className?: string }) {
       setEscalated(true);
       return;
     }
-    const id = window.setInterval(() => setEscalated((v) => !v), CYCLE_MS);
-    return () => window.clearInterval(id);
+    let t1: number, t2: number;
+    const run = () => {
+      t1 = window.setTimeout(() => setEscalated(true), TRIP_AT);
+      t2 = window.setTimeout(() => setEscalated(false), RESET_AT);
+    };
+    run();
+    const id = window.setInterval(run, BEAM_MS);
+    return () => {
+      window.clearInterval(id);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
   }, [reduced]);
 
   return (

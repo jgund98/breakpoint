@@ -44,3 +44,6 @@ next-env.d.ts
 /shots/
 /raw-assets/photos/
 /raw-assets/contact-sheet.jpg
+
+# video source files
+/raw-assets/video/

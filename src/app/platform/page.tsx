@@ -33,7 +33,7 @@ const guardrails = [
   },
   {
     k: "A human reviews the abstraction",
-    v: "The model proposes; a person confirms before a lease goes live. Co-tenancy language is unusually adversarial and the cost of a wrong read runs both directions.",
+    v: "The engine proposes; a person confirms before a lease goes live. Co-tenancy language is unusually adversarial and the cost of a wrong read runs both directions.",
   },
   {
     k: "Occupancy is evidence, not a number",

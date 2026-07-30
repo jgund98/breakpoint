@@ -84,7 +84,18 @@ export function Header() {
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-2 lg:ml-0">
+          <div className="ml-auto flex items-center gap-1.5 lg:ml-0">
+            <Link
+              href="/login"
+              className={cn(
+                "hidden rounded-full px-4 py-2.5 text-[0.9375rem] font-medium transition-colors duration-300 md:inline-flex",
+                darkTop
+                  ? "text-cream-soft hover:text-cream"
+                  : "text-ink-soft hover:text-petrol-800",
+              )}
+            >
+              Log in
+            </Link>
             <Link
               href="/demo"
               className={cn(

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DemoForm } from "@/components/forms/DemoForm";
 import { Reveal } from "@/components/ui/Reveal";
+import { WorkspaceMock } from "@/components/showpiece/WorkspaceMock";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -110,13 +111,26 @@ export default function DemoPage() {
                 ))}
               </ol>
               <p className="no-orphan balance mt-6 border-t border-line pt-5 text-sm leading-relaxed text-muted">
-                AI does the reading; our team reviews every abstraction and
-                consequential finding before it reaches&nbsp;you.
+                Our engine does the reading; our team reviews every abstraction
+                and consequential finding before it reaches&nbsp;you.
               </p>
             </Reveal>
           </div>
 
-          <p className="no-orphan mx-auto mt-10 max-w-2xl text-center text-sm leading-relaxed text-muted">
+          {/* what lands after submission */}
+          <div className="mt-14">
+            <h2 className="label text-petrol-600">
+              What comes back in your workspace
+            </h2>
+            <Reveal className="mt-5" y={30}>
+              <WorkspaceMock />
+            </Reveal>
+            <p className="mt-3 text-xs text-muted">
+              Product rendering with illustrative sample data.
+            </p>
+          </div>
+
+          <p className="no-orphan mx-auto mt-12 max-w-2xl text-center text-sm leading-relaxed text-muted">
             Breakpoint identifies potential contractual events and assembles
             evidence. Whether and when to serve notice is a decision for you
             and your counsel. Nothing on this site is legal&nbsp;advice.

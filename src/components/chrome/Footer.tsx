@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { LogoLockup } from "@/components/brand/Logo";
 import { EpicCredit } from "@/components/brand/EpicCredit";
 import { site, footerNav } from "@/lib/site";
@@ -10,10 +9,26 @@ export function Footer() {
     <footer className="relative overflow-hidden bg-petrol-900 text-cream">
       <DarkDecor />
 
-      {/* closing CTA — photographic, warm, and the last word */}
-      <div className="relative border-b border-white/10">
-        <div className="mx-auto grid max-w-[1400px] gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16 lg:py-24">
-          <div>
+      {/* closing CTA — real footage of the asset class, graded into the
+          brand, with the ask on top. The last word is cinematic. */}
+      <div className="relative overflow-hidden border-b border-white/10">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/video/cta-aerial-poster.jpg"
+          aria-hidden
+        >
+          <source src="/video/cta-aerial.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-petrol-950/72" />
+        <div className="absolute inset-0 bg-linear-to-r from-petrol-950/85 via-petrol-950/40 to-petrol-950/20" />
+
+        <div className="relative mx-auto max-w-[1400px] px-5 py-20 sm:px-8 sm:py-24 lg:py-32">
+          <div className="max-w-2xl">
             <p className="label text-brass-400">Start with one center</p>
             <h2 className="mt-5 text-[clamp(2rem,5vw,3.5rem)] text-cream">
               Send us one lease.{" "}
@@ -36,22 +51,11 @@ export function Footer() {
               </Link>
               <Link
                 href="/co-tenancy"
-                className="inline-flex items-center justify-center rounded-full border border-white/20 px-7 py-4 text-base font-medium text-cream transition-colors hover:border-white/40 hover:bg-white/5"
+                className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/5 px-7 py-4 text-base font-medium text-cream backdrop-blur-sm transition-colors hover:border-white/45 hover:bg-white/10"
               >
                 Read the field guide
               </Link>
             </div>
-          </div>
-
-          <div className="relative aspect-4/3 overflow-hidden rounded-xl lg:aspect-3/2">
-            <Image
-              src="/photos/shoppers-browsing.jpg"
-              alt="Shoppers browsing in a bright retail store"
-              fill
-              sizes="(max-width: 1024px) 100vw, 40vw"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-petrol-950/20 mix-blend-multiply" />
           </div>
         </div>
       </div>

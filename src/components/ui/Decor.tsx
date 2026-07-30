@@ -40,16 +40,15 @@ export function MarkMotif({
         WebkitMaskImage: "linear-gradient(135deg, #000 30%, transparent 85%)",
       }}
     >
-      <rect x="0" y="7" width="12.5" height="5" rx="1" fill="currentColor" />
+      <rect x="12.25" y="11.5" width="7.5" height="18.5" rx="2.5" fill="currentColor" />
       <rect
-        x="13.5"
-        y="13.5"
-        width="5"
-        height="5"
-        rx="1"
+        x="12.25"
+        y="2"
+        width="7.5"
+        height="7.5"
+        rx="2.2"
         className={tone === "dark" ? "fill-brass-400/60" : "fill-brass-500/50"}
       />
-      <rect x="19.5" y="20" width="12.5" height="5" rx="1" fill="currentColor" />
     </svg>
   );
 }

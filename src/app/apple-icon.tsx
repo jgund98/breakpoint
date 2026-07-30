@@ -1,10 +1,10 @@
 import { ImageResponse } from "next/og";
 
-export const size = { width: 64, height: 64 };
+export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-/** The mark: a rent line stepping down past a unit gone dark. */
-export default function Icon() {
+/** Home-screen / iMessage icon — the indicator on deep indigo. */
+export default function AppleIcon() {
   return new ImageResponse(
     (
       <div
@@ -14,10 +14,10 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#191553",
+          background: "linear-gradient(160deg, #2f2a9b 0%, #191553 100%)",
         }}
       >
-        <svg width="44" height="44" viewBox="0 0 32 32">
+        <svg width="120" height="120" viewBox="0 0 32 32">
           <rect x="12.25" y="11.5" width="7.5" height="18.5" rx="2.5" fill="#f6f4ee" />
           <rect x="12.25" y="2" width="7.5" height="7.5" rx="2.2" fill="#d99a2b" />
         </svg>

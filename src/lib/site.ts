@@ -13,9 +13,8 @@ export const site = {
   name: "Breakpoint",
   legalName: "Breakpoint Intelligence, Inc.",
   category: "Retail Lease Intelligence",
-  /** Placeholder domain — swap before any deploy. */
-  domain: "breakpoint.re",
-  url: "https://breakpoint.re",
+  domain: "breakpoint.epicdevsolutions.com",
+  url: "https://breakpoint.epicdevsolutions.com",
   tagline: "Know the hour it breaks.",
   description:
     "Breakpoint monitors co-tenancy clauses across the centers you occupy, flags when a lease test may have failed, and hands your team the estimated impact with the evidence behind it.",

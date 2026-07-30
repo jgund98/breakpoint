@@ -1,11 +1,16 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { Section, Eyebrow, SectionTitle } from "@/components/ui/Section";
-import { Reveal } from "@/components/ui/Reveal";
+import { cn } from "@/lib/cn";
 
 /**
- * The pipeline, compressed to one band. The full four-stage treatment —
- * clause reader, occupancy trace, alert, claim packet — lives on
- * /platform; this strip earns the click without re-telling it.
+ * The pipeline, compressed to one band — with a live signal running
+ * through it. A brass pulse travels Abstract → Watch → Trigger →
+ * Package on loop, lighting each stage as it arrives: the product's
+ * whole motion, ambient. Full treatment lives on /platform.
  */
 const steps = [
   {
@@ -30,7 +35,23 @@ const steps = [
   },
 ];
 
+const STEP_MS = 2100;
+
 export function HowItWorks() {
+  const ref = useRef<HTMLOListElement>(null);
+  const inView = useInView(ref, { margin: "-15%" });
+  const reduced = useReducedMotion();
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    if (!inView || reduced) return;
+    const id = window.setInterval(
+      () => setActive((a) => (a + 1) % steps.length),
+      STEP_MS,
+    );
+    return () => window.clearInterval(id);
+  }, [inView, reduced]);
+
   return (
     <Section tone="canvas">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -54,22 +75,55 @@ export function HowItWorks() {
         </Link>
       </div>
 
-      <ol className="mt-12 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map((s, i) => (
-          <li key={s.n} className="group bg-surface transition-colors duration-300 hover:bg-petrol-50">
-            <Reveal delay={i * 0.09} className="h-full p-6 sm:p-7">
-            <div className="flex items-center gap-3">
-              <span className="font-display text-lg leading-none text-brass-500">
-                {s.n}
-              </span>
-              <span className="label text-petrol-600">{s.k}</span>
-            </div>
-            <p className="no-orphan balance mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
-              {s.v}
-            </p>
-            </Reveal>
-          </li>
-        ))}
+      {/* the signal track */}
+      <div className="relative mt-12 hidden h-px bg-line lg:block">
+        <motion.span
+          className="absolute -top-[3px] h-[7px] w-[7px] rounded-full bg-brass-500 shadow-[0_0_12px_rgba(217,154,43,0.8)]"
+          animate={{ left: `${active * 25 + 12.5}%` }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </div>
+
+      <ol
+        ref={ref}
+        className="grid gap-px overflow-hidden rounded-xl border border-line bg-line max-lg:mt-12 sm:grid-cols-2 lg:grid-cols-4 lg:rounded-t-none lg:border-t-0"
+      >
+        {steps.map((s, i) => {
+          const on = active === i;
+          return (
+            <li
+              key={s.n}
+              className={cn(
+                "relative p-6 transition-colors duration-500 sm:p-7",
+                on ? "bg-petrol-50" : "bg-surface",
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <motion.span
+                  className={cn(
+                    "font-display text-lg leading-none transition-colors duration-500",
+                    on ? "text-brass-600" : "text-brass-500/60",
+                  )}
+                  animate={{ scale: on ? 1.15 : 1 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {s.n}
+                </motion.span>
+                <span
+                  className={cn(
+                    "label transition-colors duration-500",
+                    on ? "text-petrol-700" : "text-muted",
+                  )}
+                >
+                  {s.k}
+                </span>
+              </div>
+              <p className="no-orphan balance mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
+                {s.v}
+              </p>
+            </li>
+          );
+        })}
       </ol>
     </Section>
   );

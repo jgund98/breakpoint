@@ -1,12 +1,13 @@
 import { cn } from "@/lib/cn";
 
 /**
- * The Breakpoint mark.
+ * The Breakpoint mark: the indicator.
  *
- * A rent line that steps down past a unit gone dark — two bars and a
- * brass square. The wordmark carries the same idea typographically:
- * set in Fraunces, with the tittle of the "i" replaced by the brass
- * step square. One glyph, one story, in both halves of the lockup.
+ * The wordmark's signature is the brass square sitting as the tittle
+ * of the dotless ı — so the mark IS that glyph, isolated: a column
+ * with the brass indicator lit above it. It reads as the letter from
+ * the name, and as a status flag raised over a location. One device,
+ * everywhere.
  */
 export function LogoMark({
   className,
@@ -22,10 +23,28 @@ export function LogoMark({
       aria-hidden="true"
       className={cn("shrink-0", className)}
     >
-      <rect x="0" y="7" width="12.5" height="5" rx="1" fill="currentColor" />
-      <rect x="13.5" y="13.5" width="5" height="5" rx="1" fill={accent} />
-      <rect x="19.5" y="20" width="12.5" height="5" rx="1" fill="currentColor" />
+      <rect x="12.25" y="11.5" width="7.5" height="18.5" rx="2.5" fill="currentColor" />
+      <rect x="12.25" y="2" width="7.5" height="7.5" rx="2.2" fill={accent} />
     </svg>
+  );
+}
+
+/**
+ * The mark as an app tile — indigo rounded square, glyph knocked out
+ * in cream. This is the "product icon" cut used in navigation, the
+ * favicon, and anywhere the brand sits on its own.
+ */
+export function LogoBadge({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "grid shrink-0 place-items-center rounded-[26%] bg-petrol-800 text-cream shadow-[0_4px_12px_-4px_rgba(47,42,155,0.5)]",
+        className,
+      )}
+    >
+      <LogoMark className="h-[62%] w-[62%]" />
+    </span>
   );
 }
 
@@ -71,7 +90,7 @@ export function Logo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark className={cn("h-[20px] w-[20px]", markClassName)} />
+      <LogoBadge className={cn("h-[26px] w-[26px]", markClassName)} />
       {showWord && <LogoWord className={cn("text-[1.375rem]", wordClassName)} />}
     </span>
   );

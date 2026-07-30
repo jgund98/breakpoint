@@ -97,7 +97,8 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  scroll-behavior: smooth;
+  /* No global smooth scrolling — it makes route changes appear to
+     load mid-page. Anchors jump instantly. */
   scroll-padding-top: 5.5rem;
   overflow-x: clip;
   overscroll-behavior-x: none;
@@ -266,7 +267,7 @@ h4 {
 }
 
 .anim-scan {
-  animation: bp-scan 11s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: bp-scan 9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .anim-marquee {

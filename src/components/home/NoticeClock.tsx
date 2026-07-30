@@ -1,9 +1,31 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { animate, motion, useInView } from "motion/react";
 import { leaseEconomics, usd } from "@/lib/center";
 import { cn } from "@/lib/cn";
 import { DarkDecor } from "@/components/ui/Decor";
+
+/** Counts up from zero the first time it scrolls into view. */
+function CountTo({ value, className }: { value: number; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(0, value, {
+      duration: 1.4,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: setV,
+    });
+    return () => controls.stop();
+  }, [inView, value]);
+  return (
+    <span ref={ref} className={className}>
+      {usd(v)}
+    </span>
+  );
+}
 
 /**
  * The single most expensive fact in retail co-tenancy: the remedy runs
@@ -124,7 +146,7 @@ export function NoticeClock() {
                 Potential savings missed before notice
               </span>
               <p className="tnum mt-3 font-display text-[clamp(2rem,4.4vw,2.75rem)] leading-none text-cream-faint line-through decoration-clay-500/70 decoration-2">
-                {usd(forgone)}
+                <CountTo value={forgone} />
               </p>
               <p className="no-orphan mt-3 text-sm leading-relaxed text-cream-soft">
                 The condition appears to have existed for nine months — but the
@@ -138,7 +160,7 @@ export function NoticeClock() {
                 Savings available from notice forward
               </span>
               <p className="tnum mt-3 font-display text-[clamp(2rem,4.4vw,2.75rem)] leading-none text-brass-200">
-                {usd(recovered)}
+                <CountTo value={recovered} />
               </p>
               <p className="no-orphan mt-3 text-sm leading-relaxed text-cream-soft">
                 On one store, in one center. Breakpoint&#8217;s entire job is to

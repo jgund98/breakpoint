@@ -5,22 +5,23 @@ export function TheCenter() {
   return (
     <Section id="the-center" tone="sunk" grid>
       <div className="max-w-3xl">
-        <Eyebrow>The showpiece</Eyebrow>
+        <Eyebrow>Interactive demonstration</Eyebrow>
         <SectionTitle>
-          Take a storefront dark.{" "}
+          Close a storefront.{" "}
           <span className="display-em text-petrol-700">
-            Watch what it costs.
+            Watch your lease react.
           </span>
         </SectionTitle>
         <Lede>
-          One lease, in one center, evaluated against the three tests written
-          into its co&#8209;tenancy clause. Close a store and the arithmetic
-          moves in front of you — the same arithmetic Breakpoint re&#8209;runs
-          across every center you occupy as verified conditions change.
+          One shopping center, one lease — the outlined unit is your store.
+          Pick a scenario or click any other storefront to close it
+          (&#8220;going dark,&#8221; in lease terms). Breakpoint re&#8209;runs
+          your co&#8209;tenancy tests and shows the potential impact on your
+          rent.
         </Lede>
       </div>
 
-      <div className="mt-12 lg:mt-16">
+      <div className="mt-10 lg:mt-12">
         <CenterPlan />
       </div>
     </Section>

@@ -364,7 +364,7 @@ export type Scenario = {
 export const scenarios: Scenario[] = [
   {
     id: "today",
-    label: "Today",
+    label: "Center today",
     blurb: "The center as leased",
     dark: [],
     elapsedDays: 0,
@@ -373,7 +373,7 @@ export const scenarios: Scenario[] = [
   },
   {
     id: "anchor",
-    label: "Anchor goes dark",
+    label: "Anchor closes",
     blurb: "Brenner's closes",
     dark: ["a-br"],
     elapsedDays: 45,
@@ -382,8 +382,8 @@ export const scenarios: Scenario[] = [
   },
   {
     id: "bleed",
-    label: "The bleed",
-    blurb: "Nine months later",
+    label: "9 months undetected",
+    blurb: "The closures cascade",
     dark: ["a-br", "n2", "n5", "s5", "s9"],
     elapsedDays: 274,
     lesson:
@@ -391,8 +391,8 @@ export const scenarios: Scenario[] = [
   },
   {
     id: "demall",
-    label: "Demall",
-    blurb: "Redevelopment takes the north wing",
+    label: "Redevelopment",
+    blurb: "The north wing comes offline",
     dark: [
       "a-br",
       "n1",
