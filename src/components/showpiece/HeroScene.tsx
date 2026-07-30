@@ -138,9 +138,8 @@ export function HeroScene({ className }: { className?: string }) {
                 ease: [0.22, 1, 0.36, 1],
               }}
               className={cn(
-                "absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2",
+                "absolute z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 sm:flex",
                 m.flip && "flex-row-reverse",
-                m.minor && "hidden sm:flex",
               )}
               style={{ left: `${m.x}%`, top: `${m.y}%` }}
             >
@@ -154,6 +153,19 @@ export function HeroScene({ className }: { className?: string }) {
             </motion.div>
           );
         })}
+
+        {/* phone: one live chip, parked safely above the caption */}
+        <div className="absolute inset-x-4 bottom-12 z-10 flex justify-center sm:hidden">
+          <div className="flex items-center gap-2">
+            <Pin state={escalated ? "fail" : "watch"} />
+            <Chip
+              name="Fairmount Collection"
+              value={escalated ? "67.8%" : "70.4%"}
+              state={escalated ? "fail" : "watch"}
+              note={escalated ? "Potential trigger · est. $18,917/mo" : undefined}
+            />
+          </div>
+        </div>
 
         {/* sheet caption */}
         <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5">

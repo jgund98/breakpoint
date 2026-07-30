@@ -39,7 +39,7 @@ export function LogoBadge({ className }: { className?: string }) {
     <span
       aria-hidden="true"
       className={cn(
-        "grid shrink-0 place-items-center rounded-[26%] bg-petrol-800 text-cream shadow-[0_4px_12px_-4px_rgba(47,42,155,0.5)]",
+        "grid shrink-0 place-items-center rounded-[26%] bg-linear-to-b from-petrol-700 to-petrol-900 text-cream shadow-[0_5px_14px_-5px_rgba(25,21,83,0.65)] ring-1 ring-white/15 ring-inset",
         className,
       )}
     >

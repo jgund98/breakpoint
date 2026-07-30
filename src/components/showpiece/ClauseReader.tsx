@@ -148,13 +148,13 @@ export function ClauseReader() {
       onMouseLeave={() => setPinned(false)}
     >
       {/* ---- the document ---- */}
-      <div className="rounded-xl border border-line bg-surface p-6 lift sm:p-8">
+      <div className="flex flex-col rounded-xl border border-line bg-surface p-6 lift sm:p-8">
         <div className="flex items-baseline justify-between gap-4 border-b border-line pb-4">
           <span className="label text-muted">Executed lease · § 4.3</span>
           <span className="text-xs text-faint">Ongoing Co-Tenancy</span>
         </div>
 
-        <p className="mt-6 text-[0.9375rem] leading-[1.85] text-ink-soft sm:text-base">
+        <p className="mt-6 flex-1 text-[0.9375rem] leading-[1.85] text-ink-soft sm:text-base">
           {CLAUSE.map((part, i) =>
             part.id ? (
               <mark
@@ -176,6 +176,10 @@ export function ClauseReader() {
               <span key={i}>{part.text}</span>
             ),
           )}
+        </p>
+        <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-muted">
+          Hover any highlighted passage — the rule extracted from it lights up
+          on the right. Every field points back to its source sentence.
         </p>
       </div>
 
@@ -212,11 +216,10 @@ export function ClauseReader() {
                       animate={{ scale: on ? 1.6 : 1, opacity: on ? 1 : 0.5 }}
                       transition={{ duration: 0.35 }}
                     />
-                    <span className="label text-cream-faint">{f.group}</span>
+                    <span className="label text-cream-soft">{f.group}</span>
                     <span
                       className={cn(
-                        "ml-auto text-sm font-medium transition-colors duration-300",
-                        on ? "text-cream" : "text-cream-soft",
+                        "ml-auto text-sm font-semibold text-cream transition-colors duration-300",
                       )}
                     >
                       {f.label}
@@ -224,8 +227,8 @@ export function ClauseReader() {
                   </span>
                   <span
                     className={cn(
-                      "mt-1.5 block pl-4 text-[0.8125rem] leading-snug transition-colors duration-300",
-                      on ? "text-brass-200" : "text-cream-faint",
+                      "mt-1.5 block pl-4 text-[0.8125rem] font-medium leading-snug transition-colors duration-300",
+                      on ? "text-brass-200" : "text-cream-soft",
                     )}
                   >
                     {f.value}
@@ -236,7 +239,7 @@ export function ClauseReader() {
           })}
         </ul>
 
-        <p className="mt-6 border-t border-white/15 pt-4 text-xs leading-relaxed text-cream-faint">
+        <p className="mt-6 border-t border-white/15 pt-4 text-xs leading-relaxed text-cream-soft">
           Every field carries a pointer back to the clause it came from, so a
           lease administrator can audit the abstraction instead of trusting it.
         </p>

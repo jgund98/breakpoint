@@ -32,8 +32,8 @@ export function Footer() {
             <p className="label text-brass-400">Start with one center</p>
             <h2 className="mt-5 text-[clamp(2rem,5vw,3.5rem)] text-cream">
               Send us one lease.{" "}
-              <span className="display-em block text-brass-200">
-                We&#8217;ll tell you what it may be owed.
+              <span className="display-em balance block text-brass-200">
+                We&#8217;ll tell you what it may be&nbsp;owed.
               </span>
             </h2>
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">

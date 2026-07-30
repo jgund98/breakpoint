@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { PageHero } from "@/components/chrome/PageHero";
 import { Section, Eyebrow, SectionTitle } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
@@ -130,14 +131,19 @@ export default function CoTenancyPage() {
                 </li>
               ))}
             </ul>
-            <div className="mt-8 rounded-xl border border-line bg-surface p-5">
-              <p className="no-orphan text-sm leading-relaxed text-ink-soft">
-                Want yours read properly? Send one lease and we&#8217;ll abstract
-                its co&#8209;tenancy language inside 48&nbsp;hours.
+            <div className="relative mt-8 overflow-hidden rounded-xl bg-petrol-800 p-5 text-cream">
+              <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brass-500/20 blur-2xl" />
+              <p className="label relative text-brass-400">Your lease, read properly</p>
+              <p className="no-orphan relative mt-2.5 text-sm leading-relaxed text-cream-soft">
+                Send one lease — the co&#8209;tenancy language comes back
+                abstracted, cited and evaluated inside 48&nbsp;hours.
               </p>
-              <Button href="/demo" size="md" className="mt-4 w-full">
+              <Link
+                href="/demo"
+                className="relative mt-4 flex w-full items-center justify-center rounded-full bg-brass-500 px-4 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap text-petrol-950 transition-colors hover:bg-brass-400"
+              >
                 Start your evaluation
-              </Button>
+              </Link>
             </div>
           </nav>
 

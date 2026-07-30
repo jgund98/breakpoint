@@ -40,7 +40,7 @@ export function PageHero({
             <h1 className="balance mt-5 text-[clamp(2.25rem,5.6vw,4rem)] text-cream">
               {title}
               {accent && (
-                <span className="display-em block text-brass-200">{accent}</span>
+                <span className="display-em balance block text-brass-200">{accent}</span>
               )}
             </h1>
             <div className="lede no-orphan mt-6 max-w-2xl text-cream-soft">

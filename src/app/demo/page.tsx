@@ -48,7 +48,7 @@ export default function DemoPage() {
                   Send one lease.
                 </span>
                 <span className="display-em balance mt-2 block text-[clamp(2.4rem,5vw,3.75rem)] text-petrol-700">
-                  We&#8217;ll tell you what it may be owed.
+                  We&#8217;ll tell you what it may be&nbsp;owed.
                 </span>
               </h1>
               <p className="lede no-orphan mt-6 text-ink-soft">

@@ -202,9 +202,12 @@ export default function PlatformPage() {
           </div>
           <div className="rounded-xl border border-line bg-surface p-7 sm:p-8">
             <span className="label text-muted">Runs alongside</span>
-            <ul className="mt-5 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+            <ul className="mt-5 flex flex-wrap gap-2">
               {coexistsWith.map((n) => (
-                <li key={n} className="text-[1.0625rem] font-medium text-ink-soft">
+                <li
+                  key={n}
+                  className="rounded-full border border-line bg-canvas px-4 py-2 text-[0.9375rem] font-medium text-ink-soft"
+                >
                   {n}
                 </li>
               ))}

@@ -53,8 +53,8 @@ export function NoticeClock() {
           <p className="label text-brass-400">The notice clock</p>
           <h2 className="balance mt-5 text-[clamp(1.9rem,4.4vw,3.25rem)] text-cream">
             The clause doesn&#8217;t pay retroactively.{" "}
-            <span className="display-em block text-brass-200">
-              It pays from the day you notice.
+            <span className="display-em balance block text-brass-200">
+              It pays from the day you&nbsp;notice.
             </span>
           </h2>
           <p className="lede no-orphan mt-6 max-w-2xl text-cream-soft">
@@ -104,7 +104,7 @@ export function NoticeClock() {
                   />
                   <span
                     className={cn(
-                      "text-[0.625rem] font-medium tracking-wide uppercase sm:text-xs",
+                      "font-medium uppercase max-sm:text-[0.5rem] max-sm:tracking-normal sm:text-xs sm:tracking-wide",
                       silent ? "text-cream-faint" : "text-brass-200",
                     )}
                   >

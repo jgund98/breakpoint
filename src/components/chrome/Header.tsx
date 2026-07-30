@@ -186,6 +186,12 @@ export function Header() {
                 >
                   Start your evaluation
                 </Link>
+                <Link
+                  href="/login"
+                  className="mt-3 flex w-full items-center justify-center rounded-full border border-white/20 px-6 py-4 text-base font-medium text-cream"
+                >
+                  Log in
+                </Link>
                 <p className="mt-4 text-center text-sm text-cream-faint">
                   Your first center goes live in 24–48 hours.
                 </p>

@@ -68,10 +68,9 @@ export function CenterPlan() {
 
   const hoveredUnit = placed.find((p) => p.unit.id === hovered);
 
-  // Phones pan the plan horizontally: open centered on the viewer's
-  // store, retire the swipe hint once they've moved.
+  // Tablet widths can still pan the drawn plan; open it centered on
+  // the viewer's store. (Phones get the native tile plan instead.)
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [hinted, setHinted] = useState(true);
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || el.scrollWidth <= el.clientWidth) return;
@@ -81,9 +80,6 @@ export function CenterPlan() {
         (el.scrollWidth * (subject.left + subject.width / 2)) / 100 -
         el.clientWidth / 2;
     }
-    const onScroll = () => setHinted(false);
-    el.addEventListener("scroll", onScroll, { once: true, passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -144,14 +140,40 @@ export function CenterPlan() {
             </span>
           </p>
 
-          <div className="relative">
+          {/* phone-native plan — the same center as tappable tiles,
+              built for thumbs instead of panned from desktop */}
+          <div className="sm:hidden">
+            <p className="label text-muted">Anchors</p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {units
+                .filter((u) => u.anchor)
+                .map((u) => (
+                  <MobileTile key={u.id} unit={u} onToggle={toggleUnit} tall />
+                ))}
+            </div>
+            <p className="label mt-4 text-muted">Inline stores</p>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {units
+                .filter((u) => !u.anchor)
+                .map((u) => (
+                  <MobileTile
+                    key={u.id}
+                    unit={u}
+                    onToggle={toggleUnit}
+                    breached={evaluation.triggered}
+                  />
+                ))}
+            </div>
+          </div>
+
+          <div className="relative hidden sm:block">
             <div
               ref={scrollRef}
               className="scroll-x-clean -mx-5 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
             >
               <div className="min-w-[760px] sm:min-w-0">
                 <div
-                  className="relative aspect-1000/620 w-full overflow-hidden rounded-xl border border-line bg-surface lift"
+                  className="relative aspect-1000/620 w-full overflow-hidden rounded-xl border border-line bg-linear-to-b from-surface to-petrol-50/50 lift"
                   onMouseLeave={() => setHovered(null)}
                 >
                   <div className="plan-grid absolute inset-0 opacity-60" />
@@ -159,7 +181,7 @@ export function CenterPlan() {
                   {[corridor, northCourt, southCourt].map((c, i) => (
                     <div
                       key={i}
-                      className="absolute rounded-sm bg-surface-sunk"
+                      className="absolute rounded-sm bg-petrol-50"
                       style={{
                         left: `${c.left}%`,
                         top: `${c.top}%`,
@@ -190,20 +212,6 @@ export function CenterPlan() {
               </div>
             </div>
 
-            {/* phone-only pan affordances */}
-            <div className="pointer-events-none absolute inset-y-0 -left-5 w-8 bg-linear-to-r from-surface-sunk to-transparent sm:hidden" />
-            <div className="pointer-events-none absolute inset-y-0 -right-5 w-8 bg-linear-to-l from-surface-sunk to-transparent sm:hidden" />
-            <AnimatePresence>
-              {hinted && (
-                <motion.span
-                  exit={{ opacity: 0, y: 6 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-petrol-900/90 px-3.5 py-1.5 text-[0.6875rem] font-semibold whitespace-nowrap text-cream shadow-lg backdrop-blur-sm sm:hidden"
-                >
-                  ⟷ Swipe to see the whole center
-                </motion.span>
-              )}
-            </AnimatePresence>
           </div>
 
           {/* plain-language legend */}
@@ -459,6 +467,84 @@ function LeaseMathCard({ evaluation }: { evaluation: Evaluation }) {
 
 /* ------------------------------------------------------------------ */
 
+/** A storefront as a thumb-sized tile — the phone-native plan. */
+function MobileTile({
+  unit,
+  onToggle,
+  breached,
+  tall,
+}: {
+  unit: Unit;
+  onToggle: (u: Unit) => void;
+  breached?: boolean;
+  tall?: boolean;
+}) {
+  const isDark = unit.status === "dark";
+  const isVacant = unit.status === "vacant";
+  return (
+    <button
+      type="button"
+      disabled={isVacant || unit.subject}
+      onClick={() => onToggle(unit)}
+      aria-label={`${unit.name} — ${unit.status}`}
+      className={cn(
+        "relative flex flex-col items-center justify-center rounded-lg px-1 text-center transition-colors duration-300",
+        tall ? "h-16" : "h-14",
+        isVacant
+          ? "border border-dashed border-muted/70 bg-transparent"
+          : unit.subject
+            ? cn(
+                "bg-surface ring-2 ring-inset",
+                breached
+                  ? "ring-brass-500 shadow-[0_0_0_3px_rgba(217,154,43,0.25)]"
+                  : "ring-petrol-700",
+              )
+            : isDark
+              ? "bg-petrol-900 text-cream-soft"
+              : "shadow-[0_1px_2px_rgba(20,20,46,0.08)] ring-1 ring-inset ring-petrol-800/25",
+      )}
+      style={
+        !isVacant && !isDark && !unit.subject
+          ? { backgroundColor: categoryColor[unit.category] }
+          : undefined
+      }
+    >
+      {unit.named && !isVacant && (
+        <span
+          className={cn(
+            "absolute right-1 top-1 h-1.5 w-1.5 rounded-[1px]",
+            isDark ? "bg-brass-400/70" : "bg-brass-500",
+          )}
+        />
+      )}
+      {unit.subject ? (
+        <>
+          <span
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[0.5625rem] font-bold",
+              breached ? "bg-brass-500 text-petrol-950" : "bg-petrol-800 text-cream",
+            )}
+          >
+            YOU
+          </span>
+          <span className="mt-0.5 text-[0.5625rem] font-medium text-ink">
+            Unit 214
+          </span>
+        </>
+      ) : (
+        <span
+          className={cn(
+            "line-clamp-2 text-[0.625rem] leading-tight font-medium",
+            isDark ? "text-cream-soft" : isVacant ? "text-faint" : "text-ink",
+          )}
+        >
+          {isVacant ? "Vacant" : unit.name}
+        </span>
+      )}
+    </button>
+  );
+}
+
 function UnitBox({
   placed,
   breached,
@@ -490,6 +576,7 @@ function UnitBox({
         !isVacant && !unit.subject && "cursor-pointer",
         unit.subject && "cursor-default",
         isDark ? "ring-petrol-950" : "ring-petrol-800/30",
+        !isVacant && "shadow-[0_1px_2px_rgba(20,20,46,0.08)]",
         isVacant && "ring-0",
         isHovered && !unit.subject && "z-20 shadow-[0_0_0_2px_var(--color-petrol-600)]",
       )}
