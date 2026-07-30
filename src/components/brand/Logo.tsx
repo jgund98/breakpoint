@@ -86,7 +86,7 @@ export function LogoLockup({ className }: { className?: string }) {
       <Logo wordClassName="text-2xl" markClassName="h-[22px] w-[22px]" />
       <span className="hidden h-4 w-px bg-current opacity-20 xl:block" />
       <span className="label opacity-55 leading-none pt-px">
-        Co&#8209;tenancy Intelligence
+        Retail Lease Intelligence
       </span>
     </span>
   );

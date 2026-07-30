@@ -137,7 +137,7 @@ export default function CompanyPage() {
               you&#8217;ll have one fewer thing to worry about.
             </p>
             <div className="mt-9">
-              <Button href="/demo">Book a walkthrough</Button>
+              <Button href="/demo">Start your evaluation</Button>
             </div>
           </div>
         </div>

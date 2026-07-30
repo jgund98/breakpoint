@@ -6,12 +6,11 @@ import { motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/cn";
 
 /**
- * The hero's full-bleed scene: a real aerial of American retail with
- * Breakpoint's annotation layer living on top of it. The photograph
- * drifts like a survey flight, a scan beam sweeps the corridor, and
- * one of the centers escalates into a failed test while you watch.
- *
- * The whole product, before a word of copy is read.
+ * The hero's living panel: a real aerial of American retail with
+ * Breakpoint's annotation layer on top, framed as a cinematic card on
+ * the white canvas. The photograph drifts like a survey flight, a scan
+ * beam sweeps the corridor, and one of the centers escalates into a
+ * potential test failure while you watch.
  */
 
 type MarkerState = "ok" | "watch" | "fail";
@@ -24,27 +23,29 @@ type Marker = {
   value: string;
   state: MarkerState;
   escalated?: { value: string; note: string };
+  /** Hidden on the narrowest screens to stop chips colliding. */
+  minor?: boolean;
   flip?: boolean;
 };
 
 const MARKERS: Marker[] = [
-  { id: "m1", x: 46, y: 30, name: "Northgate Commons", value: "92.4%", state: "ok" },
-  { id: "m2", x: 84, y: 22, name: "Vermont Plaza", value: "88.1%", state: "ok", flip: true },
+  { id: "m1", x: 20, y: 24, name: "Northgate Commons", value: "92.4%", state: "ok" },
+  { id: "m2", x: 64, y: 15, name: "Vermont Plaza", value: "88.1%", state: "ok", minor: true, flip: true },
   {
     id: "m3",
-    x: 56,
+    x: 34,
     y: 62,
     name: "Fairmount Collection",
     value: "70.4%",
     state: "watch",
-    escalated: { value: "67.8%", note: "§4.3(c) test failed · review ready" },
+    escalated: { value: "67.8%", note: "§4.3(c) potential failure · review ready" },
   },
-  { id: "m4", x: 87, y: 48, name: "Kestrel Pointe", value: "71.2%", state: "watch", flip: true },
+  { id: "m4", x: 77, y: 46, name: "Kestrel Pointe", value: "71.2%", state: "watch", minor: true, flip: true },
 ];
 
 const CYCLE_MS = 4200;
 
-export function HeroScene() {
+export function HeroScene({ className }: { className?: string }) {
   const [escalated, setEscalated] = useState(false);
   const reduced = useReducedMotion();
 
@@ -58,100 +59,94 @@ export function HeroScene() {
   }, [reduced]);
 
   return (
-    <div className="absolute inset-0 overflow-hidden" aria-hidden>
-      {/* the flight — a slow drift across the corridor */}
-      <motion.div
-        className="absolute inset-0 will-change-transform"
-        initial={false}
-        animate={
-          reduced
-            ? { scale: 1.02 }
-            : { scale: [1.02, 1.1], x: ["0%", "-2%"], y: ["0%", "-1.5%"] }
-        }
-        transition={
-          reduced
-            ? undefined
-            : {
-                duration: 30,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "linear",
-              }
-        }
-      >
-        <Image
-          src="/photos/aerial-oceanside-ca.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover brightness-[0.92] contrast-[1.08] saturate-[1.15]"
-        />
-      </motion.div>
-
-      {/* grade — deep petrol out of the left, floor into the wire */}
-      <div className="absolute inset-0 bg-linear-to-r from-petrol-950/95 via-petrol-950/72 to-petrol-950/15 sm:via-45% sm:to-80%" />
-      <div className="absolute inset-0 bg-linear-to-t from-petrol-950/85 via-transparent to-petrol-950/35 sm:from-petrol-950/70" />
-      <div className="plan-grid-dark absolute inset-0 opacity-30" />
-
-      {/* the survey beam */}
-      {!reduced && (
-        <div className="anim-scan absolute inset-y-0 left-0 w-[24vw] bg-linear-to-r from-transparent via-white/8 to-transparent" />
+    <figure
+      className={cn(
+        "relative overflow-hidden rounded-xl bg-petrol-900 lift-lg",
+        className,
       )}
+    >
+      <div className="relative aspect-4/3 w-full overflow-hidden sm:aspect-3/2">
+        {/* the flight — a slow drift across the corridor */}
+        <motion.div
+          className="absolute inset-0 will-change-transform"
+          initial={false}
+          animate={
+            reduced
+              ? { scale: 1.03 }
+              : { scale: [1.03, 1.12], x: ["0%", "-2%"], y: ["0%", "-1.5%"] }
+          }
+          transition={
+            reduced
+              ? undefined
+              : {
+                  duration: 28,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "linear",
+                }
+          }
+        >
+          <Image
+            src="/photos/aerial-oceanside-ca.jpg"
+            alt="Aerial view of a retail corridor of shopping centers and parking fields"
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 52vw"
+            className="object-cover contrast-[1.1] saturate-[1.18]"
+          />
+        </motion.div>
 
-      {/* annotation layer — desktop */}
-      {MARKERS.map((m, i) => {
-        const isFail = Boolean(m.escalated) && escalated;
-        const state: MarkerState = isFail ? "fail" : m.state;
-        const value = isFail ? m.escalated!.value : m.value;
-        return (
-          <motion.div
-            key={m.id}
-            initial={{ opacity: 0, scale: 0.75 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              duration: 0.55,
-              delay: 0.4 + i * 0.16,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className={cn(
-              "absolute z-10 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-2 lg:flex",
-              m.flip && "flex-row-reverse",
-            )}
-            style={{ left: `${m.x}%`, top: `${m.y}%` }}
-          >
-            <Pin state={state} />
-            <Chip
-              name={m.name}
-              value={value}
-              state={state}
-              note={isFail ? m.escalated!.note : undefined}
-            />
-          </motion.div>
-        );
-      })}
+        {/* warm grade so the photo belongs to the brand */}
+        <div className="pointer-events-none absolute inset-0 bg-petrol-900/12 mix-blend-multiply" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-petrol-950/78 via-transparent to-petrol-950/20" />
 
-      {/* annotation layer — one live chip on phones, parked above the wire */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.7 }}
-        className="absolute bottom-20 right-4 z-10 flex items-center gap-2 lg:hidden"
-      >
-        <Pin state={escalated ? "fail" : "watch"} />
-        <Chip
-          name="Fairmount Collection"
-          value={escalated ? "67.8%" : "70.4%"}
-          state={escalated ? "fail" : "watch"}
-          note={escalated ? "§4.3(c) test failed" : undefined}
-        />
-      </motion.div>
+        {/* the survey beam */}
+        {!reduced && (
+          <div className="anim-scan pointer-events-none absolute inset-y-0 left-0 w-[30%] bg-linear-to-r from-transparent via-white/10 to-transparent" />
+        )}
 
-      {/* sheet caption */}
-      <span className="label absolute bottom-5 left-5 z-10 hidden text-cream/60 sm:block sm:left-8">
-        Portfolio view — 4 of 214 centers · sample data
-      </span>
-    </div>
+        {/* annotation layer */}
+        {MARKERS.map((m, i) => {
+          const isFail = Boolean(m.escalated) && escalated;
+          const state: MarkerState = isFail ? "fail" : m.state;
+          const value = isFail ? m.escalated!.value : m.value;
+          return (
+            <motion.div
+              key={m.id}
+              initial={{ opacity: 0, scale: 0.75 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.55,
+                delay: 0.35 + i * 0.14,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className={cn(
+                "absolute z-10 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2",
+                m.flip && "flex-row-reverse",
+                m.minor && "hidden sm:flex",
+              )}
+              style={{ left: `${m.x}%`, top: `${m.y}%` }}
+            >
+              <Pin state={state} />
+              <Chip
+                name={m.name}
+                value={value}
+                state={state}
+                note={isFail ? m.escalated!.note : undefined}
+              />
+            </motion.div>
+          );
+        })}
+
+        {/* sheet caption */}
+        <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5">
+          <span className="label text-cream/75">
+            Portfolio view — 4 of 214 centers
+          </span>
+          <span className="label text-cream/50">Sample data</span>
+        </figcaption>
+      </div>
+    </figure>
   );
 }
 

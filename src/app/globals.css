@@ -6,36 +6,37 @@
    BREAKPOINT — design system
 
    White canvas, Inter Tight display, confident color.
-   Petrol green carries the brand, brass carries money, clay
+   Electric indigo carries the brand, brass carries money, clay
    carries exposure. Dark is an accent band, never the ground.
    ============================================================ */
 
 @theme {
-  /* --- surfaces: crisp white ground, green-tinted secondary bands.
-         The vibrancy comes from white + petrol + brass, with dark
-         petrol sections as the contrast beats. --- */
+  /* --- surfaces: crisp white ground, indigo-tinted secondary bands.
+         The vibrancy comes from white + indigo + brass, with dark
+         indigo sections as the contrast beats. --- */
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-surface-sunk: #eef4ee;
-  --color-line: #dde6de;
-  --color-line-soft: #eaf0ea;
+  --color-surface-sunk: #eef0fb;
+  --color-line: #e2e4f0;
+  --color-line-soft: #edeff8;
 
-  /* --- text: near-black with a green cast --- */
-  --color-ink: #101b18;
-  --color-ink-soft: #3d4a45;
-  --color-muted: #64716a;
-  --color-faint: #8f9b94;
+  /* --- text: near-black with an indigo cast --- */
+  --color-ink: #14142e;
+  --color-ink-soft: #3f4160;
+  --color-muted: #676a88;
+  --color-faint: #9b9db8;
 
-  /* --- brand: deep petrol. Institutional, moneyed, and not
-         the blue every other proptech company reaches for. --- */
-  --color-petrol-950: #06211e;
-  --color-petrol-900: #0a2f2a;
-  --color-petrol-800: #0e4a42;
-  --color-petrol-700: #135b51;
-  --color-petrol-600: #197263;
-  --color-petrol-300: #8ec2b7;
-  --color-petrol-100: #cfe5df;
-  --color-petrol-50: #e6f1ee;
+  /* --- brand: electric indigo. Vivid, financial, and the ground
+         that makes the brass money color detonate. Token names kept
+         for stability. --- */
+  --color-petrol-950: #100d2e;
+  --color-petrol-900: #191553;
+  --color-petrol-800: #2f2a9b;
+  --color-petrol-700: #4038c7;
+  --color-petrol-600: #4f46e5;
+  --color-petrol-300: #a5b0f7;
+  --color-petrol-100: #e0e5ff;
+  --color-petrol-50: #eef1ff;
 
   /* --- brass: the money color. Claims, remedies, upside. --- */
   --color-brass-700: #96601a;
@@ -59,9 +60,9 @@
   --color-open-50: #eaf5ee;
 
   /* --- text on dark bands --- */
-  --color-cream: #f6f2e7;
-  --color-cream-soft: #c3d1cc;
-  --color-cream-faint: #86988f;
+  --color-cream: #f6f4ee;
+  --color-cream-soft: #c6c8e6;
+  --color-cream-faint: #8e90b8;
 
   /* --- type: the modern SaaS system. Inter Tight carries display,
          Inter carries text — one DNA, two optical cuts. --- */
@@ -207,8 +208,8 @@ h4 {
 
 .plan-grid-dark {
   background-image:
-    linear-gradient(to right, rgba(143, 194, 183, 0.14) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(143, 194, 183, 0.14) 1px, transparent 1px);
+    linear-gradient(to right, rgba(165, 176, 247, 0.14) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(165, 176, 247, 0.14) 1px, transparent 1px);
   background-size: 56px 56px;
 }
 
@@ -302,12 +303,12 @@ h4 {
    used where a surface genuinely sits above the canvas. */
 .lift {
   box-shadow:
-    0 1px 2px rgba(22, 33, 31, 0.04),
-    0 8px 24px -12px rgba(22, 33, 31, 0.14);
+    0 1px 2px rgba(20, 20, 46, 0.04),
+    0 8px 24px -12px rgba(20, 20, 46, 0.14);
 }
 
 .lift-lg {
   box-shadow:
-    0 1px 2px rgba(22, 33, 31, 0.05),
-    0 24px 60px -28px rgba(22, 33, 31, 0.22);
+    0 1px 2px rgba(20, 20, 46, 0.05),
+    0 24px 60px -28px rgba(20, 20, 46, 0.22);
 }

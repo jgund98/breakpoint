@@ -9,7 +9,7 @@ import { leaseEconomics, usd } from "@/lib/center";
 export const metadata: Metadata = {
   title: "Co-tenancy monitoring for retail tenants",
   description:
-    "Breakpoint watches the co-tenancy clause in every lease you hold, detects the day a test fails, and hands lease accounting the calculation and the evidence. First center live in 24–48 hours.",
+    "Breakpoint watches the co-tenancy clause in every lease you hold, flags when a test may have failed, and hands lease accounting the estimated impact with the evidence. First center live in 24–48 hours.",
   alternates: { canonical: "/tenants" },
 };
 
@@ -59,7 +59,7 @@ export default function TenantsPage() {
         }
         photo="/photos/store-bright-racks.jpg"
         photoAlt="Clothing displayed on racks in a bright retail store"
-        cta={{ href: "/demo", label: "Book a walkthrough" }}
+        cta={{ href: "/demo", label: "Start your evaluation" }}
       />
 
       {/* the arithmetic */}

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { DarkDecor } from "@/components/ui/Decor";
 
 export function PageHero({
   eyebrow,
@@ -25,7 +26,7 @@ export function PageHero({
   const wide = !photo;
   return (
     <section className="relative overflow-hidden bg-petrol-900 pt-32 pb-16 text-cream sm:pt-36 sm:pb-20 lg:pt-44 lg:pb-24">
-      <div className="plan-grid-dark mask-fade absolute inset-0 opacity-60" />
+      <DarkDecor />
 
       <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
         <div

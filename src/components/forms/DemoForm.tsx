@@ -24,7 +24,7 @@ const situations = [
   "We've never checked",
 ];
 
-const STEPS = ["Who you are", "What's happening", "Where to send it"];
+const STEPS = ["Your portfolio", "What's happening", "Where to send it"];
 
 export function DemoForm() {
   const [step, setStep] = useState(0);
@@ -67,7 +67,7 @@ export function DemoForm() {
     return (
       <div
         ref={doneRef}
-        className="flex min-h-[26rem] items-center justify-center rounded-xl border border-line bg-surface p-8 text-center lift sm:p-12"
+        className="flex min-h-[26rem] items-center justify-center rounded-xl border border-line bg-surface p-8 text-center text-ink lift sm:p-12"
       >
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -83,11 +83,11 @@ export function DemoForm() {
           </h3>
           <p className="no-orphan mt-4 text-[1.0625rem] leading-relaxed text-ink-soft">
             A person — not a sequence — will reply within one business day to
-            arrange the walkthrough and tell you exactly which documents to send.
+            set up your workspace and walk you through exactly what to upload.
           </p>
           <p className="no-orphan mt-5 text-[0.9375rem] leading-relaxed text-muted">
-            In a hurry? Reply to that email with a single lease attached and
-            we&#8217;ll start on it before the call.
+            In a hurry? Reply to that email with the lease attached and
+            we&#8217;ll start on it right away.
           </p>
         </motion.div>
       </div>
@@ -95,7 +95,7 @@ export function DemoForm() {
   }
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-6 lift sm:p-8">
+    <div className="rounded-xl border border-line bg-surface p-6 text-ink lift sm:p-8">
       {/* progress */}
       <ol className="flex items-center gap-2">
         {STEPS.map((label, i) => (
@@ -223,7 +223,7 @@ export function DemoForm() {
               : "cursor-not-allowed bg-surface-sunk text-faint",
           )}
         >
-          {step === 2 ? "Request a walkthrough" : "Continue"}
+          {step === 2 ? "Start my evaluation" : "Continue"}
         </button>
       </div>
     </div>

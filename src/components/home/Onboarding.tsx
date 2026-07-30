@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
+import { DarkDecor } from "@/components/ui/Decor";
 
 const youBring = [
   {
@@ -54,7 +55,7 @@ const timeline = [
 export function Onboarding() {
   return (
     <section className="relative overflow-hidden bg-petrol-800 py-20 text-cream sm:py-24 lg:py-32">
-      <div className="plan-grid-dark mask-fade absolute inset-0 opacity-50" />
+      <DarkDecor />
 
       <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-[1fr_0.85fr] lg:items-start lg:gap-16">

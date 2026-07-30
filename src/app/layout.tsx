@@ -22,7 +22,7 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Breakpoint — Co-tenancy intelligence for retail leases",
+    default: "Breakpoint — Retail Lease Intelligence",
     template: `%s | ${site.name}`,
   },
   description: site.description,
@@ -44,14 +44,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: site.name,
-    title: "Breakpoint — Co-tenancy intelligence for retail leases",
+    title: "Breakpoint — Retail Lease Intelligence",
     description: site.description,
     url: site.url,
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Breakpoint — Co-tenancy intelligence for retail leases",
+    title: "Breakpoint — Retail Lease Intelligence",
     description: site.description,
   },
   robots: {
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0e4a42",
+  themeColor: "#2f2a9b",
   colorScheme: "light",
 };
 
@@ -73,6 +73,7 @@ const orgSchema = {
       "@type": "Organization",
       "@id": `${site.url}/#organization`,
       name: site.name,
+      legalName: "Breakpoint Intelligence, Inc.",
       url: site.url,
       description: site.description,
       email: site.email,

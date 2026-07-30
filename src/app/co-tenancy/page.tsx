@@ -136,7 +136,7 @@ export default function CoTenancyPage() {
                 its co&#8209;tenancy language inside 48&nbsp;hours.
               </p>
               <Button href="/demo" size="md" className="mt-4 w-full">
-                Book a walkthrough
+                Start your evaluation
               </Button>
             </div>
           </nav>

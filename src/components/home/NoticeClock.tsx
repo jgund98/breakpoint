@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { leaseEconomics, usd } from "@/lib/center";
 import { cn } from "@/lib/cn";
+import { DarkDecor } from "@/components/ui/Decor";
 
 /**
  * The single most expensive fact in retail co-tenancy: the remedy runs
@@ -23,7 +24,7 @@ const recovered = monthly * (MONTHS.length - NOTICE_AT);
 export function NoticeClock() {
   return (
     <section className="relative overflow-hidden bg-petrol-900 py-20 text-cream sm:py-24 lg:py-32">
-      <div className="plan-grid-dark mask-fade absolute inset-0 opacity-60" />
+      <DarkDecor />
 
       <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
         <div className="max-w-3xl">

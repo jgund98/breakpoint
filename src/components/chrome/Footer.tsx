@@ -3,11 +3,12 @@ import Image from "next/image";
 import { LogoLockup } from "@/components/brand/Logo";
 import { EpicCredit } from "@/components/brand/EpicCredit";
 import { site, footerNav } from "@/lib/site";
+import { DarkDecor } from "@/components/ui/Decor";
 
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-petrol-900 text-cream">
-      <div className="plan-grid-dark mask-fade absolute inset-0 opacity-60" />
+      <DarkDecor />
 
       {/* closing CTA — photographic, warm, and the last word */}
       <div className="relative border-b border-white/10">
@@ -31,7 +32,7 @@ export function Footer() {
                 href="/demo"
                 className="inline-flex items-center justify-center rounded-full bg-brass-500 px-7 py-4 text-base font-medium text-petrol-950 transition-colors hover:bg-brass-400"
               >
-                Book a walkthrough
+                Start your evaluation
               </Link>
               <Link
                 href="/co-tenancy"
@@ -93,7 +94,7 @@ export function Footer() {
 
         <div className="flex flex-col gap-5 border-t border-white/10 py-8 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs leading-relaxed text-cream-faint">
-            © {new Date().getFullYear()} {site.name}. Figures shown across this
+            © {new Date().getFullYear()} {site.legalName} Figures shown across this
             site are illustrative sample data, not client results.
             <br className="hidden sm:block" /> Nothing here is legal advice —
             co&#8209;tenancy remedies depend on your executed lease.

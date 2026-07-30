@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Section, Eyebrow, SectionTitle } from "@/components/ui/Section";
+import { Reveal } from "@/components/ui/Reveal";
 
 /**
  * The pipeline, compressed to one band. The full four-stage treatment —
@@ -54,8 +55,9 @@ export function HowItWorks() {
       </div>
 
       <ol className="mt-12 grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
-        {steps.map((s) => (
-          <li key={s.n} className="group bg-surface p-6 transition-colors duration-300 hover:bg-petrol-50 sm:p-7">
+        {steps.map((s, i) => (
+          <li key={s.n} className="group bg-surface transition-colors duration-300 hover:bg-petrol-50">
+            <Reveal delay={i * 0.09} className="h-full p-6 sm:p-7">
             <div className="flex items-center gap-3">
               <span className="font-display text-lg leading-none text-brass-500">
                 {s.n}
@@ -65,6 +67,7 @@ export function HowItWorks() {
             <p className="no-orphan balance mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
               {s.v}
             </p>
+            </Reveal>
           </li>
         ))}
       </ol>

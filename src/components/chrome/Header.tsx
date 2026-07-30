@@ -13,6 +13,10 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  // Home opens on the white hero; every interior route opens on a
+  // petrol band. The unscrolled header adapts to whichever it sits on.
+  const darkTop = !scrolled && pathname !== "/";
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
@@ -44,7 +48,7 @@ export function Header() {
             aria-label="Breakpoint — home"
             className={cn(
               "transition-colors duration-500",
-              scrolled ? "text-ink" : "text-cream",
+              darkTop ? "text-cream" : "text-ink",
             )}
           >
             <Logo />
@@ -59,13 +63,13 @@ export function Header() {
                   href={item.href}
                   className={cn(
                     "relative rounded-full px-3.5 py-2 text-[0.9375rem] transition-colors duration-300",
-                    scrolled
+                    darkTop
                       ? active
-                        ? "text-petrol-800"
-                        : "text-ink-soft hover:text-petrol-800"
-                      : active
                         ? "text-cream"
-                        : "text-cream-soft hover:text-cream",
+                        : "text-cream-soft hover:text-cream"
+                      : active
+                        ? "text-petrol-800"
+                        : "text-ink-soft hover:text-petrol-800",
                   )}
                 >
                   {item.label}
@@ -85,12 +89,12 @@ export function Header() {
               href="/demo"
               className={cn(
                 "hidden items-center rounded-full px-5 py-2.5 text-[0.9375rem] font-medium transition-colors duration-500 sm:inline-flex",
-                scrolled
-                  ? "bg-petrol-800 text-cream hover:bg-petrol-700"
-                  : "bg-cream text-petrol-950 hover:bg-white",
+                darkTop
+                  ? "bg-cream text-petrol-950 hover:bg-white"
+                  : "bg-petrol-800 text-cream hover:bg-petrol-700",
               )}
             >
-              Book a walkthrough
+              Start your evaluation
             </Link>
 
             <button
@@ -102,9 +106,9 @@ export function Header() {
                 "relative z-50 grid h-11 w-11 place-items-center rounded-full transition-colors duration-300 lg:hidden",
                 open
                   ? "text-cream"
-                  : scrolled
-                    ? "text-ink hover:bg-surface-sunk"
-                    : "text-cream hover:bg-white/10",
+                  : darkTop
+                    ? "text-cream hover:bg-white/10"
+                    : "text-ink hover:bg-surface-sunk",
               )}
             >
               <span className="flex h-4 w-5 flex-col justify-between">
@@ -138,7 +142,7 @@ export function Header() {
             transition={{ duration: 0.28 }}
             className="fixed inset-0 z-40 bg-petrol-900 lg:hidden"
           >
-            <div className="plan-grid-dark absolute inset-0 opacity-60" />
+            <div aria-hidden className="pointer-events-none absolute -right-[20%] -top-[15%] h-[24rem] w-[24rem] rounded-full bg-petrol-600/25 blur-[100px]" />
             <nav className="relative flex h-full flex-col justify-center gap-1 px-6 pb-24">
               {nav.map((item, i) => (
                 <motion.div
@@ -169,7 +173,7 @@ export function Header() {
                   href="/demo"
                   className="flex w-full items-center justify-center rounded-full bg-brass-500 px-6 py-4 text-base font-medium text-petrol-950"
                 >
-                  Book a walkthrough
+                  Start your evaluation
                 </Link>
                 <p className="mt-4 text-center text-sm text-cream-faint">
                   Your first center goes live in 24–48 hours.

@@ -1,4 +1,5 @@
 import { Section, Eyebrow, SectionTitle, Lede } from "@/components/ui/Section";
+import { Reveal } from "@/components/ui/Reveal";
 import { coexistsWith } from "@/lib/site";
 
 const theyKnow = [
@@ -39,7 +40,7 @@ export function Wedge() {
 
       <div className="mt-14 grid gap-5 lg:grid-cols-2 lg:gap-6">
         {/* what they hold */}
-        <div className="rounded-xl border border-line bg-surface p-7 sm:p-9">
+        <Reveal className="rounded-xl border border-line bg-surface p-7 sm:p-9">
           <span className="label text-muted">Your lease system knows</span>
           <ul className="mt-6 space-y-4">
             {theyKnow.map((t) => (
@@ -53,11 +54,11 @@ export function Wedge() {
             All of it necessary. None of it is designed to tell you the day a
             test may have failed.
           </p>
-        </div>
+        </Reveal>
 
         {/* what we add */}
-        <div className="relative overflow-hidden rounded-xl bg-petrol-800 p-7 text-cream sm:p-9">
-          <div className="plan-grid-dark absolute inset-0 opacity-50" />
+        <Reveal delay={0.12} className="relative overflow-hidden rounded-xl bg-petrol-800 p-7 text-cream sm:p-9">
+          <div aria-hidden className="pointer-events-none absolute -right-[25%] -top-[30%] h-[20rem] w-[20rem] rounded-full bg-brass-500/15 blur-[80px]" />
           <div className="relative">
             <span className="label text-brass-400">Breakpoint also knows</span>
             <ul className="mt-6 space-y-4">
@@ -74,11 +75,11 @@ export function Wedge() {
               layered on top of what you already run, not replacing it.
             </p>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       {/* coexistence */}
-      <div className="mt-10 flex flex-col gap-4 rounded-xl border border-line bg-surface px-6 py-5 sm:flex-row sm:items-center sm:gap-6">
+      <div className="mt-10 flex w-fit max-w-full flex-col gap-4 rounded-xl border border-line bg-surface px-6 py-5 sm:flex-row sm:items-center sm:gap-6">
         <span className="label shrink-0 text-muted">Runs alongside</span>
         <ul className="flex flex-wrap gap-x-5 gap-y-2">
           {coexistsWith.map((name) => (

@@ -145,7 +145,7 @@ export default function SecurityPage() {
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Button href={`mailto:${site.email}`}>Contact us</Button>
             <Button href="/demo" variant="secondary">
-              Book a walkthrough
+              Start your evaluation
             </Button>
           </div>
         </div>

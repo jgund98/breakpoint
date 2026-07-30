@@ -14,7 +14,7 @@ export default function OpengraphImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: "#0a2f2a",
+          background: "#191553",
           padding: 72,
           fontFamily: "sans-serif",
         }}
@@ -48,7 +48,7 @@ export default function OpengraphImage() {
               fontWeight: 600,
             }}
           >
-            Co-tenancy intelligence
+            Retail Lease Intelligence
           </span>
           <span
             style={{
@@ -64,7 +64,7 @@ export default function OpengraphImage() {
           </span>
         </div>
 
-        <span style={{ color: "#8ec2b7", fontSize: 26 }}>
+        <span style={{ color: "#a5b0f7", fontSize: 26 }}>
           Every clause. Every center. Every night.
         </span>
       </div>

@@ -59,7 +59,7 @@ export default function PlatformPage() {
             conditions change, and tells you the day an answer moves.
           </>
         }
-        cta={{ href: "/demo", label: "Book a walkthrough" }}
+        cta={{ href: "/demo", label: "Start your evaluation" }}
       />
 
       {/* 01 */}
@@ -197,7 +197,7 @@ export default function PlatformPage() {
               dates, your workflow, unchanged.
             </Lede>
             <div className="mt-9">
-              <Button href="/demo">Book a walkthrough</Button>
+              <Button href="/demo">Start your evaluation</Button>
             </div>
           </div>
           <div className="rounded-xl border border-line bg-surface p-7 sm:p-8">

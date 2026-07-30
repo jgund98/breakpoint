@@ -1,4 +1,5 @@
 import { cn } from "@/lib/cn";
+import { DarkDecor, LightDecor } from "@/components/ui/Decor";
 
 type Tone = "canvas" | "surface" | "sunk" | "petrol" | "petrol-deep";
 
@@ -22,6 +23,7 @@ export function Section({
   id?: string;
   className?: string;
   containerClassName?: string;
+  /** Renders the ambient brand decor (glows + mark motif) behind the section. */
   grid?: boolean;
   children: React.ReactNode;
 }) {
@@ -35,15 +37,7 @@ export function Section({
         className,
       )}
     >
-      {grid && (
-        <div
-          aria-hidden
-          className={cn(
-            "mask-fade absolute inset-0",
-            dark ? "plan-grid-dark opacity-60" : "plan-grid opacity-50",
-          )}
-        />
-      )}
+      {grid && (dark ? <DarkDecor /> : <LightDecor />)}
       <div
         className={cn(
           "relative mx-auto max-w-[1400px] px-5 sm:px-8",

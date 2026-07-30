@@ -11,7 +11,8 @@
 
 export const site = {
   name: "Breakpoint",
-  category: "Co-tenancy Intelligence",
+  legalName: "Breakpoint Intelligence, Inc.",
+  category: "Retail Lease Intelligence",
   /** Placeholder domain — swap before any deploy. */
   domain: "breakpoint.re",
   url: "https://breakpoint.re",
@@ -67,7 +68,7 @@ export const footerNav = [
     heading: "Company",
     links: [
       { label: "About", href: "/company" },
-      { label: "Book a walkthrough", href: "/demo" },
+      { label: "Start your evaluation", href: "/demo" },
       { label: "Contact", href: `mailto:${site.email}` },
     ],
   },

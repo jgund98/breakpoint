@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   allUnits,
@@ -75,6 +75,25 @@ export function CenterPlan() {
 
   const hoveredUnit = placed.find((p) => p.unit.id === hovered);
 
+  // On phones the plan pans horizontally. Open it centered on the
+  // viewer's own store, and retire the swipe hint once they've moved.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [hinted, setHinted] = useState(true);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    const subject = placed.find((p) => p.unit.subject);
+    if (subject) {
+      el.scrollLeft =
+        (el.scrollWidth * (subject.left + subject.width / 2)) / 100 -
+        el.clientWidth / 2;
+    }
+    const onScroll = () => setHinted(false);
+    el.addEventListener("scroll", onScroll, { once: true, passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="relative">
       {/* ---------------- controls ---------------- */}
@@ -122,8 +141,12 @@ export function CenterPlan() {
       {/* ---------------- plan + panel ---------------- */}
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_384px] xl:gap-8">
         <div>
-          <div className="scroll-x-clean -mx-5 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0">
-            <div className="min-w-[720px] sm:min-w-0">
+          <div className="relative">
+            <div
+              ref={scrollRef}
+              className="scroll-x-clean -mx-5 overflow-x-auto px-5 sm:mx-0 sm:overflow-visible sm:px-0"
+            >
+              <div className="min-w-[760px] sm:min-w-0">
               <div
                 className="relative aspect-1000/620 w-full overflow-hidden rounded-xl border border-line bg-surface lift"
                 onMouseLeave={() => setHovered(null)}
@@ -161,7 +184,23 @@ export function CenterPlan() {
 
                 {hoveredUnit && <Tooltip placed={hoveredUnit} />}
               </div>
+              </div>
             </div>
+
+            {/* phone-only pan affordances */}
+            <div className="pointer-events-none absolute inset-y-0 -left-5 w-8 bg-linear-to-r from-surface-sunk to-transparent sm:hidden" />
+            <div className="pointer-events-none absolute inset-y-0 -right-5 w-8 bg-linear-to-l from-surface-sunk to-transparent sm:hidden" />
+            <AnimatePresence>
+              {hinted && (
+                <motion.span
+                  exit={{ opacity: 0, y: 6 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-petrol-900/90 px-3.5 py-1.5 text-[0.6875rem] font-semibold text-cream shadow-lg backdrop-blur-sm sm:hidden"
+                >
+                  ⟷ Swipe the plan · tap a store
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* legend sits below the plan so nothing clips on a phone */}
@@ -412,7 +451,7 @@ function UnitBox({
         backgroundColor: isVacant
           ? "rgba(0,0,0,0)"
           : isDark
-            ? "#0a2f2a"
+            ? "#191553"
             : categoryColor[unit.category],
       }}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}

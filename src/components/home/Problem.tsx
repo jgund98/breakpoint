@@ -1,12 +1,13 @@
 import Image from "next/image";
 import { Section, Eyebrow, SectionTitle } from "@/components/ui/Section";
+import { Reveal } from "@/components/ui/Reveal";
 
 export function Problem() {
   return (
     <Section tone="canvas">
       <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-16">
         {/* photo stack */}
-        <div className="relative">
+        <Reveal className="relative">
           <div className="relative aspect-4/5 overflow-hidden rounded-xl lift-lg sm:aspect-4/3 lg:aspect-4/5">
             <Image
               src="/photos/mall-closed-stores.jpg"
@@ -23,14 +24,14 @@ export function Problem() {
             <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
               Three named tenants dark. Occupancy at{" "}
               <span className="tnum font-semibold text-ink">67.8%</span> against
-              a 70% floor. The clause has been claimable for{" "}
+              a 70% floor. The condition appears to have held for{" "}
               <span className="font-semibold text-ink">nine months</span>.
             </p>
           </div>
-        </div>
+        </Reveal>
 
         {/* copy */}
-        <div className="mt-10 lg:mt-0">
+        <Reveal delay={0.12} className="mt-10 lg:mt-0">
           <Eyebrow>The detection problem</Eyebrow>
           <SectionTitle>
             The system of record is{" "}
@@ -64,7 +65,7 @@ export function Problem() {
             stores. Not a failure of diligence — a failure of instrumentation.
             Nobody gave these teams a feed.
           </p>
-        </div>
+        </Reveal>
       </div>
     </Section>
   );
