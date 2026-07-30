@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "breakpoint",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev", "--port", "3510"],
+      "port": 3510
+    },
+    {
+      "name": "breakpoint-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "start", "--port", "3511"],
+      "port": 3511
+    }
+  ]
+}
