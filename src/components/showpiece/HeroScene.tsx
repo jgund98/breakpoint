@@ -38,7 +38,7 @@ const MARKERS: Marker[] = [
     name: "Fairmount Collection",
     value: "70.4%",
     state: "watch",
-    escalated: { value: "67.8%", note: "Potential trigger · est. $18,917/mo relief" },
+    escalated: { value: "67.8%", note: "Potential trigger · est. $18.9K/mo" },
   },
   { id: "m4", x: 77, y: 46, name: "Kestrel Pointe", value: "71.2%", state: "watch", minor: true, flip: true },
 ];
@@ -162,7 +162,7 @@ export function HeroScene({ className }: { className?: string }) {
               name="Fairmount Collection"
               value={escalated ? "67.8%" : "70.4%"}
               state={escalated ? "fail" : "watch"}
-              note={escalated ? "Potential trigger · est. $18,917/mo" : undefined}
+              note={escalated ? "Potential trigger · est. $18.9K/mo" : undefined}
             />
           </div>
         </div>
@@ -232,7 +232,9 @@ function Chip({
         <span className="tnum text-[0.6875rem] font-medium opacity-70">{value}</span>
       </span>
       {note && (
-        <span className="label mt-0.5 text-[0.5625rem] opacity-80">{note}</span>
+        <span className="mt-0.5 text-[0.625rem] font-semibold tracking-tight opacity-90">
+          {note}
+        </span>
       )}
     </motion.span>
   );

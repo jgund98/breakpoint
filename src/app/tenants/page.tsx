@@ -74,11 +74,9 @@ export default function TenantsPage() {
               </span>
             </SectionTitle>
             <Lede>
-              A 3,850 SF inline store at $92/SF pays{" "}
-              {usd(leaseEconomics.baseRentMonthly)} a month. Trading at $826/SF,
-              that&#8217;s an occupancy cost of 11.1% — healthy. When the
-              co&#8209;tenancy test fails and rent converts to 4% of gross sales,
-              the same store pays {usd(leaseEconomics.alternativeRentMonthly)}.
+              {`A 3,850 SF inline store at $92/SF pays ${usd(
+                leaseEconomics.baseRentMonthly,
+              )} a month. Trading at $826/SF, that’s an occupancy cost of 11.1% — healthy. When the co‑tenancy test appears to fail and rent converts to 4% of gross sales, the same store pays ${usd(leaseEconomics.alternativeRentMonthly)}.`}
             </Lede>
             <p className="no-orphan mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
               Now hold that against an estate of a thousand stores, where a

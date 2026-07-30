@@ -105,16 +105,10 @@ async function main() {
         for (const el of document.querySelectorAll(sel)) {
           const text = el.textContent?.trim() || "";
           if (!text || text.length < 24) continue;
-          // The LAST substantial text node — a paragraph's final line
-          // lives there. Measuring the first node false-positives on any
-          // paragraph containing <em>/<span> breaks.
-          const nodes = [...el.childNodes].filter(
-            (n) => n.nodeType === 3 && n.textContent.trim().length > 20,
-          );
-          const node = nodes[nodes.length - 1];
-          if (!node) continue;
-          range.selectNodeContents(node);
-          const rects = [...range.getClientRects()];
+          // Measure the whole element's inline content — per-text-node
+          // measurement false-positives whenever spans split the flow.
+          range.selectNodeContents(el);
+          const rects = [...range.getClientRects()].filter((r) => r.width > 8);
           if (rects.length < 2) continue;
           const last = rects[rects.length - 1];
           const prev = rects[rects.length - 2];

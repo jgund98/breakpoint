@@ -13,9 +13,10 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Home opens on the white hero; every interior route opens on a
-  // petrol band. The unscrolled header adapts to whichever it sits on.
-  const darkTop = !scrolled && pathname !== "/";
+  // Most interior routes open on a petrol band; these open light. The
+  // unscrolled header adapts to whichever it sits on.
+  const lightTopRoutes = ["/", "/login", "/demo"];
+  const darkTop = !scrolled && !lightTopRoutes.includes(pathname);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);

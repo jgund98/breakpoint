@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { GuideToc } from "@/components/chrome/GuideToc";
 import { PageHero } from "@/components/chrome/PageHero";
 import { Section, Eyebrow, SectionTitle } from "@/components/ui/Section";
 import { Button } from "@/components/ui/Button";
@@ -118,19 +119,8 @@ export default function CoTenancyPage() {
         <div className="grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
           {/* TOC */}
           <nav aria-label="Contents" className="lg:sticky lg:top-28 lg:self-start">
-            <span className="label text-muted">Contents</span>
-            <ul className="mt-4 space-y-2.5">
-              {toc.map((t) => (
-                <li key={t.id}>
-                  <a
-                    href={`#${t.id}`}
-                    className="text-[0.9375rem] text-ink-soft transition-colors hover:text-petrol-800"
-                  >
-                    {t.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <span className="label hidden text-muted lg:block">Contents</span>
+            <GuideToc items={toc} />
             <div className="relative mt-8 overflow-hidden rounded-xl bg-petrol-800 p-5 text-cream">
               <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brass-500/20 blur-2xl" />
               <p className="label relative text-brass-400">Your lease, read properly</p>

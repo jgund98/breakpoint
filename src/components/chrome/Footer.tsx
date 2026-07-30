@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoLockup } from "@/components/brand/Logo";
+import { AnimatedGlyph } from "@/components/brand/AnimatedGlyph";
 import { EpicCredit } from "@/components/brand/EpicCredit";
 import { site, footerNav } from "@/lib/site";
 import { DarkDecor } from "@/components/ui/Decor";
@@ -26,6 +27,16 @@ export function Footer() {
         </video>
         <div className="absolute inset-0 bg-petrol-950/72" />
         <div className="absolute inset-0 bg-linear-to-r from-petrol-950/85 via-petrol-950/40 to-petrol-950/20" />
+
+        {/* the beacon — the brand's own signal, raised over the asset
+            class it watches. The square keeps the product's heartbeat. */}
+        <div className="pointer-events-none absolute bottom-12 right-8 hidden lg:block xl:right-16">
+          <AnimatedGlyph
+            className="h-44 w-44 xl:h-52 xl:w-52 drop-shadow-[0_12px_36px_rgba(16,13,46,0.55)]"
+            bar="rgba(246,244,238,0.92)"
+            delay={0.3}
+          />
+        </div>
 
         <div className="relative mx-auto max-w-[1400px] px-5 py-20 sm:px-8 sm:py-24 lg:py-32">
           <div className="max-w-2xl">

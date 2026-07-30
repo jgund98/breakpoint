@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useInView } from "motion/react";
 import {
   allUnits,
   categoryColor,
@@ -71,6 +71,10 @@ export function CenterPlan() {
   // Tablet widths can still pan the drawn plan; open it centered on
   // the viewer's store. (Phones get the native tile plan instead.)
   const scrollRef = useRef<HTMLDivElement>(null);
+  const mobileGridRef = useRef<HTMLDivElement>(null);
+  const mobileGridInView = useInView(mobileGridRef, {
+    margin: "-15% 0px -15% 0px",
+  });
   useEffect(() => {
     const el = scrollRef.current;
     if (!el || el.scrollWidth <= el.clientWidth) return;
@@ -140,21 +144,23 @@ export function CenterPlan() {
             </span>
           </p>
 
-          {/* phone-native plan — the same center as tappable tiles,
-              built for thumbs instead of panned from desktop */}
-          <div className="sm:hidden">
-            <p className="label text-muted">Anchors</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+          {/* phone-native plan — only the storefronts your lease actually
+              names, so every tap moves a test. The live bar pinned to the
+              bottom of the screen reacts the instant you tap. */}
+          <div className="sm:hidden" ref={mobileGridRef}>
+            <p className="label text-muted">Named anchors</p>
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
               {units
-                .filter((u) => u.anchor)
+                .filter((u) => u.anchor && u.named)
                 .map((u) => (
                   <MobileTile key={u.id} unit={u} onToggle={toggleUnit} tall />
                 ))}
             </div>
-            <p className="label mt-4 text-muted">Inline stores</p>
+            <p className="label mt-4 text-muted">Named inline stores + you</p>
             <div className="mt-2 grid grid-cols-3 gap-1.5">
               {units
-                .filter((u) => !u.anchor)
+                .filter((u) => !u.anchor && (u.named || u.subject))
+                .sort((a, b) => (a.subject ? -1 : b.subject ? 1 : 0))
                 .map((u) => (
                   <MobileTile
                     key={u.id}
@@ -164,7 +170,61 @@ export function CenterPlan() {
                   />
                 ))}
             </div>
+            <p className="mt-3 text-xs leading-relaxed text-muted">
+              Tap a store to close or reopen it. The other 23 storefronts stay
+              as the scenario sets them — the drawn plan on larger screens
+              shows every unit.
+            </p>
           </div>
+
+          {/* live outcome bar — pinned while the tiles are on screen */}
+          <AnimatePresence>
+            {mobileGridInView && (
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 24 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                className="fixed inset-x-3 bottom-3 z-40 sm:hidden"
+              >
+                <motion.div
+                  key={`${evaluation.triggered}-${evaluation.curing}`}
+                  initial={{ scale: 0.97 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.25 }}
+                  className={cn(
+                    "flex items-center justify-between gap-3 rounded-full px-4 py-3 shadow-xl backdrop-blur-md",
+                    evaluation.triggered
+                      ? "bg-brass-500 text-petrol-950"
+                      : "bg-petrol-900/95 text-cream",
+                  )}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={cn(
+                        "h-1.5 w-1.5 shrink-0 rounded-full",
+                        evaluation.triggered
+                          ? "anim-pulse-dot bg-petrol-950"
+                          : evaluation.curing
+                            ? "bg-brass-400"
+                            : "bg-open-600",
+                      )}
+                    />
+                    <span className="truncate text-[0.8125rem] font-semibold">
+                      {evaluation.triggered
+                        ? `${evaluation.tests.filter((t) => t.status === "breached").length} tests failed · potential trigger`
+                        : evaluation.curing
+                          ? "Cure window running"
+                          : "All tests satisfied"}
+                    </span>
+                  </span>
+                  <span className="tnum shrink-0 text-[0.9375rem] font-bold">
+                    {usd(evaluation.monthlyDelta)}/mo
+                  </span>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="relative hidden sm:block">
             <div
