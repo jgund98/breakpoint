@@ -20,11 +20,8 @@ export function TheCenter() {
           </span>
         </SectionTitle>
         <Lede>
-          One shopping center, one lease — the outlined unit is your store.
-          Pick a scenario or click any other storefront to close it
-          (&#8220;going dark,&#8221; in lease terms). Breakpoint re&#8209;runs
-          your co&#8209;tenancy tests and shows the potential impact on your
-          rent.
+          One center, one lease — the outlined store is yours. Close a
+          storefront and watch what it could mean for your&nbsp;rent.
         </Lede>
       </div>
 

@@ -100,7 +100,11 @@ export function DemoForm() {
       <div className="relative overflow-hidden bg-petrol-800 px-6 py-4 text-cream sm:px-8">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-brass-500/25 blur-2xl"
+          className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(217,154,43,0.3), transparent 72%)",
+          }}
         />
         <div className="relative flex items-center justify-between gap-4">
           <span className="text-[0.9375rem] font-semibold">
@@ -141,7 +145,7 @@ export function DemoForm() {
             <>
               <h3 className="text-[1.375rem]">How many leased locations?</h3>
               <p className="mt-2 text-[0.9375rem] text-muted">
-                One is plenty — the evaluation starts with a single lease.
+                One is plenty — we start with the lease you're most worried about.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2.5">
                 {sizes.map((s) => (

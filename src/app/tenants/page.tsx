@@ -206,7 +206,7 @@ export default function TenantsPage() {
               your leases.
             </p>
             <div className="mt-9">
-              <Button href="/demo">Send us one lease</Button>
+              <Button href="/demo">Send us your lease</Button>
             </div>
           </div>
         </div>

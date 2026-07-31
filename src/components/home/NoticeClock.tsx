@@ -58,13 +58,12 @@ export function NoticeClock() {
             </span>
           </h2>
           <p className="lede no-orphan mt-6 max-w-2xl text-cream-soft">
-            In this lease — as in many — alternative rent commences on the first
-            day of the month{" "}
+            In this lease, as in many, relief starts the month{" "}
             <em className="text-cream not-italic underline decoration-brass-400/60 underline-offset-4">
-              following written notice
-            </em>
-            . Not the day the anchor went dark. Not the day occupancy crossed
-            the floor. Which makes detection speed the entire&nbsp;product.
+              after written notice
+            </em>{" "}
+            — not the day the anchor closed. Detection speed
+            is&nbsp;money.
           </p>
         </div>
 

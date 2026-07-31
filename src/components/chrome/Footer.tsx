@@ -36,16 +36,14 @@ export function Footer() {
           <div className="max-w-2xl">
             <p className="label text-brass-400">Start with one center</p>
             <h2 className="mt-5 text-[clamp(2rem,5vw,3.5rem)] text-cream">
-              Send us one lease.{" "}
+              Send us your lease.{" "}
               <span className="display-em balance block text-brass-200">
                 We&#8217;ll tell you what it may be&nbsp;owed.
               </span>
             </h2>
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">
-              Pick the center you have the worst feeling about. We&#8217;ll
-              abstract the co&#8209;tenancy language, assemble the center&#8217;s
-              occupancy history, and show you whether a test appears to have
-              failed — inside 48 hours.
+              Pick the center you have the worst feeling about — we&#8217;ll
+              tell you in 48 hours whether a test appears to have&nbsp;failed.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link

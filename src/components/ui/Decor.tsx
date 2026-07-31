@@ -10,11 +10,20 @@ import { cn } from "@/lib/cn";
  *    job. Never a generic grid.
  */
 
-export function Glow({ className }: { className: string }) {
+export function Glow({
+  className,
+  color,
+}: {
+  className: string;
+  color: string;
+}) {
   return (
     <div
       aria-hidden
-      className={cn("pointer-events-none absolute rounded-full blur-[100px]", className)}
+      className={cn("pointer-events-none absolute rounded-full", className)}
+      style={{
+        background: `radial-gradient(closest-side, ${color}, transparent 72%)`,
+      }}
     />
   );
 }
@@ -57,8 +66,8 @@ export function MarkMotif({
 export function DarkDecor() {
   return (
     <>
-      <Glow className="-right-[10%] -top-[30%] h-[28rem] w-[28rem] bg-petrol-600/25" />
-      <Glow className="-bottom-[35%] -left-[8%] h-[24rem] w-[24rem] bg-brass-500/10" />
+      <Glow className="-right-[10%] -top-[30%] h-[28rem] w-[28rem]" color="rgba(79,70,229,0.25)" />
+      <Glow className="-bottom-[35%] -left-[8%] h-[24rem] w-[24rem]" color="rgba(217,154,43,0.10)" />
       <MarkMotif tone="dark" className="-right-24 -top-24 h-[38rem] w-[38rem] rotate-[-10deg]" />
     </>
   );
@@ -68,8 +77,8 @@ export function DarkDecor() {
 export function LightDecor() {
   return (
     <>
-      <Glow className="-left-[12%] -top-[35%] h-[26rem] w-[26rem] bg-petrol-100/70" />
-      <Glow className="-bottom-[40%] -right-[10%] h-[24rem] w-[24rem] bg-brass-200/40" />
+      <Glow className="-left-[12%] -top-[35%] h-[26rem] w-[26rem]" color="rgba(224,229,255,0.70)" />
+      <Glow className="-bottom-[40%] -right-[10%] h-[24rem] w-[24rem]" color="rgba(243,215,156,0.40)" />
     </>
   );
 }

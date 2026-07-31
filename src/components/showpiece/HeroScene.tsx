@@ -93,25 +93,13 @@ export function HeroScene({ className }: { className?: string }) {
       )}
     >
       <div className="relative aspect-4/3 w-full overflow-hidden sm:aspect-3/2">
-        {/* the flight — a slow drift across the corridor */}
-        <motion.div
-          className="absolute inset-0 will-change-transform"
-          initial={false}
-          animate={
-            !live
-              ? { scale: 1.03 }
-              : { scale: [1.03, 1.12], x: ["0%", "-2%"], y: ["0%", "-1.5%"] }
-          }
-          transition={
-            !live
-              ? undefined
-              : {
-                  duration: 28,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                  ease: "linear",
-                }
-          }
+        {/* the flight — pure CSS, paused offscreen, never on the main
+            thread */}
+        <div
+          className={cn(
+            "anim-kenburns absolute inset-0",
+            !live && "anim-paused",
+          )}
         >
           <Image
             src="/photos/aerial-oceanside-ca.jpg"
@@ -121,7 +109,7 @@ export function HeroScene({ className }: { className?: string }) {
             sizes="(max-width: 1024px) 100vw, 52vw"
             className="object-cover contrast-[1.1] saturate-[1.18]"
           />
-        </motion.div>
+        </div>
 
         {/* warm grade so the photo belongs to the brand */}
         <div className="pointer-events-none absolute inset-0 bg-petrol-900/12 mix-blend-multiply" />
@@ -253,7 +241,6 @@ function Chip({
 }) {
   return (
     <motion.span
-      layout
       className={cn(
         "flex flex-col rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg transition-colors duration-500",
         state === "fail" ? "bg-brass-500 text-petrol-950" : "bg-white/92 text-ink",

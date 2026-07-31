@@ -58,9 +58,9 @@ export function AnimatedGlyph({
         }
         transition={{ duration: 0.5, delay: delay + 0.45, ease: [0.34, 1.56, 0.64, 1] }}
       />
-      {/* the heartbeat — a ring that breathes off the square */}
-      {!reduced && inView && (
-        <motion.rect
+      {/* the heartbeat — a CSS ring that breathes off the square */}
+      {!reduced && (
+        <rect
           x="12.25"
           y="2"
           width="7.5"
@@ -69,16 +69,8 @@ export function AnimatedGlyph({
           fill="none"
           stroke="var(--color-brass-500)"
           strokeWidth="1.5"
-          initial={{ opacity: 0, scale: 1 }}
-          animate={{ opacity: [0, 0.7, 0], scale: [1, 1.9, 2.4] }}
-          style={{ originX: "16px", originY: "5.75px" }}
-          transition={{
-            duration: 2.6,
-            delay: delay + 1.1,
-            repeat: Infinity,
-            repeatDelay: 1.2,
-            ease: "easeOut",
-          }}
+          className={cn("glyph-ring", !inView && "anim-paused")}
+          style={{ animationDelay: `${delay + 1.1}s` }}
         />
       )}
     </svg>

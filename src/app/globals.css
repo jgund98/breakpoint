@@ -274,6 +274,51 @@ h4 {
   animation: bp-marquee 64s linear infinite;
 }
 
+/* The hero's survey flight — pure CSS so it never touches the main
+   thread. Paused via .anim-paused when offscreen. */
+@keyframes bp-kenburns {
+  from {
+    transform: scale(1.03) translate(0, 0);
+  }
+  to {
+    transform: scale(1.12) translate(-2%, -1.5%);
+  }
+}
+
+.anim-kenburns {
+  animation: bp-kenburns 28s linear infinite alternate;
+}
+
+/* The glyph's heartbeat ring — CSS, compositor-friendly. */
+@keyframes bp-heartbeat {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.7;
+  }
+  60% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+.glyph-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bp-heartbeat 3.8s ease-out infinite;
+}
+
+.anim-paused,
+.anim-paused * {
+  animation-play-state: paused !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

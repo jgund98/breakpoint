@@ -16,9 +16,8 @@ export function Workspace() {
             </span>
           </SectionTitle>
           <Lede>
-            Submit leases in your Breakpoint workspace and evaluations come back
-            inside it — portfolio status at a glance, potential triggers
-            flagged, and every finding one click from its review package.
+            Upload a lease. The answer comes back in your workspace — triggers
+            flagged, money estimated, package&nbsp;ready.
           </Lede>
         </div>
         <Button href="/demo" className="shrink-0 self-start lg:self-auto">

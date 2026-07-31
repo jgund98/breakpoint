@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Start your evaluation",
   description:
-    "Send one lease and one center. Breakpoint abstracts the co-tenancy language, assembles the center's occupancy history, and shows you whether a test appears to have failed — inside 48 hours.",
+    "Send us your lease. Breakpoint abstracts the co-tenancy language, assembles the center's occupancy history, and shows you whether a test appears to have failed — inside 48 hours.",
   alternates: { canonical: "/demo" },
 };
 
@@ -32,11 +32,19 @@ export default function DemoPage() {
       <section className="relative overflow-hidden bg-canvas pt-28 pb-16 sm:pt-32 lg:pt-36 lg:pb-20">
         <div
           aria-hidden
-          className="pointer-events-none absolute -left-[20%] -top-[30%] h-[60vh] w-[60vw] rounded-full bg-petrol-100/60 blur-[100px]"
+          className="pointer-events-none absolute -left-[20%] -top-[30%] h-[60vh] w-[60vw] rounded-full"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(224,229,255,0.6), transparent 72%)",
+          }}
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-[15%] top-[35%] h-[50vh] w-[45vw] rounded-full bg-brass-200/35 blur-[110px]"
+          className="pointer-events-none absolute -right-[15%] top-[35%] h-[50vh] w-[45vw] rounded-full"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(243,215,156,0.35), transparent 72%)",
+          }}
         />
 
         <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
@@ -45,7 +53,7 @@ export default function DemoPage() {
               <p className="label text-petrol-600">Start your evaluation</p>
               <h1 className="mt-5">
                 <span className="block text-[clamp(1.3rem,2.4vw,1.65rem)] font-medium tracking-[-0.02em] text-ink-soft">
-                  Send one lease.
+                  Send us your lease.
                 </span>
                 <span className="display-em balance mt-2 block text-[clamp(2.4rem,5vw,3.75rem)] text-petrol-700">
                   We&#8217;ll tell you what it may be&nbsp;owed.

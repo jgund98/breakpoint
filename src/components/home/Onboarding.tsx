@@ -69,7 +69,7 @@ export function Onboarding() {
             </h2>
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">
               Enterprise lease implementations run three to nine months. This
-              isn&#8217;t one. Send a single lease and we&#8217;ll have that
+              isn&#8217;t one. Send us your lease and we&#8217;ll have that
               center evaluated inside 48 hours — you supply what only you have,
               and we assemble the rest from closure signals, filings, permits,
               property research and field verification.
@@ -151,7 +151,7 @@ export function Onboarding() {
             </div>
 
             <Button href="/demo" variant="onDark" className="w-full">
-              Send us one lease
+              Send us your lease
             </Button>
           </div>
         </div>

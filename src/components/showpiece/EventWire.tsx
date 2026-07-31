@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef } from "react";
+import { useInView } from "motion/react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -73,14 +77,17 @@ function Row({ kind, tag, body }: { kind: Kind; tag: string; body: string }) {
 }
 
 export function EventWire({ className }: { className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { margin: "5% 0px" });
   return (
     <div
+      ref={ref}
       className={cn(
         "relative overflow-hidden border-y border-line bg-surface py-3.5",
         className,
       )}
     >
-      <div className="anim-marquee flex w-max">
+      <div className={cn("anim-marquee flex w-max", !inView && "anim-paused")}>
         {[0, 1].map((copy) => (
           <span key={copy} className="flex" aria-hidden={copy === 1}>
             {events.map((e, i) => (

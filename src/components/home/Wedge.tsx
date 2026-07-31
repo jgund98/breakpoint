@@ -26,9 +26,8 @@ export function Wedge() {
           </span>
         </SectionTitle>
         <Lede>
-          Most lease suites track the clause — a field in a record, entered
-          once. The trigger lives outside the document, in a center that
-          changes every week. Breakpoint is built on joining the two.<span className="hidden sm:inline"> And if you hold one lease instead of a thousand, the &#8220;system&#8221; is a filing cabinet — the gap is the same.</span>
+          Lease software tracks the paperwork. The trigger lives in a center
+          that changes every week — Breakpoint joins the&nbsp;two.
         </Lede>
       </div>
 

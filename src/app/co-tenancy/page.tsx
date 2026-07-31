@@ -117,12 +117,16 @@ export default function CoTenancyPage() {
 
       <Section tone="canvas">
         <div className="grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
-          {/* TOC */}
-          <nav aria-label="Contents" className="lg:sticky lg:top-28 lg:self-start">
+          {/* TOC — sticky chip rail on phones so navigation never
+              requires scrolling back to the top */}
+          <nav
+            aria-label="Contents"
+            className="max-lg:sticky max-lg:top-16 max-lg:z-30 max-lg:-mx-5 max-lg:border-b max-lg:border-line max-lg:bg-canvas/95 max-lg:px-5 max-lg:py-3 lg:sticky lg:top-28 lg:self-start"
+          >
             <span className="label hidden text-muted lg:block">Contents</span>
             <GuideToc items={toc} />
-            <div className="relative mt-8 overflow-hidden rounded-xl bg-petrol-800 p-5 text-cream">
-              <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-brass-500/20 blur-2xl" />
+            <div className="relative mt-8 hidden overflow-hidden rounded-xl bg-petrol-800 p-5 text-cream lg:block">
+              <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full" style={{ background: "radial-gradient(closest-side, rgba(217,154,43,0.25), transparent 72%)" }} />
               <p className="label relative text-brass-400">Your lease, read properly</p>
               <p className="no-orphan relative mt-2.5 text-sm leading-relaxed text-cream-soft">
                 Send one lease — the co&#8209;tenancy language comes back
@@ -413,7 +417,7 @@ export default function CoTenancyPage() {
               </span>
             </SectionTitle>
             <div className="mt-8">
-              <Button href="/demo">Send us one lease</Button>
+              <Button href="/demo">Send us your lease</Button>
             </div>
           </div>
           <div className="relative aspect-4/3 overflow-hidden rounded-xl lift">

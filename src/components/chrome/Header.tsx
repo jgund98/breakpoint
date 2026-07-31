@@ -39,7 +39,7 @@ export function Header() {
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,box-shadow] duration-500",
           scrolled
-            ? "border-b border-line bg-canvas/88 backdrop-blur-xl"
+            ? "border-b border-line bg-canvas/95"
             : "border-b border-transparent",
         )}
       >
@@ -154,7 +154,7 @@ export function Header() {
             transition={{ duration: 0.28 }}
             className="fixed inset-0 z-40 bg-petrol-900 lg:hidden"
           >
-            <div aria-hidden className="pointer-events-none absolute -right-[20%] -top-[15%] h-[24rem] w-[24rem] rounded-full bg-petrol-600/25 blur-[100px]" />
+            <div aria-hidden className="pointer-events-none absolute -right-[20%] -top-[15%] h-[24rem] w-[24rem] rounded-full" style={{ background: "radial-gradient(closest-side, rgba(79,70,229,0.25), transparent 72%)" }} />
             <nav className="relative flex h-full flex-col justify-center gap-1 px-6 pb-24">
               {nav.map((item, i) => (
                 <motion.div
@@ -194,7 +194,7 @@ export function Header() {
                   Log in
                 </Link>
                 <p className="mt-4 text-center text-sm text-cream-faint">
-                  Your first center goes live in 24–48 hours.
+                  Your first answer within 48 hours.
                 </p>
               </motion.div>
             </nav>

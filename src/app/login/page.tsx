@@ -13,11 +13,19 @@ export default function LoginPage() {
     <section className="relative flex min-h-svh items-center justify-center overflow-hidden bg-canvas px-5 py-28">
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-[20%] -top-[25%] h-[55vh] w-[55vw] rounded-full bg-petrol-100/60 blur-[100px]"
+        className="pointer-events-none absolute -left-[20%] -top-[25%] h-[55vh] w-[55vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(224,229,255,0.6), transparent 72%)",
+        }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-[30%] -right-[15%] h-[50vh] w-[45vw] rounded-full bg-brass-200/35 blur-[110px]"
+        className="pointer-events-none absolute -bottom-[30%] -right-[15%] h-[50vh] w-[45vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(243,215,156,0.35), transparent 72%)",
+        }}
       />
       <LoginCard />
     </section>

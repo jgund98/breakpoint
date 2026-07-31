@@ -60,11 +60,6 @@ export function Problem() {
             </figcaption>
           </figure>
 
-          <p className="no-orphan mt-8 hidden max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft sm:block">
-            That is the state of the art at companies operating a thousand
-            stores. Not a failure of diligence — a failure of instrumentation.
-            Nobody gave these teams a feed.
-          </p>
         </Reveal>
       </div>
     </Section>

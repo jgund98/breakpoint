@@ -10,12 +10,12 @@ import { Button } from "@/components/ui/Button";
 const proof = [
   ["24–48 hrs", "to your first answer"],
   ["One lease", "or a national portfolio"],
-  ["Watched", "as your center changes"],
+  ["Watched", "as things change around your store"],
 ];
 
 const enter = (delay: number) => ({
-  initial: { opacity: 0, y: 20, filter: "blur(6px)" },
-  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
   transition: { duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] as const },
 });
 
@@ -30,11 +30,19 @@ export function Hero() {
       {/* color washes so the white ground never reads flat */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-[22%] -top-[28%] h-[70vh] w-[70vw] rounded-full bg-petrol-100/60 blur-[100px]"
+        className="pointer-events-none absolute -left-[22%] -top-[28%] h-[70vh] w-[70vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(224,229,255,0.6), transparent 72%)",
+        }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-[18%] top-[30%] h-[55vh] w-[50vw] rounded-full bg-brass-200/40 blur-[110px]"
+        className="pointer-events-none absolute -right-[18%] top-[30%] h-[55vh] w-[50vw] rounded-full"
+        style={{
+          background:
+            "radial-gradient(closest-side, rgba(243,215,156,0.4), transparent 72%)",
+        }}
       />
 
       <div className="relative mx-auto max-w-[1400px] px-5 pt-24 pb-14 sm:px-8 sm:pt-32 lg:pt-36 lg:pb-20">
@@ -89,8 +97,9 @@ export function Hero() {
               rent — most tenants never find out in time.
               <span className="hidden sm:inline">
                 {" "}
-                Breakpoint watches your shopping centers and tells you the
-                moment you may be owed a break, with the proof&nbsp;attached.
+                Breakpoint watches the centers your stores sit in and tells you
+                the moment you may be owed a break, with the
+                proof&nbsp;attached.
               </span>
             </motion.p>
 

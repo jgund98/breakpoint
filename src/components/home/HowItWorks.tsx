@@ -20,8 +20,8 @@ const steps = [
   },
   {
     n: "02",
-    k: "Watch your center",
-    v: "We track what's really happening at your shopping center — closures, filings, permits, on-the-ground checks.",
+    k: "Watch around you",
+    v: "We track what's really happening around your store — closures, filings, permits, on-the-ground checks.",
   },
   {
     n: "03",
