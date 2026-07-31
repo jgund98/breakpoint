@@ -47,12 +47,13 @@ export function Footer() {
               occupancy history, and show you whether a test appears to have
               failed — inside 48 hours.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/demo"
-                className="inline-flex items-center justify-center rounded-full bg-brass-500 px-7 py-4 text-base font-medium text-petrol-950 transition-colors hover:bg-brass-400"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-brass-500 px-9 py-5 text-lg font-semibold whitespace-nowrap text-petrol-950 shadow-[0_16px_44px_-12px_rgba(217,154,43,0.65)] transition-all hover:-translate-y-0.5 hover:bg-brass-400 hover:shadow-[0_20px_52px_-12px_rgba(217,154,43,0.8)]"
               >
-                Start your evaluation
+                Start your free evaluation
+                <span>→</span>
               </Link>
               <Link
                 href="/co-tenancy"
@@ -61,6 +62,9 @@ export function Footer() {
                 Read the field guide
               </Link>
             </div>
+            <p className="mt-4 text-sm text-cream-faint">
+              Free · first answer in 48 hours · no commitment
+            </p>
           </div>
         </div>
       </div>

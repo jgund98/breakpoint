@@ -1,5 +1,12 @@
-import { CenterPlan } from "@/components/showpiece/CenterPlan";
+import dynamic from "next/dynamic";
+
+// The demo is the heaviest client component on the site — it gets its
+// own chunk and hydrates after first paint.
+const CenterPlan = dynamic(() =>
+  import("@/components/showpiece/CenterPlan").then((m) => m.CenterPlan),
+);
 import { Section, Eyebrow, SectionTitle, Lede } from "@/components/ui/Section";
+import { Deferred } from "@/components/ui/Deferred";
 
 export function TheCenter() {
   return (
@@ -21,9 +28,9 @@ export function TheCenter() {
         </Lede>
       </div>
 
-      <div className="mt-10 lg:mt-12">
+      <Deferred minHeight={760} className="mt-10 lg:mt-12">
         <CenterPlan />
-      </div>
+      </Deferred>
     </Section>
   );
 }

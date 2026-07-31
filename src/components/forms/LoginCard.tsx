@@ -62,7 +62,7 @@ export function LoginCard() {
 
           <button
             type="submit"
-            className="w-full rounded-full bg-petrol-800 px-6 py-3.5 text-[0.9375rem] font-semibold text-cream transition-colors hover:bg-petrol-700"
+            className="w-full rounded-full bg-petrol-800 px-6 py-3.5 text-[0.9375rem] font-semibold whitespace-nowrap text-cream transition-colors hover:bg-petrol-700"
           >
             Sign in
           </button>
@@ -70,7 +70,7 @@ export function LoginCard() {
           <button
             type="button"
             onClick={() => setNotice(true)}
-            className="w-full rounded-full border border-line bg-surface px-6 py-3.5 text-[0.9375rem] font-medium text-ink-soft transition-colors hover:border-petrol-300 hover:bg-petrol-50"
+            className="w-full rounded-full border border-line bg-surface px-6 py-3.5 text-[0.9375rem] font-medium whitespace-nowrap text-ink-soft transition-colors hover:border-petrol-300 hover:bg-petrol-50"
           >
             Continue with SSO
           </button>

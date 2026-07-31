@@ -96,7 +96,7 @@ export function Onboarding() {
                           </span>
                         )}
                       </p>
-                      <p className="no-orphan balance mt-1 text-sm leading-relaxed text-cream-soft">
+                      <p className="no-orphan balance mt-1 hidden text-sm leading-relaxed text-cream-soft sm:block">
                         {item.detail}
                       </p>
                     </div>

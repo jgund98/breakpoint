@@ -166,11 +166,11 @@ export function TriggerAlert() {
           </p>
         </div>
 
-        <div className="mt-4 flex gap-2">
-          <span className="flex-1 rounded-full bg-petrol-800 px-4 py-2.5 text-center text-[0.8125rem] font-medium text-cream">
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <span className="rounded-lg bg-petrol-800 px-4 py-2.5 text-center text-[0.8125rem] font-medium whitespace-nowrap text-cream sm:flex-1">
             Open review package
           </span>
-          <span className="rounded-full border border-line px-4 py-2.5 text-center text-[0.8125rem] font-medium text-ink-soft">
+          <span className="rounded-lg border border-line px-4 py-2.5 text-center text-[0.8125rem] font-medium whitespace-nowrap text-ink-soft">
             Assign
           </span>
         </div>

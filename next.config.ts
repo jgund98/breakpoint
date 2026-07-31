@@ -2,10 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  // Serve AVIF first — the aerial hero drops roughly a third in weight
-  // with no visible change.
+  // WebP only. AVIF encodes cold on Vercel per size/device class and
+  // can stall first mobile views for seconds — not worth the bytes.
   images: {
-    formats: ["image/avif", "image/webp"],
+    formats: ["image/webp"],
   },
   experimental: {
     // Tree-shake the animation library down to what each chunk uses.

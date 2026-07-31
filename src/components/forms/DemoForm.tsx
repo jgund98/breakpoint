@@ -231,7 +231,7 @@ export function DemoForm() {
           disabled={!canAdvance}
           onClick={() => (step === 2 ? submit() : setStep((s) => s + 1))}
           className={cn(
-            "ml-auto rounded-full px-7 py-3.5 text-[0.9375rem] font-medium transition-all duration-300",
+            "ml-auto rounded-full px-7 py-3.5 text-[0.9375rem] font-medium whitespace-nowrap transition-all duration-300",
             canAdvance
               ? "bg-petrol-800 text-cream hover:bg-petrol-700"
               : "cursor-not-allowed bg-surface-sunk text-faint",

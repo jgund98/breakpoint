@@ -15,23 +15,23 @@ import { cn } from "@/lib/cn";
 const steps = [
   {
     n: "01",
-    k: "Abstract",
-    v: "The lease and every amendment become testable rules, each field citing the sentence it came from.",
+    k: "Read your lease",
+    v: "We turn the fine print — the lease and every amendment — into rules that can be checked.",
   },
   {
     n: "02",
-    k: "Watch",
-    v: "We assemble what each center actually looks like — closures, filings, permits, field verification.",
+    k: "Watch your center",
+    v: "We track what's really happening at your shopping center — closures, filings, permits, on-the-ground checks.",
   },
   {
     n: "03",
-    k: "Trigger",
-    v: "Every test re-runs as conditions change. The day one fails, the right person hears about it.",
+    k: "Flag the moment",
+    v: "The moment a closing may entitle you to pay less rent, the right person on your team hears about it.",
   },
   {
     n: "04",
-    k: "Package",
-    v: "The notice materials, citations, evidence and calculations arrive as one package for your team and counsel.",
+    k: "Hand you the file",
+    v: "You get the letter, the evidence and the math in one package, ready for your team and your lawyer.",
   },
 ];
 
@@ -118,7 +118,7 @@ export function HowItWorks() {
                   {s.k}
                 </span>
               </div>
-              <p className="no-orphan balance mt-4 text-[0.9375rem] leading-relaxed text-ink-soft">
+              <p className="no-orphan balance mt-4 text-[0.9375rem] leading-relaxed text-ink-soft max-sm:line-clamp-2">
                 {s.v}
               </p>
             </li>

@@ -1,6 +1,11 @@
 import { Section, Eyebrow, SectionTitle, Lede } from "@/components/ui/Section";
-import { Confluence } from "@/components/showpiece/Confluence";
+import dynamic from "next/dynamic";
+
+const Confluence = dynamic(() =>
+  import("@/components/showpiece/Confluence").then((m) => m.Confluence),
+);
 import { Reveal } from "@/components/ui/Reveal";
+import { Deferred } from "@/components/ui/Deferred";
 import { coexistsWith } from "@/lib/site";
 
 /**
@@ -23,15 +28,15 @@ export function Wedge() {
         <Lede>
           Most lease suites track the clause — a field in a record, entered
           once. The trigger lives outside the document, in a center that
-          changes every week. Breakpoint is built on joining the two. And if
-          you hold one lease instead of a thousand, the &#8220;system&#8221;
-          is a filing cabinet — the gap is the same.
+          changes every week. Breakpoint is built on joining the two.<span className="hidden sm:inline"> And if you hold one lease instead of a thousand, the &#8220;system&#8221; is a filing cabinet — the gap is the same.</span>
         </Lede>
       </div>
 
-      <Reveal className="mt-12 lg:mt-14" y={30}>
-        <Confluence />
-      </Reveal>
+      <Deferred minHeight={480} className="mt-12 lg:mt-14">
+        <Reveal y={30}>
+          <Confluence />
+        </Reveal>
+      </Deferred>
 
       {/* coexistence */}
       <div className="mt-12 flex w-fit max-w-full flex-col gap-4 rounded-xl border border-line bg-surface px-6 py-5 sm:flex-row sm:items-center sm:gap-6">

@@ -152,11 +152,11 @@ export function WorkspaceMock({ className }: { className?: string }) {
               failed. Estimated relief $18,917/mo, pending your review and
               written notice.
             </p>
-            <div className="mt-2.5 flex gap-2">
-              <span className="rounded-full bg-petrol-800 px-3.5 py-1.5 text-[0.75rem] font-medium text-cream">
+            <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">
+              <span className="rounded-lg bg-petrol-800 px-3.5 py-2 text-center text-[0.75rem] font-medium whitespace-nowrap text-cream">
                 Open review package
               </span>
-              <span className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-[0.75rem] font-medium text-ink-soft">
+              <span className="rounded-lg border border-line bg-surface px-3.5 py-2 text-center text-[0.75rem] font-medium whitespace-nowrap text-ink-soft">
                 Share with counsel
               </span>
             </div>

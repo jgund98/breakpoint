@@ -41,10 +41,10 @@ export function Problem() {
           </SectionTitle>
 
           <p className="lede no-orphan mt-7 text-ink-soft">
-            Traditional lease platforms store your co&#8209;tenancy clause. What
-            they don&#8217;t hold is what your center looks like right now. So
-            the trigger event — the thing actually worth money — gets spotted
-            by whoever happens to walk the mall.
+            Lease software stores your paperwork. It has no idea which stores
+            around you closed this month — so the event that could lower your
+            rent gets spotted by whoever happens to walk the mall, or not
+            at&nbsp;all.
           </p>
 
           <figure className="mt-9 border-l-2 border-brass-500 pl-6">
@@ -60,7 +60,7 @@ export function Problem() {
             </figcaption>
           </figure>
 
-          <p className="no-orphan mt-8 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
+          <p className="no-orphan mt-8 hidden max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft sm:block">
             That is the state of the art at companies operating a thousand
             stores. Not a failure of diligence — a failure of instrumentation.
             Nobody gave these teams a feed.

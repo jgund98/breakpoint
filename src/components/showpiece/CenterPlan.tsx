@@ -144,36 +144,41 @@ export function CenterPlan() {
             </span>
           </p>
 
-          {/* phone-native plan — only the storefronts your lease actually
-              names, so every tap moves a test. The live bar pinned to the
-              bottom of the screen reacts the instant you tap. */}
+          {/* phone-native plan — the stores your lease names, as a clean
+              list with switches. Every flip moves a test, and the live
+              bar pinned to the bottom reacts the instant you do. */}
           <div className="sm:hidden" ref={mobileGridRef}>
-            <p className="label text-muted">Named anchors</p>
-            <div className="mt-2 grid grid-cols-3 gap-1.5">
-              {units
-                .filter((u) => u.anchor && u.named)
-                .map((u) => (
-                  <MobileTile key={u.id} unit={u} onToggle={toggleUnit} tall />
-                ))}
-            </div>
-            <p className="label mt-4 text-muted">Named inline stores + you</p>
-            <div className="mt-2 grid grid-cols-3 gap-1.5">
-              {units
-                .filter((u) => !u.anchor && (u.named || u.subject))
-                .sort((a, b) => (a.subject ? -1 : b.subject ? 1 : 0))
-                .map((u) => (
-                  <MobileTile
-                    key={u.id}
-                    unit={u}
-                    onToggle={toggleUnit}
-                    breached={evaluation.triggered}
+            <div className="overflow-hidden rounded-xl border border-line bg-surface lift">
+              <div
+                className={cn(
+                  "flex items-center justify-between gap-3 px-4 py-3 transition-colors duration-500",
+                  evaluation.triggered ? "bg-brass-50" : "bg-petrol-50",
+                )}
+              >
+                <span className="flex min-w-0 items-center gap-2.5">
+                  <span
+                    className={cn(
+                      "h-2.5 w-2.5 shrink-0 rounded-[3px] bg-surface ring-2",
+                      evaluation.triggered ? "ring-brass-500" : "ring-petrol-700",
+                    )}
                   />
+                  <span className="truncate text-sm font-semibold text-ink">
+                    Your store · Unit 214
+                  </span>
+                </span>
+                <span className="label shrink-0 text-muted">3,850 SF</span>
+              </div>
+              {units
+                .filter((u) => u.named)
+                .sort((a, b) => Number(Boolean(b.anchor)) - Number(Boolean(a.anchor)))
+                .map((u) => (
+                  <MobileRow key={u.id} unit={u} onToggle={toggleUnit} />
                 ))}
             </div>
             <p className="mt-3 text-xs leading-relaxed text-muted">
-              Tap a store to close or reopen it. The other 23 storefronts stay
-              as the scenario sets them — the drawn plan on larger screens
-              shows every unit.
+              These are the stores your lease names. Flip one closed and watch
+              the bar below — the other storefronts stay as the scenario sets
+              them.
             </p>
           </div>
 
@@ -480,12 +485,30 @@ function OutcomeCard({
 
 function LeaseMathCard({ evaluation }: { evaluation: Evaluation }) {
   const occupancy = useCountUp(evaluation.occupancyPct * 100, 0.7);
+  // Collapsed by default on phones (text diet); always open on xl.
+  const [expanded, setExpanded] = useState(false);
   return (
     <div className="rounded-xl border border-line bg-surface p-5 lift sm:p-6">
-      <div className="flex items-baseline justify-between">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        className="flex w-full items-baseline justify-between xl:pointer-events-none"
+      >
         <span className="label text-muted">The lease math</span>
-        <span className="text-xs text-faint">§ 4.3</span>
-      </div>
+        <span className="flex items-center gap-2 text-xs text-faint">
+          § 4.3
+          <span
+            className={cn(
+              "text-petrol-600 transition-transform duration-300 xl:hidden",
+              expanded && "rotate-180",
+            )}
+          >
+            ▾
+          </span>
+        </span>
+      </button>
+      <div className={cn(expanded ? "block" : "hidden", "xl:block")}>
 
       <div className="mt-4 flex items-baseline justify-between gap-3">
         <span className="text-sm text-ink-soft">Occupied space</span>
@@ -521,86 +544,64 @@ function LeaseMathCard({ evaluation }: { evaluation: Evaluation }) {
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 }
 
 /* ------------------------------------------------------------------ */
 
-/** A storefront as a thumb-sized tile — the phone-native plan. */
-function MobileTile({
+/** A named storefront as a list row with an open/closed switch. */
+function MobileRow({
   unit,
   onToggle,
-  breached,
-  tall,
 }: {
   unit: Unit;
   onToggle: (u: Unit) => void;
-  breached?: boolean;
-  tall?: boolean;
 }) {
   const isDark = unit.status === "dark";
-  const isVacant = unit.status === "vacant";
   return (
     <button
       type="button"
-      disabled={isVacant || unit.subject}
       onClick={() => onToggle(unit)}
-      aria-label={`${unit.name} — ${unit.status}`}
-      className={cn(
-        "relative flex flex-col items-center justify-center rounded-lg px-1 text-center transition-colors duration-300",
-        tall ? "h-16" : "h-14",
-        isVacant
-          ? "border border-dashed border-muted/70 bg-transparent"
-          : unit.subject
-            ? cn(
-                "bg-surface ring-2 ring-inset",
-                breached
-                  ? "ring-brass-500 shadow-[0_0_0_3px_rgba(217,154,43,0.25)]"
-                  : "ring-petrol-700",
-              )
-            : isDark
-              ? "bg-petrol-900 text-cream-soft"
-              : "shadow-[0_1px_2px_rgba(20,20,46,0.08)] ring-1 ring-inset ring-petrol-800/25",
-      )}
-      style={
-        !isVacant && !isDark && !unit.subject
-          ? { backgroundColor: categoryColor[unit.category] }
-          : undefined
-      }
+      aria-label={`${unit.name} — ${isDark ? "closed, tap to reopen" : "open, tap to close"}`}
+      aria-pressed={isDark}
+      className="flex w-full items-center justify-between gap-3 border-t border-line px-4 py-3 text-left transition-colors duration-300 active:bg-petrol-50/60"
     >
-      {unit.named && !isVacant && (
+      <span className="flex min-w-0 items-center gap-2.5">
         <span
-          className={cn(
-            "absolute right-1 top-1 h-1.5 w-1.5 rounded-[1px]",
-            isDark ? "bg-brass-400/70" : "bg-brass-500",
-          )}
+          className="h-2.5 w-2.5 shrink-0 rounded-[3px] ring-1 ring-inset ring-petrol-800/25"
+          style={{ backgroundColor: categoryColor[unit.category] }}
         />
-      )}
-      {unit.subject ? (
-        <>
+        <span className="min-w-0">
           <span
             className={cn(
-              "rounded px-1.5 py-0.5 text-[0.5625rem] font-bold",
-              breached ? "bg-brass-500 text-petrol-950" : "bg-petrol-800 text-cream",
+              "block truncate text-sm font-medium transition-colors duration-300",
+              isDark ? "text-muted line-through decoration-muted/60" : "text-ink",
             )}
           >
-            YOU
+            {unit.name}
           </span>
-          <span className="mt-0.5 text-[0.5625rem] font-medium text-ink">
-            Unit 214
+          <span className="block text-[0.6875rem] text-muted">
+            {unit.anchor ? "Anchor" : unit.category} · {sf(unit.gla)}
           </span>
-        </>
-      ) : (
+        </span>
+      </span>
+
+      {/* the switch */}
+      <span
+        className={cn(
+          "relative h-6 w-11 shrink-0 rounded-full transition-colors duration-300",
+          isDark ? "bg-line" : "bg-open-600",
+        )}
+      >
         <span
           className={cn(
-            "line-clamp-2 text-[0.625rem] leading-tight font-medium",
-            isDark ? "text-cream-soft" : isVacant ? "text-faint" : "text-ink",
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-all duration-300",
+            isDark ? "left-0.5" : "left-[22px]",
           )}
-        >
-          {isVacant ? "Vacant" : unit.name}
-        </span>
-      )}
+        />
+      </span>
     </button>
   );
 }

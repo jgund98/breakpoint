@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -85,7 +85,10 @@ export function HeroScene({ className }: { className?: string }) {
     <figure
       ref={ref}
       className={cn(
-        "relative overflow-hidden rounded-xl bg-petrol-900 lift-lg",
+        "relative overflow-hidden rounded-xl bg-petrol-900 ring-inset transition-shadow duration-700 lift-lg",
+        escalated
+          ? "shadow-[0_0_0_2px_var(--color-brass-500),0_24px_60px_-28px_rgba(20,20,46,0.4)]"
+          : "shadow-[0_0_0_0px_transparent]",
         className,
       )}
     >
@@ -160,6 +163,30 @@ export function HeroScene({ className }: { className?: string }) {
             </motion.div>
           );
         })}
+
+        {/* the money moment — when the beam trips the test, the number
+            the whole company exists to find rises off the map */}
+        <AnimatePresence>
+          {escalated && (
+            <motion.div
+              initial={{ opacity: 0, y: 16, scale: 0.85 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -14, scale: 0.95 }}
+              transition={{ duration: 0.6, ease: [0.34, 1.56, 0.64, 1] }}
+              className="pointer-events-none absolute z-20 hidden sm:block"
+              style={{ left: "34%", top: "38%" }}
+            >
+              <div className="-translate-x-1/2 text-center">
+                <p className="tnum font-display text-[clamp(1.6rem,2.6vw,2.25rem)] leading-none text-brass-400 drop-shadow-[0_2px_12px_rgba(16,13,46,0.8)]">
+                  +$18,917<span className="text-[0.55em]">/mo</span>
+                </p>
+                <p className="mt-1 text-[0.6875rem] font-semibold tracking-tight text-cream/90">
+                  potential rent relief identified
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* phone: one live chip, parked safely above the caption */}
         <div className="absolute inset-x-4 bottom-12 z-10 flex justify-center sm:hidden">

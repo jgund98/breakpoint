@@ -9,6 +9,7 @@ import puppeteer from "puppeteer-core";
 
 const URL = process.argv[2] || "https://breakpoint.epicdevsolutions.com";
 const MOBILE = process.argv[3] === "mobile";
+const DSF = Number(process.argv[4] || 3);
 
 const browser = await puppeteer.launch({
   headless: true,
@@ -25,7 +26,7 @@ if (MOBILE) {
     height: 844,
     isMobile: true,
     hasTouch: true,
-    deviceScaleFactor: 3,
+    deviceScaleFactor: DSF,
   });
   await page.setUserAgent(
     "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
@@ -67,6 +68,27 @@ page.on("requestfailed", (req) => {
   });
 });
 
+const consoleErrors = [];
+page.on("console", (m) => {
+  if (m.type() === "error") consoleErrors.push(m.text().slice(0, 160));
+});
+page.on("pageerror", (e) => consoleErrors.push(String(e).slice(0, 160)));
+
+await page.evaluateOnNewDocument(() => {
+  window.__lcp = 0;
+  new PerformanceObserver((list) => {
+    for (const e of list.getEntries()) window.__lcp = e.startTime;
+  }).observe({ type: "largest-contentful-paint", buffered: true });
+  window.__longtask = 0;
+  window.__longtaskCount = 0;
+  new PerformanceObserver((list) => {
+    for (const e of list.getEntries()) {
+      window.__longtask += e.duration;
+      window.__longtaskCount++;
+    }
+  }).observe({ type: "longtask", buffered: true });
+});
+
 const t0 = Date.now();
 await page.goto(URL, { waitUntil: "load", timeout: 120000 });
 const loadMs = Date.now() - t0;
@@ -77,7 +99,7 @@ const metrics = await page.evaluate(() => {
   const fcp = performance
     .getEntriesByType("paint")
     .find((e) => e.name === "first-contentful-paint");
-  const lcpEntries = performance.getEntriesByType("largest-contentful-paint");
+  const lcpEntries = window.__lcp ? [{ startTime: window.__lcp }] : [];
   const resources = performance.getEntriesByType("resource").map((r) => ({
     url: r.name,
     dur: Math.round(r.duration),
@@ -92,14 +114,22 @@ const metrics = await page.evaluate(() => {
     lcp: lcpEntries.length
       ? Math.round(lcpEntries[lcpEntries.length - 1].startTime)
       : null,
+    longtaskMs: Math.round(window.__longtask || 0),
+    longtaskCount: window.__longtaskCount || 0,
     resources,
   };
 });
 
-console.log(`\n=== ${MOBILE ? "MOBILE (4x CPU, ~4G)" : "DESKTOP"} · ${URL}`);
+console.log(
+  `\n=== ${MOBILE ? `MOBILE DPR${DSF} (4x CPU, ~4G)` : "DESKTOP"} · ${URL}`,
+);
 console.log(
   `TTFB ${metrics.ttfb}ms · FCP ${metrics.fcp}ms · LCP ${metrics.lcp}ms · DCL ${metrics.domContentLoaded}ms · load ${metrics.load}ms (wall ${loadMs}ms)`,
 );
+console.log(
+  `main-thread blocked ${metrics.longtaskMs}ms across ${metrics.longtaskCount} long tasks${consoleErrors.length ? ` · ${consoleErrors.length} CONSOLE ERRORS` : ""}`,
+);
+for (const e of consoleErrors.slice(0, 5)) console.log(`  console: ${e}`);
 
 const totalBytes = metrics.resources.reduce((s, r) => s + (r.size || 0), 0);
 console.log(
