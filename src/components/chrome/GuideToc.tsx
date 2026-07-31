@@ -39,8 +39,9 @@ export function GuideToc({
 
   return (
     <>
-      {/* phones: chip rail */}
-      <div className="scroll-x-clean -mx-5 overflow-x-auto px-5 lg:hidden">
+      {/* phones: chip rail — edge padding lives here, full-bleed comes
+          from the nav wrapper. Never stack negative margins. */}
+      <div className="scroll-x-clean overflow-x-auto px-5 lg:hidden">
         <div className="flex min-w-max gap-2">
           {items.map((t) => (
             <a

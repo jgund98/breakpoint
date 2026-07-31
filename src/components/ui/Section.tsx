@@ -17,6 +17,7 @@ export function Section({
   className,
   containerClassName,
   grid,
+  overflowVisible,
   children,
 }: {
   tone?: Tone;
@@ -25,6 +26,12 @@ export function Section({
   containerClassName?: string;
   /** Renders the ambient brand decor (glows + mark motif) behind the section. */
   grid?: boolean;
+  /**
+   * Sections clip overflow so decor never bleeds — but position:sticky
+   * dies inside an overflow-hidden ancestor. Sections that contain
+   * sticky rails opt out (and must not render decor).
+   */
+  overflowVisible?: boolean;
   children: React.ReactNode;
 }) {
   const dark = tone === "petrol" || tone === "petrol-deep";
@@ -32,7 +39,8 @@ export function Section({
     <section
       id={id}
       className={cn(
-        "relative overflow-hidden py-20 sm:py-24 lg:py-32",
+        "relative py-20 sm:py-24 lg:py-32",
+        !overflowVisible && "overflow-hidden",
         toneClass[tone],
         className,
       )}

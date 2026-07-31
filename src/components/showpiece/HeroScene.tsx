@@ -54,12 +54,34 @@ const RESET_AT = 8600;
 
 export function HeroScene({ className }: { className?: string }) {
   const [escalated, setEscalated] = useState(false);
+  // Phone spotlight: which center the feed is visiting (MARKERS index).
+  const [spot, setSpot] = useState(0);
   const reduced = useReducedMotion();
   const ref = useRef<HTMLElement>(null);
   // Everything pauses the moment the panel leaves the viewport — no
   // rAF ticking, no timers, no compositing work while offscreen.
   const inView = useInView(ref, { margin: "10% 0px" });
   const live = inView && !reduced;
+
+  // Walk the portfolio: two healthy centers, one on watch, then dwell
+  // on Fairmount while it trips. Ends where the money is.
+  useEffect(() => {
+    if (reduced) {
+      setSpot(2);
+      return;
+    }
+    if (!inView) return;
+    const ORDER = [0, 1, 3, 2];
+    let idx = 0;
+    let t: number;
+    const next = () => {
+      idx = (idx + 1) % ORDER.length;
+      setSpot(ORDER[idx]);
+      t = window.setTimeout(next, ORDER[idx] === 2 ? 3800 : 1900);
+    };
+    t = window.setTimeout(next, 1900);
+    return () => window.clearTimeout(t);
+  }, [inView, reduced]);
 
   useEffect(() => {
     if (reduced) {
@@ -176,16 +198,87 @@ export function HeroScene({ className }: { className?: string }) {
           )}
         </AnimatePresence>
 
-        {/* phone: one live chip, parked safely above the caption */}
-        <div className="absolute inset-x-4 bottom-12 z-10 flex justify-center sm:hidden">
-          <div className="flex items-center gap-2">
-            <Pin state={escalated ? "fail" : "watch"} />
-            <Chip
-              name="Fairmount Collection"
-              value={escalated ? "67.8%" : "70.4%"}
-              state={escalated ? "fail" : "watch"}
-              note={escalated ? "Potential trigger · est. $18.9K/mo" : undefined}
-            />
+        {/* phone: live pins on the photo + a spotlight feed that walks
+            the portfolio — every center gets its moment, Fairmount
+            lands the money. */}
+        <div className="sm:hidden">
+          {MARKERS.map((m, i) => {
+            const isSpot = i === spot;
+            const isFail = Boolean(m.escalated) && isSpot;
+            return (
+              <span
+                key={m.id}
+                className={cn(
+                  "absolute z-10 transition-all duration-500",
+                  isSpot ? "scale-125 opacity-100" : "scale-90 opacity-45",
+                )}
+                style={{
+                  left: `${m.x}%`,
+                  top: `${m.y}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <Pin state={isFail ? "fail" : m.state} />
+              </span>
+            );
+          })}
+
+          <AnimatePresence>
+            {Boolean(MARKERS[spot].escalated) && (
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
+                className="tnum font-display pointer-events-none absolute inset-x-0 top-[30%] z-10 text-center text-2xl leading-none text-brass-400 drop-shadow-[0_2px_12px_rgba(16,13,46,0.8)]"
+              >
+                +$18,917<span className="text-[0.6em]">/mo</span>
+              </motion.p>
+            )}
+          </AnimatePresence>
+
+          <div className="absolute inset-x-4 bottom-12 z-10 flex flex-col items-center gap-2">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={spot}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="flex items-center gap-2"
+              >
+                <Pin
+                  state={
+                    MARKERS[spot].escalated ? "fail" : MARKERS[spot].state
+                  }
+                />
+                <Chip
+                  name={MARKERS[spot].name}
+                  value={
+                    MARKERS[spot].escalated?.value ?? MARKERS[spot].value
+                  }
+                  state={
+                    MARKERS[spot].escalated ? "fail" : MARKERS[spot].state
+                  }
+                  note={
+                    MARKERS[spot].escalated
+                      ? "Potential trigger · est. $18.9K/mo"
+                      : undefined
+                  }
+                />
+              </motion.div>
+            </AnimatePresence>
+            <span className="flex gap-1.5">
+              {MARKERS.map((m, i) => (
+                <span
+                  key={m.id}
+                  className={cn(
+                    "h-1 w-1 rounded-full transition-all duration-300",
+                    i === spot ? "w-3 bg-brass-400" : "bg-white/40",
+                  )}
+                />
+              ))}
+            </span>
           </div>
         </div>
 

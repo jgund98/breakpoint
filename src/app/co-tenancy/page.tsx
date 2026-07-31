@@ -115,13 +115,21 @@ export default function CoTenancyPage() {
         photoAlt="Interior of an enclosed shopping center with a skylit roof"
       />
 
-      <Section tone="canvas">
-        <div className="grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
+      {/* overflowVisible: this section holds both sticky rails — the
+          phone chip bar and the desktop TOC — and sticky dies inside
+          an overflow-hidden ancestor. No decor renders here. */}
+      <Section tone="canvas" overflowVisible>
+        {/* minmax(0,1fr) on the phone track too — an auto track grows
+            to a scroll-rail's full content width and shoves text off
+            the screen. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
           {/* TOC — sticky chip rail on phones so navigation never
-              requires scrolling back to the top */}
+              requires scrolling back to the top. The nav goes full-bleed
+              (-mx-5); the rail inside owns the edge padding, so chips
+              never hang past the screen. */}
           <nav
             aria-label="Contents"
-            className="max-lg:sticky max-lg:top-16 max-lg:z-30 max-lg:-mx-5 max-lg:border-b max-lg:border-line max-lg:bg-canvas/95 max-lg:px-5 max-lg:py-3 lg:sticky lg:top-28 lg:self-start"
+            className="max-lg:sticky max-lg:top-18 max-lg:z-30 max-lg:-mx-5 max-lg:border-b max-lg:border-line max-lg:bg-canvas max-lg:py-3 lg:sticky lg:top-28 lg:self-start"
           >
             <span className="label hidden text-muted lg:block">Contents</span>
             <GuideToc items={toc} />
@@ -144,7 +152,7 @@ export default function CoTenancyPage() {
           {/* body */}
           <div className="max-w-[46rem]">
             <article className="space-y-16">
-              <section id="what" className="scroll-mt-28">
+              <section id="what" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">
                   What co-tenancy is
                 </h2>
@@ -163,7 +171,7 @@ export default function CoTenancyPage() {
                 </p>
               </section>
 
-              <section id="opening" className="scroll-mt-28">
+              <section id="opening" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">
                   Opening co-tenancy
                 </h2>
@@ -182,7 +190,7 @@ export default function CoTenancyPage() {
                 </p>
               </section>
 
-              <section id="ongoing" className="scroll-mt-28">
+              <section id="ongoing" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">
                   Ongoing co-tenancy
                 </h2>
@@ -204,7 +212,7 @@ export default function CoTenancyPage() {
                 </div>
               </section>
 
-              <section id="anatomy" className="scroll-mt-28">
+              <section id="anatomy" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">
                   Anatomy of a clause
                 </h2>
@@ -250,7 +258,7 @@ export default function CoTenancyPage() {
                 </figure>
               </section>
 
-              <section id="remedies" className="scroll-mt-28">
+              <section id="remedies" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">Remedies</h2>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
                   Three remedies appear repeatedly, and a clause may combine
@@ -272,7 +280,7 @@ export default function CoTenancyPage() {
                 </div>
               </section>
 
-              <section id="cure" className="scroll-mt-28">
+              <section id="cure" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">Cure periods</h2>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
                   A landlord will normally negotiate a window to replace a
@@ -291,7 +299,7 @@ export default function CoTenancyPage() {
                 </p>
               </section>
 
-              <section id="missed" className="scroll-mt-28">
+              <section id="missed" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">
                   Why it goes unclaimed
                 </h2>
@@ -322,7 +330,7 @@ export default function CoTenancyPage() {
                 </p>
               </section>
 
-              <section id="glossary" className="scroll-mt-28">
+              <section id="glossary" className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">Glossary</h2>
                 <dl className="mt-6">
                   <G term="Anchor">
@@ -369,7 +377,7 @@ export default function CoTenancyPage() {
               </section>
 
               {/* FAQ */}
-              <section className="scroll-mt-28">
+              <section className="scroll-mt-36 lg:scroll-mt-28">
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">
                   Common questions
                 </h2>

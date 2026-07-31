@@ -121,7 +121,7 @@ export function Hero() {
               className="mt-8 grid grid-cols-3 gap-4 border-t border-line pt-6 sm:gap-6 lg:mt-10 lg:pt-7"
             >
               {proof.map(([value, label]) => (
-                <div key={label}>
+                <div key={label} className="text-center sm:text-left">
                   <dt className="font-display text-[clamp(1.05rem,2.2vw,1.5rem)] leading-none text-petrol-800">
                     {value}
                   </dt>
