@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { useRef } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -19,9 +20,12 @@ export function AnimatedGlyph({
   bar?: string;
 }) {
   const reduced = useReducedMotion();
+  const ref = useRef<SVGSVGElement>(null);
+  const inView = useInView(ref, { margin: "10% 0px" });
 
   return (
     <svg
+      ref={ref}
       viewBox="0 0 32 32"
       fill="none"
       aria-hidden
@@ -55,7 +59,7 @@ export function AnimatedGlyph({
         transition={{ duration: 0.5, delay: delay + 0.45, ease: [0.34, 1.56, 0.64, 1] }}
       />
       {/* the heartbeat — a ring that breathes off the square */}
-      {!reduced && (
+      {!reduced && inView && (
         <motion.rect
           x="12.25"
           y="2"

@@ -4,6 +4,7 @@ import { AnimatedGlyph } from "@/components/brand/AnimatedGlyph";
 import { EpicCredit } from "@/components/brand/EpicCredit";
 import { site, footerNav } from "@/lib/site";
 import { DarkDecor } from "@/components/ui/Decor";
+import { LazyVideo } from "@/components/ui/LazyVideo";
 
 export function Footer() {
   return (
@@ -13,18 +14,11 @@ export function Footer() {
       {/* closing CTA — real footage of the asset class, graded into the
           brand, with the ask on top. The last word is cinematic. */}
       <div className="relative overflow-hidden border-b border-white/10">
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
+        <LazyVideo
+          className="absolute inset-0"
+          src="/video/cta-aerial.mp4"
           poster="/video/cta-aerial-poster.jpg"
-          aria-hidden
-        >
-          <source src="/video/cta-aerial.mp4" type="video/mp4" />
-        </video>
+        />
         <div className="absolute inset-0 bg-petrol-950/72" />
         <div className="absolute inset-0 bg-linear-to-r from-petrol-950/85 via-petrol-950/40 to-petrol-950/20" />
 
@@ -62,7 +56,7 @@ export function Footer() {
               </Link>
               <Link
                 href="/co-tenancy"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/5 px-7 py-4 text-base font-medium text-cream backdrop-blur-sm transition-colors hover:border-white/45 hover:bg-white/10"
+                className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-7 py-4 text-base font-medium text-cream transition-colors hover:border-white/45 hover:bg-white/15"
               >
                 Read the field guide
               </Link>

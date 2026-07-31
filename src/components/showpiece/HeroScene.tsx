@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
+import { motion, useInView, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -55,12 +55,18 @@ const RESET_AT = 8600;
 export function HeroScene({ className }: { className?: string }) {
   const [escalated, setEscalated] = useState(false);
   const reduced = useReducedMotion();
+  const ref = useRef<HTMLElement>(null);
+  // Everything pauses the moment the panel leaves the viewport — no
+  // rAF ticking, no timers, no compositing work while offscreen.
+  const inView = useInView(ref, { margin: "10% 0px" });
+  const live = inView && !reduced;
 
   useEffect(() => {
     if (reduced) {
       setEscalated(true);
       return;
     }
+    if (!inView) return;
     let t1: number, t2: number;
     const run = () => {
       t1 = window.setTimeout(() => setEscalated(true), TRIP_AT);
@@ -73,10 +79,11 @@ export function HeroScene({ className }: { className?: string }) {
       window.clearTimeout(t1);
       window.clearTimeout(t2);
     };
-  }, [reduced]);
+  }, [reduced, inView]);
 
   return (
     <figure
+      ref={ref}
       className={cn(
         "relative overflow-hidden rounded-xl bg-petrol-900 lift-lg",
         className,
@@ -88,12 +95,12 @@ export function HeroScene({ className }: { className?: string }) {
           className="absolute inset-0 will-change-transform"
           initial={false}
           animate={
-            reduced
+            !live
               ? { scale: 1.03 }
               : { scale: [1.03, 1.12], x: ["0%", "-2%"], y: ["0%", "-1.5%"] }
           }
           transition={
-            reduced
+            !live
               ? undefined
               : {
                   duration: 28,
@@ -118,7 +125,7 @@ export function HeroScene({ className }: { className?: string }) {
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-petrol-950/78 via-transparent to-petrol-950/20" />
 
         {/* the survey beam */}
-        {!reduced && (
+        {live && (
           <div className="anim-scan pointer-events-none absolute inset-y-0 left-0 w-[30%] bg-linear-to-r from-transparent via-white/10 to-transparent" />
         )}
 
@@ -221,7 +228,7 @@ function Chip({
     <motion.span
       layout
       className={cn(
-        "flex flex-col rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg backdrop-blur-md transition-colors duration-500",
+        "flex flex-col rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg transition-colors duration-500",
         state === "fail" ? "bg-brass-500 text-petrol-950" : "bg-white/92 text-ink",
       )}
     >

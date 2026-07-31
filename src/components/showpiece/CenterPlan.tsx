@@ -193,10 +193,10 @@ export function CenterPlan() {
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.25 }}
                   className={cn(
-                    "flex items-center justify-between gap-3 rounded-full px-4 py-3 shadow-xl backdrop-blur-md",
+                    "flex items-center justify-between gap-3 rounded-full px-4 py-3 shadow-xl",
                     evaluation.triggered
                       ? "bg-brass-500 text-petrol-950"
-                      : "bg-petrol-900/95 text-cream",
+                      : "bg-petrol-900 text-cream",
                   )}
                 >
                   <span className="flex min-w-0 items-center gap-2">

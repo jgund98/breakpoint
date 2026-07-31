@@ -57,8 +57,8 @@ export default function TenantsPage() {
             you serve notice. Breakpoint makes noticing automatic.
           </>
         }
-        photo="/photos/store-bright-racks.jpg"
-        photoAlt="Clothing displayed on racks in a bright retail store"
+        photo="/photos/mall-overhead-shoppers.jpg"
+        photoAlt="Overhead view of shoppers moving through a busy shopping center concourse"
         cta={{ href: "/demo", label: "Start your evaluation" }}
       />
 

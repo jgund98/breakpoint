@@ -57,6 +57,10 @@ export default function DemoPage() {
                 the occupancy history, and a straight answer about whether a
                 test appears to have failed, inside 48 hours.
               </p>
+              <p className="no-orphan mt-6 border-l-2 border-brass-500 pl-4 text-[0.9375rem] leading-relaxed text-ink-soft">
+                The notice clock only runs forward — every month a trigger goes
+                undetected is potential savings that can&#8217;t be recovered.
+              </p>
               <p className="mt-6 text-sm text-muted">
                 Prefer email?{" "}
                 <a
@@ -68,7 +72,16 @@ export default function DemoPage() {
               </p>
             </div>
 
-            <DemoForm />
+            <div>
+              <DemoForm />
+              <p className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-muted">
+                <span>48-hour turnaround</span>
+                <span className="h-3 w-px bg-line" />
+                <span>Reviewed by our team</span>
+                <span className="h-3 w-px bg-line" />
+                <span>Documents stay private &amp; isolated</span>
+              </p>
+            </div>
           </div>
         </div>
       </section>

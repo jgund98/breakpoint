@@ -95,23 +95,37 @@ export function DemoForm() {
   }
 
   return (
-    <div className="rounded-xl border border-line bg-surface p-6 text-ink lift sm:p-8">
-      {/* progress */}
-      <ol className="flex items-center gap-2">
-        {STEPS.map((label, i) => (
-          <li key={label} className="flex flex-1 items-center gap-2">
-            <span
-              className={cn(
-                "h-1 flex-1 rounded-full transition-colors duration-500",
-                i <= step ? "bg-petrol-700" : "bg-surface-sunk",
-              )}
-            />
-          </li>
-        ))}
-      </ol>
-      <p className="label mt-4 text-muted">
-        Step {step + 1} of 3 · {STEPS[step]}
-      </p>
+    <div className="overflow-hidden rounded-xl border border-line bg-surface text-ink lift-lg">
+      {/* header band — what they're getting, before what we're asking */}
+      <div className="relative overflow-hidden bg-petrol-800 px-6 py-4 text-cream sm:px-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-8 -top-10 h-24 w-24 rounded-full bg-brass-500/25 blur-2xl"
+        />
+        <div className="relative flex items-center justify-between gap-4">
+          <span className="text-[0.9375rem] font-semibold">
+            Free 48-hour evaluation
+          </span>
+          <span className="label text-cream-soft">
+            Step {step + 1} of 3
+          </span>
+        </div>
+        <ol className="relative mt-3 flex items-center gap-1.5">
+          {STEPS.map((label, i) => (
+            <li key={label} className="flex flex-1">
+              <span
+                className={cn(
+                  "h-1 flex-1 rounded-full transition-colors duration-500",
+                  i <= step ? "bg-brass-500" : "bg-white/20",
+                )}
+              />
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="p-6 sm:p-8">
+      <p className="label text-muted">{STEPS[step]}</p>
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -224,7 +238,9 @@ export function DemoForm() {
           )}
         >
           {step === 2 ? "Start my evaluation" : "Continue"}
+          <span className="ml-1.5">→</span>
         </button>
+      </div>
       </div>
     </div>
   );
@@ -244,13 +260,23 @@ function Chip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-xl border px-4 py-3 text-left text-[0.9375rem] transition-all duration-300",
+        "flex items-center justify-between gap-2 rounded-xl border px-4 py-3.5 text-left text-[0.9375rem] font-medium transition-all duration-300",
         on
-          ? "border-petrol-800 bg-petrol-50 text-petrol-900"
-          : "border-line text-ink-soft hover:border-petrol-300 hover:bg-petrol-50/50",
+          ? "border-petrol-800 bg-petrol-50 text-petrol-900 shadow-[0_1px_2px_rgba(20,20,46,0.08)]"
+          : "border-line text-ink-soft hover:-translate-y-px hover:border-petrol-300 hover:bg-petrol-50/50",
       )}
     >
       {label}
+      <span
+        className={cn(
+          "grid h-4 w-4 shrink-0 place-items-center rounded-full text-[0.5625rem] font-bold transition-all duration-300",
+          on
+            ? "bg-brass-500 text-petrol-950"
+            : "border border-line text-transparent",
+        )}
+      >
+        ✓
+      </span>
     </button>
   );
 }
