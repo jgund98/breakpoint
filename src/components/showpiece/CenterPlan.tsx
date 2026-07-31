@@ -184,7 +184,10 @@ export function CenterPlan() {
 
           {/* live outcome bar — pinned while the tiles are on screen */}
           <AnimatePresence>
-            {mobileGridInView && (
+            {/* Appears only after the visitor has actually changed
+                something — a verdict with no action attached reads as
+                noise — and always names what it's judging. */}
+            {mobileGridInView && (touched || scenarioId !== "today") && (
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -198,34 +201,40 @@ export function CenterPlan() {
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.25 }}
                   className={cn(
-                    "flex items-center justify-between gap-3 rounded-full px-4 py-3 shadow-xl",
+                    "rounded-2xl px-4 py-2.5 shadow-xl",
                     evaluation.triggered
                       ? "bg-brass-500 text-petrol-950"
                       : "bg-petrol-900 text-cream",
                   )}
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span
-                      className={cn(
-                        "h-1.5 w-1.5 shrink-0 rounded-full",
-                        evaluation.triggered
-                          ? "anim-pulse-dot bg-petrol-950"
+                  <div className="flex items-center justify-between gap-3 text-[0.5625rem] font-semibold tracking-[0.14em] uppercase opacity-70">
+                    <span>Your lease · Unit 214</span>
+                    <span>Live result</span>
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 shrink-0 rounded-full",
+                          evaluation.triggered
+                            ? "anim-pulse-dot bg-petrol-950"
+                            : evaluation.curing
+                              ? "bg-brass-400"
+                              : "bg-open-600",
+                        )}
+                      />
+                      <span className="truncate text-[0.8125rem] font-semibold">
+                        {evaluation.triggered
+                          ? `${evaluation.tests.filter((t) => t.status === "breached").length} tests failed · potential trigger`
                           : evaluation.curing
-                            ? "bg-brass-400"
-                            : "bg-open-600",
-                      )}
-                    />
-                    <span className="truncate text-[0.8125rem] font-semibold">
-                      {evaluation.triggered
-                        ? `${evaluation.tests.filter((t) => t.status === "breached").length} tests failed · potential trigger`
-                        : evaluation.curing
-                          ? "Cure window running"
-                          : "All tests satisfied"}
+                            ? "Cure window running"
+                            : "All tests passing again"}
+                      </span>
                     </span>
-                  </span>
-                  <span className="tnum shrink-0 text-[0.9375rem] font-bold">
-                    {usd(evaluation.monthlyDelta)}/mo
-                  </span>
+                    <span className="tnum shrink-0 text-[0.9375rem] font-bold">
+                      {usd(evaluation.monthlyDelta)}/mo
+                    </span>
+                  </div>
                 </motion.div>
               </motion.div>
             )}
