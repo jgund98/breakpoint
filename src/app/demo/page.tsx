@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Start your evaluation",
   description:
-    "Send us your lease. Breakpoint abstracts the co-tenancy language, assembles the center's occupancy history, and shows you whether a test appears to have failed — inside 48 hours.",
+    "Send us your lease. Breakpoint abstracts the co-tenancy language, assembles the center's occupancy history, and shows you whether a test appears to have failed, inside 48 hours.",
   alternates: { canonical: "/demo" },
 };
 
@@ -61,12 +61,12 @@ export default function DemoPage() {
               </h1>
               <p className="lede no-orphan mt-6 text-ink-soft">
                 Pick the center you have the worst feeling about. Your
-                submission opens an evaluation in your workspace — the clause,
+                submission opens an evaluation in your workspace: the clause,
                 the occupancy history, and a straight answer about whether a
                 test appears to have failed, inside 48 hours.
               </p>
               <p className="no-orphan mt-6 border-l-2 border-brass-500 pl-4 text-[0.9375rem] leading-relaxed text-ink-soft">
-                The notice clock only runs forward — every month a trigger goes
+                The notice clock only runs forward. Every month a trigger goes
                 undetected is potential savings that can&#8217;t be recovered.
               </p>
               <p className="mt-6 text-sm text-muted">
@@ -109,7 +109,7 @@ export default function DemoPage() {
                 ))}
               </ul>
               <p className="no-orphan mt-6 border-t border-line pt-5 text-sm leading-relaxed text-muted">
-                A redacted lease is fine while diligence runs — the clause
+                A redacted lease is fine while diligence runs. The clause
                 language is what we need, not your counterparty names.
               </p>
             </Reveal>

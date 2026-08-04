@@ -94,7 +94,7 @@ export function Hero() {
               className="lede no-orphan max-w-xl text-ink-soft lg:mt-7"
             >
               When stores close around yours, your lease may let you pay less
-              rent — most tenants never find out in time.
+              rent. Most tenants never find out in time.
               <span className="hidden sm:inline">
                 {" "}
                 Breakpoint watches the centers your stores sit in and tells you

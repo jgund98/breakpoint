@@ -82,7 +82,7 @@ export function DemoForm() {
             Got it, {fields.name.trim().split(" ")[0]}.
           </h3>
           <p className="no-orphan mt-4 text-[1.0625rem] leading-relaxed text-ink-soft">
-            A person — not a sequence — will reply within one business day to
+            A person, not a sequence, will reply within one business day to
             set up your workspace and walk you through exactly what to upload.
           </p>
           <p className="no-orphan mt-5 text-[0.9375rem] leading-relaxed text-muted">
@@ -145,7 +145,7 @@ export function DemoForm() {
             <>
               <h3 className="text-[1.375rem]">How many leased locations?</h3>
               <p className="mt-2 text-[0.9375rem] text-muted">
-                One is plenty — we start with the lease you're most worried about.
+                One is plenty. We start with the lease you're most worried about.
               </p>
               <div className="mt-4 grid grid-cols-2 gap-2.5">
                 {sizes.map((s) => (

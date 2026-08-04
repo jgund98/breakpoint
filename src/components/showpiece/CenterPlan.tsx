@@ -136,10 +136,10 @@ export function CenterPlan() {
           <p className="mb-3 flex items-center gap-2.5 text-sm font-medium text-petrol-800">
             <span className="anim-pulse-dot h-1.5 w-1.5 shrink-0 rounded-full bg-petrol-600" />
             <span className="sm:hidden">
-              Tap any storefront to close it — everything recalculates.
+              Tap any storefront to close it. Everything recalculates.
             </span>
             <span className="hidden sm:inline">
-              Click any storefront to close it — everything recalculates
+              Click any storefront to close it. Everything recalculates
               instantly.
             </span>
           </p>
@@ -177,7 +177,7 @@ export function CenterPlan() {
             </div>
             <p className="mt-3 text-xs leading-relaxed text-muted">
               These are the stores your lease names. Flip one closed and watch
-              the bar below — the other storefronts stay as the scenario sets
+              the bar below. The other storefronts stay as the scenario sets
               them.
             </p>
           </div>
@@ -339,7 +339,7 @@ export function CenterPlan() {
                 <span className="font-medium text-petrol-800">
                   Your scenario.{" "}
                 </span>
-                Breakpoint re-runs every test as the center changes — the same
+                Breakpoint re-runs every test as the center changes: the same
                 arithmetic, across every lease you hold, from one store to
                 thousands.
               </>
@@ -451,7 +451,7 @@ function OutcomeCard({
                   </li>
                   {failed.map((t) => (
                     <li key={t.id} className="text-[0.8125rem] leading-snug text-ink-soft">
-                      <span className="font-medium text-ink">{t.label}</span> —{" "}
+                      <span className="font-medium text-ink">{t.label}</span>:{" "}
                       {t.observed}
                     </li>
                   ))}
@@ -459,7 +459,7 @@ function OutcomeCard({
               </div>
               {monthsElapsed > 0 && (
                 <p className="rounded-lg bg-clay-50 px-3 py-2 text-[0.8125rem] leading-snug text-clay-700">
-                  ≈ {usd(forgone)} in potential savings already missed —{" "}
+                  ≈ {usd(forgone)} in potential savings already missed,{" "}
                   {monthsElapsed} months undetected before this evaluation.
                 </p>
               )}
@@ -472,13 +472,13 @@ function OutcomeCard({
             <p className="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
               A test would fail, but the landlord&#8217;s{" "}
               {90}
-              -day cure window is still open — nothing is claimable yet.
+              -day cure window is still open, so nothing is claimable yet.
               Breakpoint tracks the window so the day it lapses, you know.
             </p>
           ) : (
             <p className="mt-4 border-t border-line pt-4 text-sm leading-relaxed text-ink-soft">
               Every co-tenancy test in this lease is currently satisfied. Close
-              a storefront on the map — or pick a scenario above — and watch
+              a storefront on the map, or pick a scenario above, and watch
               the lease react.
             </p>
           )}
@@ -573,7 +573,7 @@ function MobileRow({
     <button
       type="button"
       onClick={() => onToggle(unit)}
-      aria-label={`${unit.name} — ${isDark ? "closed, tap to reopen" : "open, tap to close"}`}
+      aria-label={`${unit.name}: ${isDark ? "closed, tap to reopen" : "open, tap to close"}`}
       aria-pressed={isDark}
       className="flex w-full items-center justify-between gap-3 border-t border-line px-4 py-3 text-left transition-colors duration-300 active:bg-petrol-50/60"
     >
@@ -640,7 +640,7 @@ function UnitBox({
       onMouseEnter={() => onHover(unit.id)}
       onFocus={() => onHover(unit.id)}
       onClick={() => onToggle(unit)}
-      aria-label={`${unit.name} — ${unit.status}`}
+      aria-label={`${unit.name}: ${unit.status}`}
       className={cn(
         "absolute overflow-hidden rounded-[3px] text-left ring-1 ring-inset transition-shadow duration-300",
         !isVacant && !unit.subject && "cursor-pointer",

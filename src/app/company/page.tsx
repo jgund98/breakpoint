@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 const beliefs = [
   {
     k: "One clause, done completely",
-    v: "Lease platforms are broad and shallow by necessity — they have a hundred clauses to serve. We have one, and we intend to understand it better than anyone. Depth is the whole strategy.",
+    v: "Lease platforms are broad and shallow by necessity: they have a hundred clauses to serve. We have one, and we intend to understand it better than anyone. Depth is the whole strategy.",
   },
   {
     k: "Detection is the product",
@@ -26,7 +26,7 @@ const beliefs = [
   },
   {
     k: "Tenant-side, by design",
-    v: "Tenant information is private and isolated. Your leases, sales and findings serve your evaluations and nothing else — no other party's product, no model training, no exceptions.",
+    v: "Tenant information is private and isolated. Your leases, sales and findings serve your evaluations and nothing else: no other party's product, no model training, no exceptions.",
   },
 ];
 
@@ -63,8 +63,8 @@ export default function CompanyPage() {
             </p>
             <p className="no-orphan">
               What was striking, doing that work, was how rarely the other side
-              showed up. Tenants who were plainly entitled to alternative rent —
-              in writing, in a lease their own company had negotiated — simply
+              showed up. Tenants who were plainly entitled to alternative rent,
+              in writing, in a lease their own company had negotiated, simply
               never served notice. Not because they had decided against it.
               Because nobody at that company knew the condition had occurred.
             </p>
@@ -78,12 +78,12 @@ export default function CompanyPage() {
             <p className="no-orphan">
               Meanwhile the clock kept running. Co&#8209;tenancy relief typically
               starts the month after notice is served, so every quarter of
-              silence was money that could never be recovered — on both sides of
+              silence was money that could never be recovered, on both sides of
               a deal that had been fairly negotiated years earlier.
             </p>
             <p className="no-orphan">
               Breakpoint is that report, turned into a system, pointed at every
-              center at once — and put in the hands of the tenants whose money
+              center at once, and put in the hands of the tenants whose money
               was being left on the table.
             </p>
           </div>
@@ -133,7 +133,7 @@ export default function CompanyPage() {
             <p className="no-orphan mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
               The fastest way to judge us is to hand us the center you have the
               worst feeling about. One lease, one center, 48 hours. If the
-              answer is that nothing has failed, we will tell you that — and
+              answer is that nothing has failed, we will tell you that, and
               you&#8217;ll have one fewer thing to worry about.
             </p>
             <div className="mt-9">

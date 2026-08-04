@@ -16,12 +16,12 @@ const steps = [
   {
     n: "01",
     k: "Read your lease",
-    v: "We turn the fine print — the lease and every amendment — into rules that can be checked.",
+    v: "We turn the fine print, the lease and every amendment, into rules that can be checked.",
   },
   {
     n: "02",
     k: "Watch around you",
-    v: "We track what's really happening around your store — closures, filings, permits, on-the-ground checks.",
+    v: "We track what's really happening around your store: closures, filings, permits, on-the-ground checks.",
   },
   {
     n: "03",

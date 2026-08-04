@@ -141,7 +141,7 @@ export function WorkspaceMock({ className }: { className?: string }) {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-[0.8125rem] font-semibold text-ink">
                 <span className="anim-pulse-dot h-1.5 w-1.5 rounded-full bg-brass-500" />
-                Fairmount Collection — store 4412
+                Fairmount Collection · store 4412
               </span>
               <span className="text-[0.6875rem] text-muted">
                 Evaluation complete · Hour 46

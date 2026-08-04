@@ -61,8 +61,7 @@ export function NoticeClock() {
             In this lease, as in many, relief starts the month{" "}
             <em className="text-cream not-italic underline decoration-brass-400/60 underline-offset-4">
               after written notice
-            </em>{" "}
-            — not the day the anchor closed. Detection speed
+            </em>, not the day the anchor closed. Detection speed
             is&nbsp;money.
           </p>
         </div>
@@ -148,7 +147,7 @@ export function NoticeClock() {
                 <CountTo value={forgone} />
               </p>
               <p className="no-orphan mt-3 text-sm leading-relaxed text-cream-soft">
-                The condition appears to have existed for nine months — but the
+                The condition appears to have existed for nine months, but the
                 remedy only begins after written notice. Undetected, those
                 months can&#8217;t be captured.
               </p>

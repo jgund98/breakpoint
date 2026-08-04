@@ -46,7 +46,7 @@ export function Header() {
         <div className="mx-auto flex h-18 max-w-[1400px] items-center gap-8 px-5 sm:px-8">
           <Link
             href="/"
-            aria-label="Breakpoint — home"
+            aria-label="Breakpoint home"
             className={cn(
               "transition-colors duration-500",
               darkTop ? "text-cream" : "text-ink",

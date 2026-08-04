@@ -285,7 +285,7 @@ export function HeroScene({ className }: { className?: string }) {
         {/* sheet caption */}
         <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 sm:p-5">
           <span className="label text-cream/75">
-            Portfolio view — 4 of 214 centers
+            Portfolio view · 4 of 214 centers
           </span>
           <span className="label text-cream/50">Sample data</span>
         </figcaption>

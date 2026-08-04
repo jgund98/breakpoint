@@ -9,7 +9,7 @@ import { clauseText } from "@/lib/center";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "The Co-Tenancy Field Guide — clauses, triggers and remedies",
+  title: "The Co-Tenancy Field Guide: clauses, triggers and remedies",
   description:
     "How retail co-tenancy clauses actually work: opening vs ongoing co-tenancy, named tenant and occupancy tests, cure periods, alternative rent, and why violations go unclaimed.",
   alternates: { canonical: "/co-tenancy" },
@@ -29,7 +29,7 @@ const toc = [
 const faqs = [
   {
     q: "What is a co-tenancy clause in a retail lease?",
-    a: "A co-tenancy clause conditions a tenant's rent obligation on the shopping center remaining occupied. If named anchor or inline tenants close, or if occupancy falls below an agreed percentage, the tenant becomes entitled to a negotiated remedy — most commonly reduced or alternative rent, and sometimes a right to terminate.",
+    a: "A co-tenancy clause conditions a tenant's rent obligation on the shopping center remaining occupied. If named anchor or inline tenants close, or if occupancy falls below an agreed percentage, the tenant becomes entitled to a negotiated remedy, most commonly reduced or alternative rent, and sometimes a right to terminate.",
   },
   {
     q: "What is the difference between opening and ongoing co-tenancy?",
@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     q: "What occupancy threshold triggers co-tenancy?",
-    a: "There is no standard figure — it is negotiated lease by lease. Thresholds are commonly expressed as a percentage of gross leasable area, frequently excluding anchor premises from the denominator. Many clauses combine an occupancy test with a separate requirement that specific named tenants remain open and operating.",
+    a: "There is no standard figure. It is negotiated lease by lease. Thresholds are commonly expressed as a percentage of gross leasable area, frequently excluding anchor premises from the denominator. Many clauses combine an occupancy test with a separate requirement that specific named tenants remain open and operating.",
   },
   {
     q: "What is alternative rent?",
@@ -45,7 +45,7 @@ const faqs = [
   },
   {
     q: "Does co-tenancy relief apply retroactively?",
-    a: "Usually not. Many clauses provide that the remedy commences on the first day of the month following written notice from the tenant. Where that is the case, months that pass before the tenant notices and serves notice are generally not recoverable — which is why detection speed matters more than almost anything else.",
+    a: "Usually not. Many clauses provide that the remedy commences on the first day of the month following written notice from the tenant. Where that is the case, months that pass before the tenant notices and serves notice are generally not recoverable, which is why detection speed matters more than almost anything else.",
   },
   {
     q: "Can a landlord cure a co-tenancy failure?",
@@ -137,7 +137,7 @@ export default function CoTenancyPage() {
               <div aria-hidden className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full" style={{ background: "radial-gradient(closest-side, rgba(217,154,43,0.25), transparent 72%)" }} />
               <p className="label relative text-brass-400">Your lease, read properly</p>
               <p className="no-orphan relative mt-2.5 text-sm leading-relaxed text-cream-soft">
-                Send one lease — the co&#8209;tenancy language comes back
+                Send one lease. The co&#8209;tenancy language comes back
                 abstracted, cited and evaluated inside 48&nbsp;hours.
               </p>
               <Link
@@ -177,8 +177,8 @@ export default function CoTenancyPage() {
                 </h2>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
                   Opening co&#8209;tenancy governs the start of the lease. It
-                  typically allows the tenant to delay opening — and delay paying
-                  rent — until the center reaches an agreed occupancy level, or
+                  typically allows the tenant to delay opening, and delay paying
+                  rent, until the center reaches an agreed occupancy level, or
                   until specified anchors are open and trading.
                 </p>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
@@ -195,7 +195,7 @@ export default function CoTenancyPage() {
                   Ongoing co-tenancy
                 </h2>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
-                  Ongoing — sometimes operating — co&#8209;tenancy runs through
+                  Ongoing (sometimes called operating) co&#8209;tenancy runs through
                   the term, and it is where the great majority of unclaimed money
                   sits. It holds the landlord to a standard for the life of the
                   lease: keep the named tenants trading and occupancy above the
@@ -224,10 +224,10 @@ export default function CoTenancyPage() {
 
                 <ol className="mt-7 space-y-5">
                   {[
-                    ["The condition", "What must remain true — named tenants open, or occupancy above a percentage, or both."],
+                    ["The condition", "What must remain true: named tenants open, or occupancy above a percentage, or both."],
                     ["The measurement", "How occupancy is counted. Almost always by gross leasable area, and very often excluding anchor premises from the denominator."],
                     ["The cure", "How long the landlord has to fix it, and what counts as a suitable replacement tenant."],
-                    ["The remedy", "What the tenant pays instead — a reduced fixed rent, or a percentage of gross sales."],
+                    ["The remedy", "What the tenant pays instead: a reduced fixed rent, or a percentage of gross sales."],
                     ["The commencement", "When the remedy starts. This is the sentence that decides whether detection speed matters, and it usually says: the month after written notice."],
                   ].map(([k, v], i) => (
                     <li key={k} className="flex gap-5">
@@ -262,11 +262,11 @@ export default function CoTenancyPage() {
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">Remedies</h2>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
                   Three remedies appear repeatedly, and a clause may combine
-                  them in sequence — relief first, exit later.
+                  them in sequence: relief first, exit later.
                 </p>
                 <div className="mt-7 space-y-4">
                   {[
-                    ["Alternative rent", "The tenant pays a substitute rent while the failure continues — commonly the lesser of minimum rent or a percentage of gross sales. This converts a fixed cost into a variable one and is by far the most common remedy."],
+                    ["Alternative rent", "The tenant pays a substitute rent while the failure continues, commonly the lesser of minimum rent or a percentage of gross sales. This converts a fixed cost into a variable one and is by far the most common remedy."],
                     ["Abatement", "A straight reduction in fixed rent, expressed as a percentage or a stated amount. Simpler to administer, less responsive to how badly trade is actually affected."],
                     ["Termination", "A right to exit, usually only after the condition has persisted for a defined run of months and on notice. Rare to exercise, valuable to hold."],
                   ].map(([k, v]) => (
@@ -293,7 +293,7 @@ export default function CoTenancyPage() {
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
                   Well-drafted clauses therefore define a suitable replacement by
                   use, quality and sometimes size. Note also that cure periods
-                  frequently differ between tests inside the same clause — a
+                  frequently differ between tests inside the same clause: a
                   named-tenant failure may be claimable immediately while an
                   occupancy failure carries a grace period.
                 </p>
@@ -324,8 +324,8 @@ export default function CoTenancyPage() {
                   </figcaption>
                 </figure>
                 <p className="no-orphan balance mt-6 text-[1.0625rem] leading-relaxed text-ink-soft">
-                  Add the commencement rule — relief running from notice rather
-                  than from failure — and the cost of the gap compounds every
+                  Add the commencement rule, relief running from notice rather
+                  than from failure, and the cost of the gap compounds every
                   month it stays open.
                 </p>
               </section>
@@ -334,7 +334,7 @@ export default function CoTenancyPage() {
                 <h2 className="text-[clamp(1.6rem,3.2vw,2.25rem)]">Glossary</h2>
                 <dl className="mt-6">
                   <G term="Anchor">
-                    A large tenant that drives traffic to the whole center —
+                    A large tenant that drives traffic to the whole center,
                     typically a department store, big-box retailer or grocer.
                     Anchor premises are frequently excluded from the occupancy
                     denominator.
@@ -370,7 +370,7 @@ export default function CoTenancyPage() {
                   </G>
                   <G term="Recapture">
                     A landlord&#8217;s right to take back space, often used
-                    during repositioning — and a common route to the occupancy
+                    during repositioning, and a common route to the occupancy
                     decline that trips co-tenancy elsewhere in the center.
                   </G>
                 </dl>
@@ -406,7 +406,7 @@ export default function CoTenancyPage() {
                 work in US retail leases. It is general information, not legal
                 advice, and no clause behaves exactly like the examples here.
                 What you are entitled to depends on your executed lease and its
-                amendments — have counsel read them.
+                amendments. Have counsel read them.
               </p>
             </article>
           </div>

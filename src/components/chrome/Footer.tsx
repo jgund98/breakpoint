@@ -42,7 +42,7 @@ export function Footer() {
               </span>
             </h2>
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">
-              Pick the center you have the worst feeling about — we&#8217;ll
+              Pick the center you have the worst feeling about. We&#8217;ll
               tell you in 48 hours whether a test appears to have&nbsp;failed.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -107,7 +107,7 @@ export function Footer() {
           <p className="text-xs leading-relaxed text-cream-faint">
             © {new Date().getFullYear()} {site.legalName} Figures shown across this
             site are illustrative sample data, not client results.
-            <br className="hidden sm:block" /> Nothing here is legal advice —
+            <br className="hidden sm:block" /> Nothing here is legal advice;
             co&#8209;tenancy remedies depend on your executed lease.
           </p>
           <EpicCredit />

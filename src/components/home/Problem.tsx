@@ -42,7 +42,7 @@ export function Problem() {
 
           <p className="lede no-orphan mt-7 text-ink-soft">
             Lease software stores your paperwork. It has no idea which stores
-            around you closed this month — so the event that could lower your
+            around you closed this month, so the event that could lower your
             rent gets spotted by whoever happens to walk the mall, or not
             at&nbsp;all.
           </p>

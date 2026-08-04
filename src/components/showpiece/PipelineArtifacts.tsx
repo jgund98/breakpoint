@@ -119,7 +119,7 @@ export function OccupancyTrace() {
 
       <p className="mt-3 border-t border-line pt-3 text-xs text-muted">
         Rebuilt from filings, closure notices, permit activity and field
-        verification — then held as a dated record you can attach to a notice.
+        verification, then held as a dated record you can attach to a notice.
       </p>
     </div>
   );
@@ -140,7 +140,7 @@ export function TriggerAlert() {
 
       <div className="p-5">
         <p className="text-[0.9375rem] font-semibold text-ink">
-          Fairmount Collection — store 4412
+          Fairmount Collection · store 4412
         </p>
         <p className="mt-1 text-sm text-muted">Dublin, OH · Unit 214 · 3,850 SF</p>
 

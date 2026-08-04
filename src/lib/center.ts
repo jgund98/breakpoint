@@ -226,7 +226,7 @@ export const leaseEconomics = {
 /** The actual operative language, as it would read in the document. */
 export const clauseText = `If at any time following the Commencement Date (a) fewer than two (2) of the Named Anchor Tenants are open and operating for business, or (b) fewer than four (4) of the Named Inline Tenants are open and operating for business, or (c) less than seventy percent (70%) of the Gross Leasable Area of the Shopping Center, excluding Anchor Premises, is occupied by tenants open and operating for business, then Tenant shall be entitled to pay, in lieu of Minimum Annual Rent, Alternative Rent equal to the lesser of (i) Minimum Annual Rent or (ii) four percent (4%) of Gross Sales, commencing on the first day of the calendar month following the date on which Tenant delivers written notice to Landlord of such condition, and continuing until such condition is cured. Should such condition continue for twelve (12) consecutive months, Tenant may terminate this Lease upon ninety (90) days' prior written notice.`;
 
-export const clauseCitation = "Section 4.3 — Ongoing Co-Tenancy";
+export const clauseCitation = "Section 4.3 · Ongoing Co-Tenancy";
 
 /* ------------------------------------------------------------------
    Tests
@@ -369,7 +369,7 @@ export const scenarios: Scenario[] = [
     dark: [],
     elapsedDays: 0,
     lesson:
-      "A healthy center. Three vacancies, every named tenant trading, occupancy comfortably above the floor. Nothing to claim — and this is the state almost every lease file quietly assumes is still true.",
+      "A healthy center. Three vacancies, every named tenant trading, occupancy comfortably above the floor. Nothing to claim. This is the state almost every lease file quietly assumes is still true.",
   },
   {
     id: "anchor",
@@ -378,7 +378,7 @@ export const scenarios: Scenario[] = [
     dark: ["a-br"],
     elapsedDays: 45,
     lesson:
-      "The headline everyone reacts to — and on its own it changes nothing. Two of three Named Anchors are still trading, so the anchor test holds. This is precisely why teams who only watch anchors miss the events that actually pay.",
+      "The headline everyone reacts to, and on its own it changes nothing. Two of three Named Anchors are still trading, so the anchor test holds. This is precisely why teams who only watch anchors miss the events that actually pay.",
   },
   {
     id: "bleed",
@@ -387,7 +387,7 @@ export const scenarios: Scenario[] = [
     dark: ["a-br", "n2", "n5", "s5", "s9"],
     elapsedDays: 274,
     lesson:
-      "No press release, no single moment. The anchor's departure cascades into the inline shops, three Named Inline Tenants go dark — one under the four the lease requires — and occupancy slips beneath the 70% floor. Two tests fail. The remedy has been live for months.",
+      "No press release, no single moment. The anchor's departure cascades into the inline shops, three Named Inline Tenants go dark, one under the four the lease requires, and occupancy slips beneath the 70% floor. Two tests fail. The remedy has been live for months.",
   },
   {
     id: "demall",
@@ -409,7 +409,7 @@ export const scenarios: Scenario[] = [
     ],
     elapsedDays: 120,
     lesson:
-      "The owner's own move. The north wing comes offline to make room for the new format. Occupancy halves, and every remaining tenant with a co-tenancy clause can claim against it — abatement that belongs in the redevelopment pro forma whether or not anyone modeled it.",
+      "The owner's own move. The north wing comes offline to make room for the new format. Occupancy halves, and every remaining tenant with a co-tenancy clause can claim against it: abatement that belongs in the redevelopment pro forma whether or not anyone modeled it.",
   },
 ];
 

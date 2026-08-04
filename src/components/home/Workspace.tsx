@@ -16,7 +16,7 @@ export function Workspace() {
             </span>
           </SectionTitle>
           <Lede>
-            Upload a lease. The answer comes back in your workspace — triggers
+            Upload a lease. The answer comes back in your workspace: triggers
             flagged, money estimated, package&nbsp;ready.
           </Lede>
         </div>
@@ -29,7 +29,7 @@ export function Workspace() {
         <WorkspaceMock />
       </Reveal>
       <p className="mt-4 text-xs text-muted">
-        Product rendering with illustrative sample data — not client results.
+        Product rendering with illustrative sample data, not client results.
       </p>
     </Section>
   );

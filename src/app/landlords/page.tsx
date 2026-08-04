@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Owner solution — on the roadmap",
+  title: "Owner solution: on the roadmap",
   description:
     "A separately packaged owner-side product for modeling co-tenancy exposure, cure periods and redevelopment scenarios is under development. Distinct workflows, strictly isolated data.",
   alternates: { canonical: "/landlords" },
@@ -20,7 +20,7 @@ const willDo = [
   },
   {
     k: "Scenario planning",
-    v: "Model an anchor departure, phased construction or a demalling program before committing — with the abatement cost in the pro forma, not discovered after it.",
+    v: "Model an anchor departure, phased construction or a demalling program before committing, with the abatement cost in the pro forma, not discovered after it.",
   },
   {
     k: "Cure management",
@@ -36,14 +36,14 @@ export default function LandlordsPage() {
   return (
     <>
       <PageHero
-        eyebrow="Owner solution — on the roadmap"
+        eyebrow="Owner solution · on the roadmap"
         title="The same engine,"
         accent="packaged for the other side of the lease."
         lede={
           <>
             Breakpoint&#8217;s product today serves retail tenants. The rules
-            engine underneath it — clause logic joined to changing property
-            conditions — can also answer an owner&#8217;s questions about
+            engine underneath it, clause logic joined to changing property
+            conditions, can also answer an owner&#8217;s questions about
             exposure, cure and planning. That product is under development, and
             it will be a separate one.
           </>
@@ -54,9 +54,9 @@ export default function LandlordsPage() {
         <div className="max-w-3xl">
           <Eyebrow>What it will do</Eyebrow>
           <SectionTitle>
-            Forecasting and planning{" "}
+            Forecasting and planning.{" "}
             <span className="display-em text-petrol-700">
-              — not a window into claims.
+              Not a window into claims.
             </span>
           </SectionTitle>
           <Lede>
@@ -94,7 +94,7 @@ export default function LandlordsPage() {
               {[
                 "No retailer lease, sales figure or finding is ever visible to an owner customer",
                 "Nothing an owner provides informs any retailer output",
-                "Separate applications, separate access — shared arithmetic only",
+                "Separate applications, separate access, shared arithmetic only",
               ].map((p) => (
                 <li key={p} className="flex gap-3 text-[0.9375rem] text-ink-soft">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-petrol-600" />
@@ -112,7 +112,7 @@ export default function LandlordsPage() {
               keep you posted.
             </p>
             <div className="mt-7 flex flex-col gap-3">
-              <Button href={`mailto:${site.email}?subject=Owner%20solution%20—%20early%20access`}>
+              <Button href={`mailto:${site.email}?subject=Owner%20solution%20-%20early%20access`}>
                 Request early access
               </Button>
               <Button href="/co-tenancy" variant="secondary">

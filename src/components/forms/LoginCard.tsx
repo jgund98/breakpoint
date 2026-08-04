@@ -85,7 +85,7 @@ export function LoginCard() {
               className="overflow-hidden"
             >
               <span className="mt-4 block rounded-lg bg-brass-50 px-4 py-3 text-sm leading-relaxed text-brass-700">
-                Breakpoint is in early access — workspaces are provisioned with
+                Breakpoint is in early access. Workspaces are provisioned with
                 your first evaluation.
               </span>
             </motion.p>

@@ -16,7 +16,7 @@ const youBring = [
   },
   {
     label: "Current minimum rent",
-    detail: "Per store, monthly or annual — whichever your system emits.",
+    detail: "Per store, monthly or annual, whichever your system emits.",
     required: true,
   },
   {
@@ -70,7 +70,7 @@ export function Onboarding() {
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">
               Enterprise lease implementations run three to nine months. This
               isn&#8217;t one. Send us your lease and we&#8217;ll have that
-              center evaluated inside 48 hours — you supply what only you have,
+              center evaluated inside 48 hours: you supply what only you have,
               and we assemble the rest from closure signals, filings, permits,
               property research and field verification.
             </p>

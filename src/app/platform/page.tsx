@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { coexistsWith } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Platform — how co-tenancy monitoring works",
+  title: "Platform: how co-tenancy monitoring works",
   description:
     "Breakpoint abstracts co-tenancy clauses from your leases, assembles each center's occupancy record, re-evaluates every test as conditions change, and builds the review package when one appears to fail.",
   alternates: { canonical: "/platform" },
@@ -37,7 +37,7 @@ const guardrails = [
   },
   {
     k: "Occupancy is evidence, not a number",
-    v: "Every occupancy figure is stored with its date, its basis and what supported it — because a notice is only as strong as what sits behind it.",
+    v: "Every occupancy figure is stored with its date, its basis and what supported it, because a notice is only as strong as what sits behind it.",
   },
   {
     k: "We never serve notice for you",
@@ -65,7 +65,7 @@ export default function PlatformPage() {
       {/* 01 */}
       <Section tone="canvas" id="abstract">
         <div className="max-w-3xl">
-          <Eyebrow>01 — Abstract</Eyebrow>
+          <Eyebrow>01 · Abstract</Eyebrow>
           <SectionTitle>Lease language in, testable rules out</SectionTitle>
           <Lede>
             We read the executed lease and every amendment, side letter and
@@ -83,7 +83,7 @@ export default function PlatformPage() {
       <Section tone="sunk" grid id="watch">
         <div className="grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div>
-            <Eyebrow>02 — Watch</Eyebrow>
+            <Eyebrow>02 · Watch</Eyebrow>
             <SectionTitle>
               The half nobody else has ever held
             </SectionTitle>
@@ -91,7 +91,7 @@ export default function PlatformPage() {
               A lease platform can tell you the floor is 70%. It cannot tell
               you where the center is today. We assemble occupied GLA month by
               month, track which named tenants are trading, and date every
-              closure — then hold it as a record you can attach to
+              closure, then hold it as a record you can attach to
               a&nbsp;notice.
             </Lede>
             <ul className="mt-8 grid gap-2.5 sm:grid-cols-2">
@@ -111,12 +111,12 @@ export default function PlatformPage() {
       <Section tone="canvas" id="trigger">
         <div className="grid gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16">
           <div>
-            <Eyebrow>03 — Trigger</Eyebrow>
+            <Eyebrow>03 · Trigger</Eyebrow>
             <SectionTitle>Re-evaluated as conditions change. Escalated once.</SectionTitle>
             <Lede>
               Every test in every lease re-runs as verified information about its
-              center changes. Nothing fires until an answer actually moves —
-              and when one does, it goes to the person who can act on it, not
+              center changes. Nothing fires until an answer actually moves.
+              When one does, it goes to the person who can act on it, not
               into a monthly report.
             </Lede>
             <p className="no-orphan mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
@@ -135,7 +135,7 @@ export default function PlatformPage() {
         <div className="grid gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-center lg:gap-16">
           <ClaimPacket />
           <div>
-            <Eyebrow>04 — Package</Eyebrow>
+            <Eyebrow>04 · Package</Eyebrow>
             <SectionTitle>Evidence assembled, not requested</SectionTitle>
             <Lede>
               The reason valid claims die is that assembling the proof takes
@@ -146,7 +146,7 @@ export default function PlatformPage() {
             </Lede>
             <p className="no-orphan mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
               Whether and when to serve is your call, made with counsel. If
-              notice goes out, the clock starts — and Breakpoint keeps tracking
+              notice goes out, the clock starts, and Breakpoint keeps tracking
               whether the condition stays active, gets cured, or is disputed.
             </p>
           </div>
@@ -193,7 +193,7 @@ export default function PlatformPage() {
             <Lede>
               Nobody is replacing their lease system of record for one clause,
               and we would not ask. Breakpoint ingests your existing abstracts
-              and writes its findings back out — your subledger, your critical
+              and writes its findings back out: your subledger, your critical
               dates, your workflow, unchanged.
             </Lede>
             <div className="mt-9">

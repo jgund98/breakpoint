@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
-export const alt = "Breakpoint — Retail Lease Intelligence";
+export const alt = "Breakpoint | Retail Lease Intelligence";
 
 /** The link preview: deep indigo, the indicator mark, the one-liner. */
 export default function OpengraphImage() {

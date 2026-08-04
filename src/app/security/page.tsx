@@ -22,7 +22,7 @@ const practices = [
   },
   {
     k: "Tenancy separation",
-    v: "Each customer's leases, sales figures and findings are logically isolated. Your gross sales are used to price your remedies and nothing else — they never contribute to another customer's output.",
+    v: "Each customer's leases, sales figures and findings are logically isolated. Your gross sales are used to price your remedies and nothing else. They never contribute to another customer's output.",
   },
   {
     k: "Audit trail",
@@ -34,7 +34,7 @@ const practices = [
   },
   {
     k: "Availability",
-    v: "Hosted on major cloud infrastructure in US regions, with automated backups and point-in-time recovery. Breakpoint is a monitoring layer — an outage delays a notification, it never alters your lease record.",
+    v: "Hosted on major cloud infrastructure in US regions, with automated backups and point-in-time recovery. Breakpoint is a monitoring layer: an outage delays a notification, it never alters your lease record.",
   },
 ];
 
@@ -51,7 +51,7 @@ const posture = [
   },
   {
     k: "Subprocessors",
-    v: "A current list of subprocessors — cloud hosting, document storage, model providers and error monitoring — is available on request and maintained as a contractual commitment.",
+    v: "A current list of subprocessors (cloud hosting, document storage, model providers and error monitoring) is available on request and maintained as a contractual commitment.",
     state: "On request",
   },
   {
@@ -101,8 +101,8 @@ export default function SecurityPage() {
         <div className="max-w-3xl">
           <Eyebrow>Compliance</Eyebrow>
           <SectionTitle>
-            Where we actually are{" "}
-            <span className="display-em text-petrol-700">— not where we&#8217;d like to be</span>
+            Where we actually are,{" "}
+            <span className="display-em text-petrol-700">not where we&#8217;d like to be</span>
           </SectionTitle>
           <Lede>
             Plenty of early companies imply certifications they don&#8217;t hold.
@@ -139,7 +139,7 @@ export default function SecurityPage() {
           <p className="lede no-orphan mx-auto mt-6 text-ink-soft">
             Send your questionnaire and we&#8217;ll complete it. If your team
             would rather start with a redacted lease while diligence runs, that
-            works perfectly well — the clause language is what we need, not your
+            works perfectly well. The clause language is what we need, not your
             counterparty names.
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">

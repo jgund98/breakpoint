@@ -178,7 +178,7 @@ export function ClauseReader() {
           )}
         </p>
         <p className="mt-6 border-t border-line pt-4 text-xs leading-relaxed text-muted">
-          Hover any highlighted passage — the rule extracted from it lights up
+          Hover any highlighted passage and the rule extracted from it lights up
           on the right. Every field points back to its source sentence.
         </p>
       </div>

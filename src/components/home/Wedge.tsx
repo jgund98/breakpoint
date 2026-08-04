@@ -27,7 +27,7 @@ export function Wedge() {
         </SectionTitle>
         <Lede>
           Lease software tracks the paperwork. The trigger lives in a center
-          that changes every week — Breakpoint joins the&nbsp;two.
+          that changes every week. Breakpoint joins the&nbsp;two.
         </Lede>
       </div>
 

@@ -20,7 +20,7 @@ export function TheCenter() {
           </span>
         </SectionTitle>
         <Lede>
-          One center, one lease — the outlined store is yours. Close a
+          One center, one lease. The outlined store is yours. Close a
           storefront and watch what it could mean for your&nbsp;rent.
         </Lede>
       </div>

@@ -76,7 +76,7 @@ export default function TenantsPage() {
             <Lede>
               {`A 3,850 SF inline store at $92/SF pays ${usd(
                 leaseEconomics.baseRentMonthly,
-              )} a month. Trading at $826/SF, that’s an occupancy cost of 11.1% — healthy. When the co‑tenancy test appears to fail and rent converts to 4% of gross sales, the same store pays ${usd(leaseEconomics.alternativeRentMonthly)}.`}
+              )} a month. Trading at $826/SF, that’s an occupancy cost of 11.1%, which is healthy. When the co‑tenancy test appears to fail and rent converts to 4% of gross sales, the same store pays ${usd(leaseEconomics.alternativeRentMonthly)}.`}
             </Lede>
             <p className="no-orphan mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-ink-soft">
               Now hold that against an estate of a thousand stores, where a
@@ -118,7 +118,7 @@ export default function TenantsPage() {
               </p>
             </div>
             <p className="mt-4 text-xs leading-relaxed text-muted">
-              Illustrative. Your remedy is whatever your executed lease says —
+              Illustrative. Your remedy is whatever your executed lease says:
               abatement, percentage rent, a termination right, or nothing at all.
             </p>
           </div>
@@ -137,7 +137,7 @@ export default function TenantsPage() {
           </SectionTitle>
           <Lede>
             Co&#8209;tenancy falls between lease accounting, real estate, store
-            operations and legal — which is exactly why it goes unclaimed.
+            operations and legal, which is exactly why it goes unclaimed.
             Breakpoint gives it a single owner: the system.
           </Lede>
         </div>
