@@ -3,6 +3,7 @@ import { Inter, Inter_Tight } from "next/font/google";
 import { site } from "@/lib/site";
 import { Header } from "@/components/chrome/Header";
 import { Footer } from "@/components/chrome/Footer";
+import { FooterGate } from "@/components/chrome/FooterGate";
 import "./globals.css";
 
 const inter = Inter({
@@ -120,7 +121,9 @@ export default function RootLayout({
         </a>
         <Header />
         <main id="main">{children}</main>
-        <Footer />
+        <FooterGate>
+          <Footer />
+        </FooterGate>
       </body>
     </html>
   );

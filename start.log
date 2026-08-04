@@ -1,5 +1,0 @@
-$ next start "-p" "3511"
-▲ Next.js 16.2.12
-- Local:         http://localhost:3511
-- Network:       http://10.0.0.6:3511
-✓ Ready in 328ms
