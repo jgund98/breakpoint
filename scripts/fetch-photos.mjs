@@ -1,5 +1,5 @@
 /**
- * Pulls the source photography set. Pexels licence permits commercial
+ * Pulls the source photography set. Pexels license permits commercial
  * use without attribution; we still record what each file is and where
  * it came from in raw-assets/CREDITS.txt.
  */

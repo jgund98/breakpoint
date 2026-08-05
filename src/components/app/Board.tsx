@@ -389,7 +389,7 @@ export function Board({ center, clause, econ, claim, asOf }: Props) {
               className="mt-4 rounded-xl border border-petrol-100 bg-petrol-50 p-3.5"
             >
               <p className="text-[0.75rem] font-semibold text-petrol-800">
-                Modelled, not observed
+                Modeled, not observed
               </p>
               <p className="mt-1 text-[0.75rem] leading-relaxed text-ink-soft">
                 {baseline.anyFailing

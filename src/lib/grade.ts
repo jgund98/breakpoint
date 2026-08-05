@@ -105,7 +105,7 @@ export function gradeClause(clause: Clause): Grade {
     advice:
       cureScore >= 0.75
         ? "Inside market. Hold it."
-        : "Market is sixty to one hundred twenty days. Anything longer is landlord-favourable.",
+        : "Market is sixty to one hundred twenty days. Anything longer is landlord-favorable.",
   });
 
   /* 4. When the clock starts. From notice is materially worse. */
@@ -143,7 +143,7 @@ export function gradeClause(clause: Clause): Grade {
           : "Remedy shape not resolved.",
     advice: hasFloor
       ? "A floor lowers the value slightly and materially strengthens enforceability."
-      : "No floor maximises relief. Note that a remedy which can fall toward zero attracts the most scrutiny.",
+      : "No floor maximizes relief. Note that a remedy which can fall toward zero attracts the most scrutiny.",
   });
 
   /* 6. Exit. A termination right is the sturdiest remedy in the clause. */

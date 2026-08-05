@@ -11,7 +11,7 @@
  * Floor Area as shown on Exhibit B" does not.
  *
  * That split is the whole story of what this product can and cannot
- * promise, so it is modelled explicitly rather than glossed:
+ * promise, so it is modeled explicitly rather than glossed:
  *
  *   observable    a named store we can look up and verify
  *   entitled      not observable, but the lease obliges the landlord

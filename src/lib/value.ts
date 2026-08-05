@@ -1,5 +1,5 @@
 /**
- * VALUE REALISED, and FORWARD RISK.
+ * VALUE REALIZED, and FORWARD RISK.
  *
  * Two questions a real estate VP has to answer to their CFO at
  * renewal, neither of which any lease administration system answers
@@ -135,7 +135,7 @@ export function buildLedger(data: Row[] = rows): Ledger {
   }
 
   const feeToDate = (contract.annualFee / 12) * monthsElapsed;
-  const realised = securedToDate + identifiedAnnual;
+  const realized = securedToDate + identifiedAnnual;
 
   return {
     annualFee: contract.annualFee,
@@ -150,7 +150,7 @@ export function buildLedger(data: Row[] = rows): Ledger {
     lapsingCount,
     soonestLapseDays,
     detectionGap,
-    multiple: feeToDate > 0 ? realised / feeToDate : 0,
+    multiple: feeToDate > 0 ? realized / feeToDate : 0,
     sweeps,
     storefrontsConfirmed,
     clauseTestsEvaluated,

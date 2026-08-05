@@ -30,10 +30,10 @@ export const toneDot: Record<Tone, string> = {
 };
 
 /**
- * Dot colour when the dot sits INSIDE a chip. The brass chip is the one
+ * Dot color when the dot sits INSIDE a chip. The brass chip is the one
  * filled state in the set, so a brass dot on it is invisible: it needs
  * to invert. Every other tone has a soft background and can use its own
- * colour. Without this, "Claimable" renders as the only status pill
+ * color. Without this, "Claimable" renders as the only status pill
  * with no dot at all, which reads as a different component.
  */
 export const chipDot: Record<Tone, string> = {

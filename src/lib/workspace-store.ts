@@ -137,7 +137,7 @@ export const NOTICE_META: Record<
   },
   approved: {
     label: "Approved",
-    blurb: "Cleared by counsel and waiting on your authorised signatory.",
+    blurb: "Cleared by counsel and waiting on your authorized signatory.",
     next: "served",
     nextLabel: "Record as served",
   },

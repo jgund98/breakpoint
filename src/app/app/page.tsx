@@ -432,7 +432,7 @@ export default function OverviewPage() {
             ]}
           />
           <div>
-            <p className="label text-faint">Authorised signatories</p>
+            <p className="label text-faint">Authorized signatories</p>
             <ul className="mt-3 space-y-2.5">
               {org.team.map((t) => (
                 <li key={t.name} className="flex items-center gap-3">

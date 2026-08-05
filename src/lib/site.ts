@@ -6,7 +6,7 @@
  * here is either (a) a fact about the retail leasing industry, with a
  * source, or (b) a description of what the product does. Nothing
  * claims traction we don't have. All product numbers shown on the site
- * are labelled as illustrative sample data.
+ * are labeled as illustrative sample data.
  */
 
 export const site = {

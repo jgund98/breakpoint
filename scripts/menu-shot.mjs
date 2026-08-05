@@ -37,7 +37,9 @@ await page.goto(new URL(ROUTE, BASE).toString(), { waitUntil: "networkidle0" });
 await new Promise((r) => setTimeout(r, 700));
 
 const clicked = await page.evaluate(() => {
-  const btn = document.querySelector('button[aria-label*="navigation" i]');
+  const btn =
+    document.querySelector('button[aria-label*="navigation" i]') ||
+    document.querySelector('button[aria-label*="menu" i]');
   if (!btn) return false;
   btn.click();
   return true;
@@ -62,8 +64,16 @@ const geometry = await page.evaluate(() => {
       bg: cs.backgroundColor,
     };
   };
+  const main = document.querySelector("main");
+  const firstChild = main && main.firstElementChild;
   return {
     header: rect(document.querySelector("header")),
+    main: rect(main),
+    mainFirstChild: rect(firstChild),
+    mainFirstChildPadTop: firstChild
+      ? getComputedStyle(firstChild).paddingTop
+      : null,
+    htmlScrollPadding: getComputedStyle(document.documentElement).scrollPaddingTop,
     drawerPanel: rect(
       document.querySelector('div[class*="fixed inset-0"] > div:last-child'),
     ),

@@ -44,7 +44,7 @@ export default function NoticesPage() {
       <PageHead
         eyebrow="Act"
         title="Notice packages"
-        lede="We assemble the file. Your authorised signatory serves it."
+        lede="We assemble the file. Your authorized signatory serves it."
       />
 
       <Note tone="clay" title="How this works">

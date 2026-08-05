@@ -288,7 +288,7 @@ function hintFor(id: StepId) {
     case "sales":
       return "Choose how sales reach us, or skip it.";
     case "authority":
-      return "Name someone who can authorise a notice.";
+      return "Name someone who can authorize a notice.";
     default:
       return "";
   }
@@ -1069,7 +1069,7 @@ function SalesStep({
           active={s.salesMode === "skip"}
           onClick={() => set("salesMode", "skip")}
           title="Not right now"
-          blurb="We still monitor and still flag. Values show as estimates from category benchmarks and are labelled as such."
+          blurb="We still monitor and still flag. Values show as estimates from category benchmarks and are labeled as such."
         />
       </div>
 
@@ -1145,7 +1145,7 @@ function WatchStep({
         <Toggle
           on={s.priorityOnly}
           onChange={(v) => set("priorityOnly", v)}
-          title="Prioritise centers with live exposure"
+          title="Prioritize centers with live exposure"
           blurb="Sweep every center on cadence, and increase frequency where a test is inside three points of its threshold or a cure clock is running."
         />
       </div>
@@ -1177,12 +1177,12 @@ function AuthorityStep({
       <Head
         step="Step seven"
         title="Who can act on a finding?"
-        lede="Breakpoint assembles the file. Your authorised signatory serves it. Notice under a lease is a legal act, so it goes out over your name and your counsel's review, never ours."
+        lede="Breakpoint assembles the file. Your authorized signatory serves it. Notice under a lease is a legal act, so it goes out over your name and your counsel's review, never ours."
       />
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2">
         <Field
-          label="Authorised signatory"
+          label="Authorized signatory"
           hint="The person whose name goes on a co-tenancy notice."
           placeholder="Full name and title"
           value={s.signatory}
@@ -1214,7 +1214,7 @@ function AuthorityStep({
       </div>
 
       <Note tone="clay" title="Where we stop">
-        We are not your lawyers and we do not practise law. We do not decide
+        We are not your lawyers and we do not practice law. We do not decide
         whether a right exists, we do not serve notices, and we do not
         negotiate with your landlord unless you separately instruct us in
         writing and your counsel is copied. What we do is make sure the

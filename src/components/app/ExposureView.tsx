@@ -18,16 +18,16 @@ export function ExposureView({
   matrix: Matrix;
   cascades: CascadeResult[];
 }) {
-  const modelled = new Set(cascades.map((c) => c.operator));
+  const modeled = new Set(cascades.map((c) => c.operator));
   const first =
-    matrix.operators.find((o) => modelled.has(o.operator))?.operator ??
+    matrix.operators.find((o) => modeled.has(o.operator))?.operator ??
     cascades[0]?.operator ??
     "";
 
   const [active, setActive] = useState(first);
 
   const select = (operator: string) => {
-    if (modelled.has(operator)) setActive(operator);
+    if (modeled.has(operator)) setActive(operator);
   };
 
   return (

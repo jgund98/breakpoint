@@ -25,7 +25,7 @@ export default function SignalsPage() {
       <PageHead
         eyebrow="Monitor"
         title="Signals"
-        lede="Raw observations, before they become findings. Sources are labelled primary or secondary."
+        lede="Raw observations, before they become findings. Sources are labeled primary or secondary."
       />
 
       <div className="grid gap-3 sm:grid-cols-3">

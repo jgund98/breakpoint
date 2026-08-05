@@ -44,7 +44,7 @@ export function LoginCard() {
         router.refresh();
         return;
       }
-      setError("That email and password combination was not recognised.");
+      setError("That email and password combination was not recognized.");
     } catch {
       setError("Something went wrong. Try again.");
     } finally {
