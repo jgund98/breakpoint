@@ -320,6 +320,17 @@ export default async function LocationPage({
             <Note tone="petrol" title="At renewal">
               {grade.dials.sort((a, b) => a.score - b.score)[0].advice}
             </Note>
+
+            {grade.replacementStandard && (
+              <Note tone="muted" title="Replacement standard, not scored">
+                <span className="block italic">
+                  &#8220;{grade.replacementStandard.text}&#8221;
+                </span>
+                <span className="mt-1.5 block">
+                  {grade.replacementStandard.note}
+                </span>
+              </Note>
+            )}
           </Panel>
 
           {/* ---- money ---- */}

@@ -28,6 +28,11 @@ export type Grade = {
   score: number; // 0 to 100
   dials: Dial[];
   headline: string;
+  /**
+   * Shown, never scored. The verbatim standard is the authority and no
+   * enum can rank the 31 distinct forms real drafting uses.
+   */
+  replacementStandard: { text: string; note: string } | null;
 };
 
 export function gradeClause(clause: Clause): Grade {
@@ -53,42 +58,21 @@ export function gradeClause(clause: Clause): Grade {
         : "Ask for an occupancy floor alongside the named test.",
   });
 
-  /* 2. Replacement standard. Loose standards let a landlord cure cheaply.
-        Only triggers that actually carry a standard are scored: an
-        occupancy test has no replacement concept, and counting it as
-        "any" would mis-grade every clause that pairs the two. */
-  const standards = clause.triggers
-    .filter((t) => "replacementStandard" in t)
-    .map((t) => (t as { replacementStandard: { kind: string } }).replacementStandard.kind);
-  const rank: Record<string, number> = {
-    named_only: 3,
-    comparable_quality: 2,
-    category_match: 1,
-    any: 0,
-  };
-  const std = standards.length
-    ? standards.reduce((best, k) => (rank[k] > rank[best] ? k : best), standards[0])
-    : "any";
-  const stdScore =
-    std === "named_only" ? 1 : std === "comparable_quality" ? 0.8 : std === "category_match" ? 0.65 : 0.2;
-  dials.push({
-    key: "replacement",
-    label: "Replacement standard",
-    weight: 1.3,
-    score: stdScore,
-    verdict:
-      std === "named_only"
-        ? "Named tenant only. No substitution permitted."
-        : std === "comparable_quality"
-          ? "Comparable quality required, with a size floor."
-          : std === "category_match"
-            ? "Category and trade-name depth required."
-            : "Any replacement cures. The weakest form there is.",
-    advice:
-      stdScore >= 0.8
-        ? "Strong. Courts read named tests literally."
-        : "Push for objective criteria: ninety percent of the vacated space and a national trade name with fifteen or more locations.",
-  });
+  /*
+   * The replacement standard is deliberately NOT scored.
+   *
+   * Our partner's real set contains 31 distinct kinds across 64
+   * triggers, from "suitable replacement" to "landlord discretion
+   * replacement menu" to "partial reoccupancy threshold". Any enum
+   * that tries to rank those is inventing an ordering the drafting
+   * does not support, and it would be doing so inside a number that a
+   * real estate team takes to a renewal negotiation.
+   *
+   * So it is surfaced verbatim for a human to read and left out of the
+   * arithmetic. Everything remaining is mechanical once the clause is
+   * abstracted, which means the grade is fully computable from
+   * extracted fields with no judgment call hidden inside it.
+   */
 
   /* 3. Cure length. Shorter is stronger for the tenant. */
   const cure = r.cureDays;
@@ -187,10 +171,20 @@ export function gradeClause(clause: Clause): Grade {
 
   const weakest = [...dials].sort((a, b) => a.score - b.score)[0];
 
+  const withStandard = clause.triggers.find((t) => "replacementStandard" in t) as
+    | { replacementStandard: { text: string } }
+    | undefined;
+
   return {
     letter,
     score,
     dials,
+    replacementStandard: withStandard
+      ? {
+          text: withStandard.replacementStandard.text,
+          note: "Read this yourself. Whether a given occupant satisfies it is a judgment for you and your counsel, so it is not scored.",
+        }
+      : null,
     headline:
       letter === "A"
         ? "Strong protection. Little to change at renewal."

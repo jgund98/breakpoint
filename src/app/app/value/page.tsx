@@ -39,48 +39,44 @@ export default function ValuePage() {
     <div className="space-y-6">
       <PageHead
         eyebrow="Analyze"
-        title="Value realized"
-        lede={`Since ${prettyDate(contract.startedOn)}. Estimates of potential co-tenancy rent, not amounts owed.`}
+        title="Assurance"
+        lede="What has been checked, what was found, and what your leases entitle you to."
         right={<LinkButton href="/app/notices">Notice desk</LinkButton>}
       />
 
-      {/* ---- the headline ---- */}
+      {/* ---- what the watch covered this period ----
+           Deliberately not a return-on-fee figure. That needs sales we
+           usually do not have, and a multiple computed from a third of
+           the portfolio is a number nobody can defend. Coverage is
+           something we can always state exactly. */}
       <div className="mesh-indigo card-enter d-1 relative overflow-hidden rounded-2xl border border-line bg-petrol-900 p-6 sm:p-8">
         <div className="relative grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
           <div>
-            <p className="label text-brass-400">Return on the contract</p>
+            <p className="label text-brass-400">Coverage since {prettyDate(contract.startedOn)}</p>
             <h2 className="number-pop mt-3 text-[clamp(2rem,4.4vw,3.25rem)] text-cream">
-              {covered >= 1 ? `${covered.toFixed(1)}x` : `${Math.round(covered * 100)}%`}{" "}
-              <span className="display-em text-brass-400">
-                {covered >= 1 ? "covered" : "of fee"}
-              </span>
+              {l.sweeps.toLocaleString("en-US")}{" "}
+              <span className="display-em text-brass-400">scans run.</span>
             </h2>
             <p className="no-orphan mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-cream-soft">
-              {usd(Math.round(realized))} of co-tenancy rent secured or identified against{" "}
-              {usd(Math.round(l.feeToDate))} of fee over {l.monthsElapsed} months.
-              Identified means a verified condition makes it available. It is
-              not money owed and it is not booked until a notice is served.
+              Every named tenant your clauses depend on, checked on each
+              pass, for {l.monthsElapsed} months. This is the record a lease
+              audit or an internal control review will ask you to produce.
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             {[
-              ["Running", compactUsd(l.securedMonthly * 12), `${l.securedCount} on alternative rent`],
-              ["Available", compactUsd(l.identifiedAnnual), `${l.identifiedCount} awaiting a decision`],
-              ["Lapsing", compactUsd(l.lapsingValue), l.soonestLapseDays != null ? `soonest in ${l.soonestLapseDays} days` : "none at risk"],
-              ["Annual fee", compactUsd(l.annualFee), `${org.watched} watched doors`],
+              ["Named tenants", l.storefrontsConfirmed.toLocaleString("en-US"), "checked each pass"],
+              ["Centers", String(l.centersSurveyed), "under watch"],
+              ["Clause tests", l.clauseTestsEvaluated.toLocaleString("en-US"), "evaluated"],
+              ["Conditions met", String(l.identifiedCount + l.securedCount), "co-tenancy rent available"],
             ].map(([k, v, hint]) => (
-              <div
-                key={k as string}
-                className="rounded-xl border border-white/12 bg-white/5 p-4"
-              >
-                <p className="label text-cream-faint">{k as string}</p>
+              <div key={k} className="rounded-xl border border-white/12 bg-white/5 p-4">
+                <p className="label text-cream-faint">{k}</p>
                 <p className="tnum font-display mt-1.5 text-[1.375rem] leading-none text-cream">
-                  {v as string}
+                  {v}
                 </p>
-                <p className="mt-1 text-[0.6875rem] text-cream-faint">
-                  {hint as string}
-                </p>
+                <p className="mt-1 text-[0.6875rem] text-cream-faint">{hint}</p>
               </div>
             ))}
           </div>
