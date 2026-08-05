@@ -24,6 +24,7 @@ import { org, TODAY, summary } from "@/lib/portfolio";
 import { prettyDate } from "@/lib/clause";
 import { DEMO_USER } from "@/lib/session";
 import { useScrollLock } from "@/lib/useScrollLock";
+import { ScanStatus } from "./ScanStatus";
 
 const NAV = [
   {
@@ -134,15 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <NavList />
         </div>
 
-        <div className="border-t border-line px-5 py-4">
-          <p className="label text-faint">Evaluated through</p>
-          <p className="tnum mt-1 text-[0.8125rem] font-medium text-ink">
-            {prettyDate(TODAY)}
-          </p>
-          <p className="mt-1.5 text-[0.75rem] leading-snug text-muted">
-            Recurring evaluation as verified conditions change.
-          </p>
-        </div>
+        <ScanStatus />
       </aside>
 
       {/* ---- top bar ---- */}
@@ -263,11 +256,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <NavList onNavigate={() => setOpen(false)} />
               </div>
 
-              <div className="shrink-0 border-t border-line px-5 py-4">
-                <p className="label text-faint">Evaluated through</p>
-                <p className="tnum mt-1 text-[0.8125rem] font-medium text-ink">
-                  {prettyDate(TODAY)}
-                </p>
+              <div className="shrink-0">
+                <ScanStatus compact />
               </div>
             </motion.div>
           </div>
