@@ -32,9 +32,9 @@ export default function ClausesPage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Clause library"
-        title="How well your leases actually protect you"
-        lede="Every co-tenancy provision in the portfolio, graded on the seven dials that decide whether a clause ever pays. This is a negotiating instrument: at renewal it tells your team exactly which dial to turn."
+        eyebrow="Analyze"
+        title="Clause library"
+        lede="Every co-tenancy provision, graded on the seven terms that decide whether it pays."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

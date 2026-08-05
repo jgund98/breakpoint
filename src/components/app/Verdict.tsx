@@ -114,8 +114,15 @@ export function Verdict({
         <div className="rounded-xl border border-white/12 bg-white/5 p-5">
           <p className="label text-cream-faint">Watch record</p>
           <dl className="mt-4 space-y-3.5">
+            {/*
+              Deliberately "named tenants", not "storefronts". We check
+              the specific stores your clauses depend on, because those
+              are the ones we can identify from the lease and verify in
+              the field. Claiming to confirm every storefront in every
+              center would be a promise the data cannot keep.
+            */}
             <Row
-              k="Storefronts confirmed trading"
+              k="Named tenants checked"
               v={
                 <CountUp
                   to={storefrontsConfirmed}

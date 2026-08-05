@@ -23,9 +23,9 @@ export default function SignalsPage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Signals"
-        title="Everything we have observed"
-        lede="The raw feed, before any of it becomes a finding. Sources are labelled primary or secondary, because what a thing is worth depends entirely on where it came from."
+        eyebrow="Monitor"
+        title="Signals"
+        lede="Raw observations, before they become findings. Sources are labelled primary or secondary."
       />
 
       <div className="grid gap-3 sm:grid-cols-3">

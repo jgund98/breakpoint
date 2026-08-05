@@ -20,6 +20,7 @@ import { cn } from "@/lib/cn";
 import { org, TODAY, summary } from "@/lib/portfolio";
 import { prettyDate } from "@/lib/clause";
 import { DEMO_USER } from "@/lib/session";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 const NAV = [
   {
@@ -98,14 +99,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Close on navigation, and stop the page behind the drawer scrolling.
+  // Close on navigation, and stop the page behind the drawer scrolling
+  // without losing the reader's place.
   useEffect(() => setOpen(false), [pathname]);
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  useScrollLock(open);
 
   return (
     <div className="min-h-screen bg-surface-sunk/40">

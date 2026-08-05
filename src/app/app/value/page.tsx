@@ -38,9 +38,9 @@ export default function ValuePage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Value realized"
-        title="What the watch has been worth"
-        lede={`Since ${prettyDate(contract.startedOn)}. Relief is shown as potential or running, never as an amount owed, and the assurance figures below are what a quiet quarter actually buys.`}
+        eyebrow="Analyze"
+        title="Value realized"
+        lede={`Since ${prettyDate(contract.startedOn)}. Estimates of potential relief, not amounts owed.`}
         right={<LinkButton href="/app/notices">Notice desk</LinkButton>}
       />
 

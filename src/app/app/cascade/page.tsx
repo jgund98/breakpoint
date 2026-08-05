@@ -7,9 +7,9 @@ export default function ExposurePage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Anchor exposure"
-        title="How much of the portfolio rides on one retailer"
-        lede="Operators down the side, your centers across the top. A filled cell means that retailer is named in your co-tenancy test there. Select any row and we close every one of its stores at once: wave one is the leases that name it, wave two is the leases that trip anyway when occupancy follows it down."
+        eyebrow="Analyze"
+        title="Anchor exposure"
+        lede="Which retailers your co-tenancy tests depend on, and what fails if one goes dark."
       />
       <ExposureView matrix={matrix} cascades={cascades} />
       <p className="rounded-xl border border-line bg-surface-sunk p-5 text-[0.75rem] leading-relaxed text-muted">

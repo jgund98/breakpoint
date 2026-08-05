@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Logo } from "@/components/brand/Logo";
 import { nav } from "@/lib/site";
 import { cn } from "@/lib/cn";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -26,12 +27,7 @@ export function Header() {
   }, []);
 
   useEffect(() => setOpen(false), [pathname]);
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [open]);
+  useScrollLock(open);
 
   // The lock screen renders bare — no nav to a site you can't enter.
   // The workspace and the onboarding wizard carry their own chrome.

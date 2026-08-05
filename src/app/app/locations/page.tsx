@@ -57,9 +57,9 @@ export default function LocationsPage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Locations"
-        title="Every door we watch"
-        lede="One row per location with co-tenancy language. Occupancy is computed for each clause on its own terms, so two rows showing the same percentage are not necessarily measuring the same thing."
+        eyebrow="Monitor"
+        title="Locations"
+        lede="One row per location with co-tenancy language. Occupancy is computed per clause, on that clause's own terms."
       />
       <LocationsTable rows={data} />
     </div>

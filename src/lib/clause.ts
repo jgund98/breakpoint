@@ -336,8 +336,56 @@ export const PRECONDITION_META: Record<
   },
 };
 
+/**
+ * A right the lease gives the tenant to DEMAND data from the landlord.
+ *
+ * This is the most under-used provision in retail leasing and the answer
+ * to our hardest problem. Occupancy report and certification language
+ * appears 63 times across the real gold set. A tenant usually cannot
+ * compute a percentage test because it does not hold the center's rent
+ * roll, and in many leases it does not have to: the landlord is
+ * contractually obliged to hand the number over on request.
+ *
+ * We extract the right, track its window, and prompt the client to
+ * exercise it. We do not invent the number.
+ */
+export type Entitlement = {
+  kind: "occupancy_report" | "anchor_roster" | "sales_certification";
+  /** Verbatim from the lease. The authority, not our paraphrase. */
+  text: string;
+  cite: string;
+  /** How often it may be demanded. */
+  frequency: "annual" | "semiannual" | "quarterly" | "on_request";
+  /** Days the landlord has to respond once asked. */
+  responseDays: number;
+  /** ISO dates, where the client has told us. */
+  lastRequested?: string;
+  lastReceived?: string;
+};
+
+export const ENTITLEMENT_META: Record<
+  Entitlement["kind"],
+  { label: string; unlocks: string }
+> = {
+  occupancy_report: {
+    label: "Occupancy report",
+    unlocks:
+      "The percentage of Floor Area open and operating, from the party that actually knows it.",
+  },
+  anchor_roster: {
+    label: "Anchor roster",
+    unlocks: "Which named anchors the landlord agrees are trading.",
+  },
+  sales_certification: {
+    label: "Sales certification",
+    unlocks: "Center sales data supporting a percentage-rent or decline test.",
+  },
+};
+
 export type Clause = {
   id: string;
+  /** Rights to demand data from the landlord. Often unexercised. */
+  entitlements?: Entitlement[];
   type: "opening" | "operating" | "both";
   locations: string[];
   sourceText: string;

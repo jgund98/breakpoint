@@ -42,9 +42,9 @@ export default function NoticesPage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Notice desk"
-        title="Assembled, reviewed, and waiting for your signature"
-        lede="Breakpoint builds the file. Your authorised signatory serves it. We do not send notices on your behalf and we do not decide whether a right exists."
+        eyebrow="Act"
+        title="Notice packages"
+        lede="We assemble the file. Your authorised signatory serves it."
       />
 
       <Note tone="clay" title="How this works">

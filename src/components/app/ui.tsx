@@ -304,6 +304,14 @@ export function LinkButton({
   );
 }
 
+/**
+ * Page header, at application scale rather than marketing scale.
+ *
+ * A workspace is not a landing page: the title is a label for where you
+ * are, not a headline, and the subtitle is one line of orientation, not
+ * a paragraph. Anything longer belongs in the help affordance next to
+ * it, where a reader can ask for it instead of scrolling past it.
+ */
 export function PageHead({
   eyebrow,
   title,
@@ -312,16 +320,21 @@ export function PageHead({
 }: {
   eyebrow?: string;
   title: string;
+  /** One short line. Long explanations belong in `help`. */
   lede?: React.ReactNode;
   right?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-5">
-      <div className="min-w-0 max-w-2xl">
-        {eyebrow && <p className="label text-petrol-600">{eyebrow}</p>}
-        <h1 className="mt-2 text-[clamp(1.6rem,3vw,2.125rem)]">{title}</h1>
+    <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="min-w-0">
+        {eyebrow && (
+          <p className="text-[0.75rem] font-medium text-muted">{eyebrow}</p>
+        )}
+        <h1 className="mt-0.5 text-[1.375rem] leading-tight font-semibold tracking-[-0.02em]">
+          {title}
+        </h1>
         {lede && (
-          <p className="no-orphan mt-2.5 text-[0.9375rem] leading-relaxed text-ink-soft">
+          <p className="mt-1 max-w-2xl text-[0.8125rem] leading-relaxed text-muted">
             {lede}
           </p>
         )}

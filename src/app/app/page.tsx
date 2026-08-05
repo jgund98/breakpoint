@@ -60,11 +60,24 @@ export default function OverviewPage() {
     (r) => r.evaluation.anyFailing && r.evaluation.evidenceCeiling !== "observable",
   );
 
-  /* ---- the watch record: what the year bought, even in a quiet one ---- */
-  const storefrontsConfirmed = rows.reduce(
-    (sum, r) => sum + r.center.suites.filter((s) => s.status === "open").length,
-    0,
-  );
+  /* ---- the watch record: what the year bought, even in a quiet one ----
+     Counts only the tenants a clause actually depends on. Those are the
+     stores we can name from the lease and check in the field. Counting
+     every open suite in every center would claim coverage we do not
+     have. */
+  const storefrontsConfirmed = rows.reduce((sum, r) => {
+    const named = new Set<string>();
+    for (const t of r.clause.triggers) {
+      if (t.kind === "named_tenant") t.names.forEach((n) => named.add(n));
+      else if (t.kind === "tenant_count") t.pool.forEach((n) => named.add(n));
+    }
+    return (
+      sum +
+      [...named].filter(
+        (id) => r.center.suites.find((s) => s.id === id)?.status === "open",
+      ).length
+    );
+  }, 0);
   const decisionMonthly = decisions.reduce(
     (sum, r) => sum + (r.evaluation.monthlyDelta ?? 0),
     0,
