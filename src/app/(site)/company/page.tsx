@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "Company",
   description:
-    "Breakpoint was built by people who produced co-tenancy reports from the landlord's side and watched tenants miss what they were owed. One clause, done properly.",
+    "Breakpoint was built by people who produced co-tenancy reports from the landlord's side and watched tenants miss relief their own leases already allowed. One clause, done properly.",
   alternates: { canonical: "/company" },
 };
 
@@ -22,7 +22,7 @@ const beliefs = [
   },
   {
     k: "Auditable or worthless",
-    v: "We tell people they are owed money. If a lease administrator cannot trace every figure back to a sentence and a date, we have produced a liability rather than a claim.",
+    v: "We tell people a lease may entitle them to pay less rent. If a lease administrator cannot trace every figure back to a sentence and a date, we have produced a liability rather than a claim.",
   },
   {
     k: "Tenant-side, by design",

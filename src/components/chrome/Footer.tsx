@@ -38,7 +38,7 @@ export function Footer() {
             <h2 className="mt-5 text-[clamp(2rem,5vw,3.5rem)] text-cream">
               Send us your lease.{" "}
               <span className="display-em balance block text-brass-200">
-                We&#8217;ll tell you what it may be&nbsp;owed.
+                We&#8217;ll tell you what it may be&nbsp;worth.
               </span>
             </h2>
             <p className="lede no-orphan mt-6 max-w-xl text-cream-soft">

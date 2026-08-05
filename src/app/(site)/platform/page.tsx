@@ -164,7 +164,7 @@ export default function PlatformPage() {
             </span>
           </SectionTitle>
           <p className="lede no-orphan mt-6 max-w-2xl text-cream-soft">
-            This product tells people they may be owed money. That obligates us
+            This product tells people a lease may entitle them to pay less rent. That obligates us
             to be checkable at every step.
           </p>
         </div>

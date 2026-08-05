@@ -420,7 +420,17 @@ export function Board({ center, clause, econ, claim, asOf }: Props) {
                         t.failing ? "text-clay-600" : "text-ink-soft",
                       )}
                     >
-                      {t.observed}
+                      {/*
+                        A tenth of a percent implies a precision we do
+                        not have when the denominator is estimated.
+                        Round and mark it as approximate instead.
+                      */}
+                      {t.computability === "observable"
+                        ? t.observed
+                        : t.observed.replace(
+                            /(\d+)\.\d+%/,
+                            (_, whole) => `~${whole}%`,
+                          )}
                     </p>
                   </div>
                   <div className="mt-2">
@@ -444,6 +454,13 @@ export function Board({ center, clause, econ, claim, asOf }: Props) {
                   {t.deemedOpenApplied.length > 0 && (
                     <p className="mt-1 text-[0.75rem] text-brass-700">
                       Deemed open: {t.deemedOpenApplied.join("; ")}
+                    </p>
+                  )}
+                  {/* Where the number came from, stated on the number
+                      itself rather than buried in a panel elsewhere. */}
+                  {t.computability !== "observable" && (
+                    <p className="mt-1 text-[0.75rem] leading-snug text-clay-600">
+                      {t.computabilityNote}
                     </p>
                   )}
                 </div>
