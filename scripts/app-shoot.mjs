@@ -24,6 +24,11 @@ const CHROME =
 const GATE_COOKIE = "bp_access";
 const GATE_TOKEN =
   "e6d8d4d5557c63a0eb0913a1345b4b3b149f5ad3b20c9d1a28aae8abfb912e2a";
+const SESSION_COOKIE = "bp_session";
+const SESSION_TOKEN = "demo-workspace-session-v1";
+
+/** Guard against auditing a redirect. */
+const EXPECT_TITLE = /Workspace|Breakpoint/;
 
 const WIDTHS = [
   { w: 390, h: 844, tag: "390" },
@@ -69,15 +74,23 @@ async function main() {
       });
 
       const url = new URL(route, BASE).toString();
-      await page.setCookie({
-        name: GATE_COOKIE,
-        value: GATE_TOKEN,
-        url: BASE,
-        path: "/",
-      });
+      // Both gates: the pre-launch site lock and the workspace session.
+      // Without the second one every /app route silently redirects to
+      // /login and the audit passes against the wrong page.
+      await page.setCookie(
+        { name: GATE_COOKIE, value: GATE_TOKEN, url: BASE, path: "/" },
+        { name: SESSION_COOKIE, value: SESSION_TOKEN, url: BASE, path: "/" },
+      );
 
       await page.goto(url, { waitUntil: "networkidle0", timeout: 45000 });
       await new Promise((r) => setTimeout(r, 900));
+
+      // A redirect used to pass silently: every gated route landed on
+      // /login and the audit reported it clean. Never again.
+      const landed = new URL(page.url()).pathname;
+      if (landed !== new URL(url).pathname) {
+        errors.push(`REDIRECTED to ${landed}`);
+      }
 
       const audit = await page.evaluate(() => {
         const docW = document.documentElement.clientWidth;

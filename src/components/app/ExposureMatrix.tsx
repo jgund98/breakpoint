@@ -92,13 +92,27 @@ export function ExposureMatrix({
             <span className="font-semibold text-ink">
               {Math.round(top.concentration * 100)}% of your watched doors
             </span>{" "}
-            carry a co-tenancy test that depends on{" "}
-            <span className="font-semibold text-ink">{top.operator}</span>{" "}
-            trading. That is your single largest concentration, worth{" "}
-            <span className="tnum font-semibold text-brass-700">
-              {compactUsd(top.monthlyAtStake * 12)}
-            </span>{" "}
-            a year in potential relief if it went dark everywhere.
+            carry a co-tenancy test naming{" "}
+            <span className="font-semibold text-ink">{top.operator}</span>. That
+            is your largest single dependency.{" "}
+            {top.wouldTrip > 0 ? (
+              <>
+                If it went dark everywhere,{" "}
+                <span className="font-semibold text-ink">
+                  {top.wouldTrip} location{top.wouldTrip === 1 ? "" : "s"}
+                </span>{" "}
+                would become claimable, worth{" "}
+                <span className="tnum font-semibold text-brass-700">
+                  {compactUsd(top.monthlyAtStake * 12)}
+                </span>{" "}
+                a year.
+              </>
+            ) : (
+              <>
+                Losing it alone would trip nothing today: every test naming it
+                still has margin. That margin is the thing to watch.
+              </>
+            )}
           </p>
         </div>
       )}
@@ -161,11 +175,18 @@ export function ExposureMatrix({
                       >
                         {row.operator}
                       </span>
-                      {row.rolloverDays != null && row.rolloverDays < 730 && (
-                        <Pill tone="watch" className="ml-1">
-                          rolls
+                      {row.wouldTrip > 0 && (
+                        <Pill tone="clay" className="ml-1">
+                          trips {row.wouldTrip}
                         </Pill>
                       )}
+                      {row.wouldTrip === 0 &&
+                        row.rolloverDays != null &&
+                        row.rolloverDays < 365 && (
+                          <Pill tone="watch" className="ml-1">
+                            rolls soon
+                          </Pill>
+                        )}
                     </button>
                   </td>
 
@@ -206,10 +227,10 @@ export function ExposureMatrix({
                     >
                       {row.monthlyAtStake > 0
                         ? `${usd(Math.round(row.monthlyAtStake))}/mo`
-                        : "—"}
+                        : "No margin lost"}
                     </span>
                     <span className="block text-[0.6875rem] text-muted">
-                      {row.namedInLeases} named
+                      {row.namedInLeases} named · {row.centersPresent} centers
                     </span>
                   </td>
                 </tr>

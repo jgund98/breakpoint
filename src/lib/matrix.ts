@@ -15,6 +15,7 @@
  * This is the portfolio-scale version of the single-center board.
  */
 
+import { runCascade } from "./cascade";
 import { rows, type Row } from "./portfolio";
 import { rolloverRisks } from "./value";
 
@@ -33,7 +34,10 @@ export type MatrixRow = {
   namedInLeases: number;
   centersPresent: number;
   darkAt: number;
+  /** Relief that would actually become claimable if this operator failed. */
   monthlyAtStake: number;
+  /** Locations that would move into a claimable position. */
+  wouldTrip: number;
   /** Share of your watched doors exposed to this one operator. */
   concentration: number;
   rolloverDays: number | null;
@@ -95,6 +99,7 @@ export function buildMatrix(data: Row[] = rows): Matrix {
           centersPresent: 0,
           darkAt: 0,
           monthlyAtStake: 0,
+          wouldTrip: 0,
           concentration: 0,
           rolloverDays: ro?.daysToSoonest ?? null,
           rolloverOn: ro?.soonestExpiry ?? null,
@@ -138,6 +143,18 @@ export function buildMatrix(data: Row[] = rows): Matrix {
     row.centersPresent = Object.keys(row.cells).length;
     row.darkAt = Object.values(row.cells).filter((c) => c.state === "dark").length;
     row.concentration = totalDoors ? row.namedInLeases / totalDoors : 0;
+
+    /*
+     * At stake is what would actually become claimable if this operator
+     * went dark, not the sum of every lease that names it. Most named
+     * tests are count tests with margin: losing one of three anchors
+     * usually changes nothing, and reporting the full sum would
+     * overstate the exposure by an order of magnitude. So the number
+     * comes from the same cascade the reader can run below it.
+     */
+    const cascade = runCascade(row.operator);
+    row.monthlyAtStake = cascade.monthlyDelta;
+    row.wouldTrip = cascade.hits.length;
     return row;
   });
 
