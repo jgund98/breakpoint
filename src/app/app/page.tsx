@@ -494,35 +494,6 @@ export default function OverviewPage() {
         </Panel>
       </div>
 
-      <Panel>
-        <PanelHead title="Account" />
-        <div className="mt-4 grid gap-6 sm:grid-cols-2">
-          <KeyValue
-            items={[
-              { k: "Plan", v: org.plan },
-              { k: "Watching since", v: prettyDate(org.contractStart) },
-              { k: "Doors under contract", v: org.totalDoors.toLocaleString("en-US") },
-              { k: "Doors with co-tenancy language", v: org.watched },
-            ]}
-          />
-          <div>
-            <p className="label text-faint">Authorized signatories</p>
-            <ul className="mt-3 space-y-2.5">
-              {org.team.map((t) => (
-                <li key={t.name} className="flex items-center gap-3">
-                  <span className="grid h-8 w-8 place-items-center rounded-lg bg-petrol-50 text-[0.6875rem] font-semibold text-petrol-800">
-                    {t.initials}
-                  </span>
-                  <div>
-                    <p className="text-[0.8125rem] font-medium text-ink">{t.name}</p>
-                    <p className="text-[0.75rem] text-muted">{t.role}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </Panel>
     </div>
   );
 }

@@ -14,6 +14,7 @@ import {
   Radar,
   RefreshCw,
   Settings2,
+  SlidersHorizontal,
   Sparkles,
   Store,
   TrendingUp,
@@ -51,6 +52,7 @@ const NAV = [
     items: [
       { href: "/app/notices", label: "Notice packages", Icon: FileSignature },
       { href: "/app/setup", label: "Portfolio setup", Icon: Settings2 },
+      { href: "/app/settings", label: "Settings", Icon: SlidersHorizontal },
     ],
   },
 ] as const;
