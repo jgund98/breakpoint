@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Wizard } from "@/components/onboarding/Wizard";
+import { WorkspaceProvider } from "@/components/app/WorkspaceProvider";
 
 export const metadata: Metadata = {
   title: "Account setup",
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function OnboardingPage() {
-  return <Wizard />;
+  return (
+    <WorkspaceProvider>
+      <Wizard />
+    </WorkspaceProvider>
+  );
 }

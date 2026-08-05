@@ -15,6 +15,7 @@ import {
   sampleCsv,
 } from "@/lib/ingest";
 import { ActionButton, Note, Panel, Pill } from "@/components/app/ui";
+import { useWorkspace } from "@/lib/workspace-store";
 
 /* ============================================================
    ONBOARDING
@@ -239,7 +240,9 @@ export function Wizard() {
               {step.id === "sales" && <SalesStep s={s} set={set} />}
               {step.id === "watch" && <WatchStep s={s} set={set} />}
               {step.id === "authority" && <AuthorityStep s={s} set={set} />}
-              {step.id === "launch" && <LaunchStep s={s} stats={stats} />}
+              {step.id === "launch" && (
+                <LaunchStep s={s} stats={stats} ingested={ingested} />
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -1213,16 +1216,26 @@ function AuthorityStep({
 function LaunchStep({
   s,
   stats,
+  ingested,
 }: {
   s: State;
   stats: { matched: number; review: number; total: number };
+  ingested: IngestRow[];
 }) {
   const [ready, setReady] = useState(false);
+  const { importOnboarding } = useWorkspace();
+  const imported = useRef(false);
 
   useEffect(() => {
+    // The portfolio the client just loaded becomes the portfolio the
+    // workspace runs on. Onboarding output is dashboard input.
+    if (!imported.current && ingested.length) {
+      imported.current = true;
+      importOnboarding(ingested, s.company || "Your portfolio");
+    }
     const t = setTimeout(() => setReady(true), 2200);
     return () => clearTimeout(t);
-  }, []);
+  }, [ingested, importOnboarding, s.company]);
 
   const lines = [
     `Provisioning workspace for ${s.company || "your portfolio"}`,

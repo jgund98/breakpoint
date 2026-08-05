@@ -53,6 +53,20 @@ export const config = {
    * - favicons so the tab icon still renders on the unlock screen
    */
   matcher: [
-    "/((?!unlock|_next/static|_next/image|favicon\\.ico|icon|apple-icon).*)",
+    /*
+     * Gate everything except:
+     * - the unlock page and its submit endpoint
+     * - Next's static assets and the image optimizer
+     * - favicons, so the tab icon renders on the lock screen
+     * - any path that ends in a media or font extension
+     *
+     * That last exclusion is not cosmetic. Next's image optimizer
+     * fetches the source file back over HTTP from this same origin. If
+     * the gate intercepts that request it answers with the lock screen
+     * HTML, the optimizer sees markup instead of a JPEG, and every
+     * optimized image on the site returns 400. Static files carry no
+     * private information, so excluding them costs nothing.
+     */
+    "/((?!unlock|_next/static|_next/image|favicon\\.ico|icon|apple-icon|.*\\.(?:jpg|jpeg|png|webp|avif|gif|svg|ico|mp4|webm|woff|woff2|ttf|txt|xml)$).*)",
   ],
 };

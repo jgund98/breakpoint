@@ -10,10 +10,19 @@ import { Note, Panel, PanelHead, Pill, type Tone } from "./ui";
 
 export function CascadeBoard({
   cascades,
+  active: activeProp,
+  onSelect,
+  hidePicker = false,
 }: {
   cascades: CascadeResult[];
+  /** Controlled selection, when the matrix above is driving. */
+  active?: string;
+  onSelect?: (operator: string) => void;
+  hidePicker?: boolean;
 }) {
-  const [active, setActive] = useState(cascades[0]?.operator ?? "");
+  const [internal, setInternal] = useState(cascades[0]?.operator ?? "");
+  const active = activeProp ?? internal;
+  const setActive = onSelect ?? setInternal;
   const result = cascades.find((c) => c.operator === active) ?? cascades[0];
 
   if (!result) return null;
@@ -21,7 +30,7 @@ export function CascadeBoard({
   return (
     <div className="space-y-4">
       {/* ---- operator picker ---- */}
-      <Panel flush>
+      <Panel flush className={hidePicker ? "hidden" : undefined}>
         <div className="px-5 py-4">
           <PanelHead
             title="Pick an operator"

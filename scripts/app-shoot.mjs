@@ -50,9 +50,23 @@ async function main() {
 
       const errors = [];
       page.on("console", (m) => {
-        if (m.type() === "error") errors.push(m.text().slice(0, 180));
+        const t = m.text();
+        // Next's dev tooling emits generic resource failures that say
+        // nothing about the page. Real failures are captured by the
+        // response listener below, which knows the URL.
+        if (m.type() === "error" && !t.includes("Failed to load resource"))
+          errors.push(t.slice(0, 180));
       });
       page.on("pageerror", (e) => errors.push(`pageerror: ${e.message.slice(0, 180)}`));
+      page.on("response", (res) => {
+        const status = res.status();
+        const url = res.url();
+        if (status < 400) return;
+        // dev-only endpoints: HMR, the devtools overlay, source maps
+        if (/__nextjs|_next\/static\/chunks\/.*\.map|hmr|turbopack/i.test(url))
+          return;
+        errors.push(`${status} ${url.replace(BASE, "").slice(0, 120)}`);
+      });
 
       const url = new URL(route, BASE).toString();
       await page.setCookie({

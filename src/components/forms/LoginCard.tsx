@@ -38,6 +38,8 @@ export function LoginCard() {
       });
 
       if (res.ok) {
+        // Tells the workspace to play its boot sequence once on arrival.
+        window.sessionStorage.setItem("bp_boot", "1");
         router.push(next.startsWith("/") ? next : "/app");
         router.refresh();
         return;

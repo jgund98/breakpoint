@@ -182,6 +182,12 @@ export type Suite = {
   since?: string;
   /** True when this suite is the subject tenant's own store. */
   subject?: boolean;
+  /**
+   * When this occupant's own lease runs out, where known. An anchor
+   * rolling inside two years is a risk today, not at expiry, because
+   * it is named in other tenants' co-tenancy tests.
+   */
+  leaseExpiry?: string;
 };
 
 export type CenterFacts = {

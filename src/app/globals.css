@@ -334,6 +334,155 @@ h4 {
 }
 
 /* ============================================================
+   product motion vocabulary
+
+   The workspace needs to feel alive without violating the scroll law:
+   everything here is transform/opacity, pure CSS, and one-shot unless
+   explicitly marked. No filter blur, no backdrop blur, ever.
+   ============================================================ */
+
+/* --- staggered card entrance --- */
+@keyframes bp-card-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+.card-enter {
+  opacity: 0;
+  animation: bp-card-enter 0.55s var(--ease-lux) forwards;
+}
+
+.d-1 { animation-delay: 40ms; }
+.d-2 { animation-delay: 100ms; }
+.d-3 { animation-delay: 160ms; }
+.d-4 { animation-delay: 220ms; }
+.d-5 { animation-delay: 280ms; }
+.d-6 { animation-delay: 340ms; }
+.d-7 { animation-delay: 400ms; }
+.d-8 { animation-delay: 460ms; }
+
+/* --- a number arriving --- */
+@keyframes bp-number-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  60% { transform: scale(1.03); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.number-pop {
+  animation: bp-number-pop 0.5s var(--ease-out-expo) both;
+}
+
+/* --- loading shimmer, for skeletons only --- */
+@keyframes bp-shimmer {
+  from { transform: translate3d(-100%, 0, 0); }
+  to { transform: translate3d(100%, 0, 0); }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-sunk);
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.75) 50%,
+    transparent 100%
+  );
+  animation: bp-shimmer 1.5s infinite;
+}
+
+/* --- a bar filling to its value --- */
+@keyframes bp-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.bar-fill {
+  transform-origin: left center;
+  animation: bp-fill 0.9s var(--ease-out-expo) both;
+}
+
+/* --- the confirmation mark: ring, then the stroke draws --- */
+@keyframes bp-ring {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bp-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+.mark-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bp-ring 0.45s var(--ease-out-expo) both;
+}
+
+.mark-draw {
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: bp-draw 0.5s var(--ease-out-expo) 0.28s forwards;
+}
+
+/* --- the boot sequence sweep --- */
+@keyframes bp-sweep {
+  0% { transform: translate3d(-110%, 0, 0); }
+  100% { transform: translate3d(110%, 0, 0); }
+}
+
+.anim-sweep {
+  animation: bp-sweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes bp-boot-out {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+.boot-out {
+  animation: bp-boot-out 0.55s var(--ease-lux) forwards;
+}
+
+/**
+ * Signature depth. A mesh of radial gradients, never a filter, so it
+ * costs nothing to composite on a weak device.
+ */
+.mesh-indigo {
+  background-image:
+    radial-gradient(at 12% 8%, rgba(79, 70, 229, 0.22) 0px, transparent 52%),
+    radial-gradient(at 88% 12%, rgba(217, 154, 43, 0.18) 0px, transparent 48%),
+    radial-gradient(at 68% 92%, rgba(47, 42, 155, 0.28) 0px, transparent 55%);
+}
+
+.mesh-paper {
+  background-image:
+    radial-gradient(at 4% 0%, rgba(224, 229, 255, 0.75) 0px, transparent 46%),
+    radial-gradient(at 96% 4%, rgba(251, 241, 220, 0.7) 0px, transparent 42%);
+}
+
+/* A hairline that carries the brand rather than just dividing. */
+.rule-brass {
+  background: linear-gradient(
+    90deg,
+    var(--color-brass-500) 0%,
+    var(--color-petrol-600) 42%,
+    transparent 100%
+  );
+}
+
+/* ============================================================
    utilities
    ============================================================ */
 

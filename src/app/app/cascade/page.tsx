@@ -1,21 +1,22 @@
 import { cascades } from "@/lib/cascade";
-import { CascadeBoard } from "@/components/app/CascadeBoard";
+import { matrix } from "@/lib/matrix";
+import { ExposureView } from "@/components/app/ExposureView";
 import { PageHead } from "@/components/app/ui";
 
-export default function CascadePage() {
+export default function ExposurePage() {
   return (
     <div className="space-y-6">
       <PageHead
-        eyebrow="Cascade"
-        title="If an operator fails, what&#160;happens&#160;to&#160;us?"
-        lede="Pick a retailer trading in your centers and we close every one of its stores at once. Wave one is the leases that name it. Wave two is the leases that do not, and trip anyway when occupancy follows it down."
+        eyebrow="Anchor exposure"
+        title="How much of the portfolio rides on one retailer"
+        lede="Operators down the side, your centers across the top. A filled cell means that retailer is named in your co-tenancy test there. Select any row and we close every one of its stores at once: wave one is the leases that name it, wave two is the leases that trip anyway when occupancy follows it down."
       />
-      <CascadeBoard cascades={cascades} />
+      <ExposureView matrix={matrix} cascades={cascades} />
       <p className="rounded-xl border border-line bg-surface-sunk p-5 text-[0.75rem] leading-relaxed text-muted">
         A model, not a forecast. It assumes every location of the selected
-        operator closes simultaneously and that no landlord cures. Real
-        outcomes depend on cure periods, replacement tenants and the
-        preconditions in each lease. Illustrative sample data.
+        operator closes at once and that no landlord cures. Real outcomes depend
+        on cure periods, replacement tenants and the preconditions in each
+        lease. Illustrative sample data.
       </p>
     </div>
   );

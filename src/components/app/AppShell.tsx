@@ -3,6 +3,16 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  FileSignature,
+  FileText,
+  LayoutDashboard,
+  Network,
+  Radar,
+  Settings2,
+  Store,
+  TrendingUp,
+} from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/cn";
 import { org, TODAY, summary } from "@/lib/portfolio";
@@ -11,23 +21,27 @@ import { DEMO_USER } from "@/lib/session";
 
 const NAV = [
   {
-    heading: "Watch",
+    heading: "Monitor",
     items: [
-      { href: "/app", label: "Overview", exact: true },
-      { href: "/app/locations", label: "Locations" },
-      { href: "/app/signals", label: "Signals" },
+      { href: "/app", label: "Overview", exact: true, Icon: LayoutDashboard },
+      { href: "/app/locations", label: "Locations", Icon: Store },
+      { href: "/app/signals", label: "Signals", Icon: Radar },
     ],
   },
   {
-    heading: "Model",
+    heading: "Analyze",
     items: [
-      { href: "/app/cascade", label: "Cascade" },
-      { href: "/app/clauses", label: "Clause library" },
+      { href: "/app/cascade", label: "Anchor exposure", Icon: Network },
+      { href: "/app/clauses", label: "Clause library", Icon: FileText },
+      { href: "/app/value", label: "Value realized", Icon: TrendingUp },
     ],
   },
   {
     heading: "Act",
-    items: [{ href: "/app/notices", label: "Notice packages" }],
+    items: [
+      { href: "/app/notices", label: "Notice packages", Icon: FileSignature },
+      { href: "/app/setup", label: "Portfolio setup", Icon: Settings2 },
+    ],
   },
 ] as const;
 
@@ -59,6 +73,12 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                     {active && (
                       <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-brass-500" />
                     )}
+                    <item.Icon
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        active ? "text-petrol-700" : "text-faint",
+                      )}
+                    />
                     {item.label}
                   </Link>
                 </li>
@@ -191,7 +211,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       {/* ---- content ---- */}
-      <main className="lg:pl-64">
+      <main id="main" className="lg:pl-64">
         <div className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 sm:py-9">
           {children}
         </div>
