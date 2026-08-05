@@ -8,6 +8,7 @@ import {
   type AnswerBlock,
   type TheoAnswer,
   ask,
+  greeting,
   suggestedQuestions,
   theo,
 } from "@/lib/theo";
@@ -74,7 +75,10 @@ export function Theo() {
                   <p className="text-[0.75rem] text-muted">{theo.role}</p>
                 </div>
               </div>
-              <p className="mt-4 max-w-lg text-[0.875rem] leading-relaxed text-ink-soft">
+              <p className="mt-5 max-w-xl text-[1rem] leading-relaxed text-ink">
+                {greeting()}
+              </p>
+              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-muted">
                 {theo.charter}
               </p>
 
@@ -117,6 +121,11 @@ export function Theo() {
                   <p className="text-[0.75rem] font-medium text-muted">
                     {t.answer.interpreted}
                   </p>
+                  {t.answer.lead && (
+                    <p className="text-[0.9375rem] leading-relaxed text-ink">
+                      {t.answer.lead}
+                    </p>
+                  )}
                   {t.answer.blocks.map((b, k) => (
                     <Block key={k} block={b} />
                   ))}

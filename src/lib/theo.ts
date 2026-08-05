@@ -54,6 +54,16 @@ export type AnswerBlock =
 export type TheoAnswer = {
   /** What Theo understood the question to be. Shown back to the reader. */
   interpreted: string;
+  /**
+   * A sentence of plain reading before the data.
+   *
+   * Not decoration. A number without a reading is work the client has
+   * to do themselves, and the whole point of an analyst is that they
+   * tell you what they found before they show you the table. It is
+   * always generated from the figures below it, never freestanding, so
+   * it cannot say anything the data does not.
+   */
+  lead?: string;
   blocks: AnswerBlock[];
   /** Where the answer came from. Never omitted. */
   provenance: string;
@@ -104,6 +114,10 @@ export function toolDependency(operator: string): TheoAnswer {
 
   return {
     interpreted: `Leases that depend on ${row.operator}`,
+    lead:
+      row.wouldTrip > 0
+        ? `${row.operator} is named in ${row.namedInLeases} of your leases across ${row.centersPresent} centers. If it closed everywhere, ${row.wouldTrip} of those would qualify for relief, worth about ${usd(Math.round(row.monthlyAtStake))} a month.`
+        : `${row.operator} is named in ${row.namedInLeases} of your leases across ${row.centersPresent} centers, but losing it alone would not trip anything today. Every test naming it still has margin, which is the thing worth watching.`,
     provenance: asOf,
     blocks: [
       {
@@ -218,8 +232,14 @@ export function toolCenter(name: string): TheoAnswer {
     });
   }
 
+  const failingHere = at.filter((r) => r.evaluation.anyFailing).length;
+
   return {
     interpreted: `Status at ${center.name}`,
+    lead:
+      failingHere > 0
+        ? `You have ${at.length} ${at.length === 1 ? "store" : "stores"} at ${center.name}, and ${failingHere} of them ${failingHere === 1 ? "has" : "have"} a failing co-tenancy test. ${dark.length > 0 ? `${dark.map((s) => s.name).slice(0, 2).join(" and ")} ${dark.length === 1 ? "is" : "are"} closed.` : ""}`
+        : `${center.name} looks healthy. You have ${at.length} ${at.length === 1 ? "store" : "stores"} there and every co-tenancy test is currently satisfied.`,
     provenance: `${asOf} · rent roll ${Math.round(center.rentRollCoverage * 100)}% complete`,
     blocks,
     followUps: [
@@ -252,6 +272,7 @@ export function toolClause(query: string): TheoAnswer {
 
   return {
     interpreted: `Co-tenancy language at ${hit.center.name}`,
+    lead: `Here is the operative language from ${hit.clause.locations[0]}, exactly as it reads in the document.${hit.clause.amendments.length ? " Note that it has been amended, so read the amendment below alongside it." : ""}`,
     provenance: `${hit.clause.locations.join(" · ")} · abstraction confidence ${Math.round(hit.clause.confidence * 100)}%`,
     blocks: [
       { type: "verbatim", cite: hit.clause.locations[0], body: hit.clause.sourceText },
@@ -296,6 +317,7 @@ export function toolLastCheck(query: string): TheoAnswer {
 
   return {
     interpreted: `Last check for ${query}`,
+    lead: `Checked ${targets.length === 1 ? "it" : `all ${targets.length}`} on the most recent sweep. Here is what each source is saying.`,
     provenance: `${sweeps.length} sweeps on record`,
     blocks: [
       {
@@ -326,19 +348,26 @@ export function toolClaimable(): TheoAnswer {
   if (claimable.length === 0) {
     return {
       interpreted: "Locations that qualify for rent relief",
+      lead: "Nothing qualifies today, which is the good outcome.",
       provenance: asOf,
       blocks: [
         {
           type: "text",
-          body: "Nothing qualifies today. Every co-tenancy test in the portfolio is either satisfied or still inside the landlord's window to fix it.",
+          body: "Every co-tenancy test in the portfolio is either satisfied or still inside the landlord's window to fix it. I will flag it the moment that changes.",
         },
       ],
       followUps: ["What is closest to failing?", "What changed in the last sweep?"],
     };
   }
 
+  const total = claimable.reduce(
+    (s, r) => s + (r.evaluation.monthlyDelta ?? 0),
+    0,
+  );
+
   return {
     interpreted: "Locations that qualify for rent relief",
+    lead: `${claimable.length} ${claimable.length === 1 ? "location qualifies" : "locations qualify"} right now, worth about ${usd(Math.round(total))} a month combined. Each one has a failing test, the landlord's window to fix it has passed, and you meet the conditions to claim.`,
     provenance: asOf,
     blocks: [
       {
@@ -384,6 +413,9 @@ export function toolNearMiss(): TheoAnswer {
 
   return {
     interpreted: "Tests closest to failing",
+    lead: near.length
+      ? `${near.length} ${near.length === 1 ? "location is" : "locations are"} close enough to a threshold that one more closure could trip them. These are the ones I would watch.`
+      : "Nothing is near a threshold right now. Every test has comfortable margin.",
     provenance: asOf,
     blocks: [
       {
@@ -411,6 +443,7 @@ export function toolCapability(): TheoAnswer {
   const c = coverage;
   return {
     interpreted: "What Breakpoint monitors, and what it cannot see",
+    lead: `I watch ${c.storesWatched} specific stores, the ones your clauses actually name, and run about ${c.checksPerSweep} source checks each sweep. Roughly ${Math.round(c.observablePct * 100)}% of your clause tests I can verify directly. Here is the honest split.`,
     provenance: `${c.storesWatched} stores watched · ${c.checksPerSweep} source checks per sweep`,
     blocks: [
       {
@@ -447,6 +480,9 @@ export function toolChanges(): TheoAnswer {
   const recent = sweeps.slice(0, 4).filter((s) => s.changes > 0);
   return {
     interpreted: "Changes in recent sweeps",
+    lead: recent.length
+      ? `${recent.length} of the last four sweeps picked something up. Here is what moved.`
+      : "Quiet stretch. Nothing moved in the last four sweeps, and every named tenant was open on each pass.",
     provenance: `${activitySummary.sweepsRun} sweeps on record`,
     blocks: recent.length
       ? [
@@ -477,6 +513,9 @@ export function toolEntitlements(): TheoAnswer {
   const available = coverage.entitlements.filter((e) => e.state === "available");
   return {
     interpreted: "Reporting rights you can exercise",
+    lead: available.length
+      ? `You can send ${available.length} ${available.length === 1 ? "request" : "requests"} today. These are rights your leases already give you, and in my experience almost nobody uses them.`
+      : "Nothing is available to send right now. Either the requests are out with landlords or the annual window has not reopened.",
     provenance: asOf,
     blocks: [
       {
@@ -505,6 +544,7 @@ export function toolEntitlements(): TheoAnswer {
 export function toolValue(): TheoAnswer {
   return {
     interpreted: "What the watch has returned",
+    lead: `Against an annual fee of ${usd(ledger.annualFee)}, you have ${usd(Math.round(ledger.securedMonthly * 12))} a year running and another ${usd(Math.round(ledger.identifiedAnnual))} identified and waiting on a decision.`,
     provenance: asOf,
     blocks: [
       {
@@ -581,11 +621,12 @@ export function ask(question: string): TheoAnswer {
 
   return {
     interpreted: question,
+    lead: "I am not sure I follow that one, and I would rather say so than guess.",
     provenance: asOf,
     blocks: [
       {
         type: "gap",
-        body: "I could not map that to something I hold. I can answer on your locations, the clauses in them, the stores they depend on, what our sweeps observed, and what any of it is worth. I will not guess at anything else.",
+        body: "I can answer on your locations, the clauses inside them, the stores those clauses depend on, what our sweeps have seen, and what any of it is worth. Try naming a center or a retailer and I will pull what I have.",
         action: { label: "See what I monitor", href: "/app/coverage" },
       },
     ],
@@ -613,6 +654,24 @@ export function suggestedQuestions(): string[] {
   out.push("What does Breakpoint monitor?");
 
   return out.slice(0, 6);
+}
+
+/**
+ * The opening line, written off the portfolio's actual state so the
+ * first thing Theo says is already useful rather than a greeting.
+ */
+export function greeting(): string {
+  const claimable = rows.filter((r) => r.evaluation.state === "claimable").length;
+  const lapsing = rows.filter((r) => r.evaluation.state === "election_open").length;
+  const watching = rows.filter((r) => r.evaluation.state === "watch").length;
+
+  if (lapsing > 0)
+    return `Worth starting here: ${lapsing} ${lapsing === 1 ? "location has an election window" : "locations have election windows"} closing, and those rights lapse if nobody acts on them. Ask me about those, or anything else in the portfolio.`;
+  if (claimable > 0)
+    return `${claimable} ${claimable === 1 ? "location currently qualifies" : "locations currently qualify"} for rent relief. Ask me about those, or anything else across your ${rows.length} watched doors.`;
+  if (watching > 0)
+    return `Nothing qualifies for relief today. ${watching} ${watching === 1 ? "location is" : "locations are"} close to a threshold and worth a look. Ask me anything about the portfolio.`;
+  return `All quiet. Every co-tenancy test across your ${rows.length} watched doors is satisfied. Ask me anything and I will pull what I have.`;
 }
 
 export const theo = {
