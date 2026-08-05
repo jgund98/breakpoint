@@ -244,7 +244,7 @@ export default async function LocationPage({
             ) : (
               <p className="mt-5 rounded-xl border border-line bg-surface-sunk p-4 text-[0.8125rem] text-muted">
                 No observations logged. Every named tenant at this center was
-                confirmed trading on the last sweep.
+                confirmed open on the last sweep.
               </p>
             )}
 

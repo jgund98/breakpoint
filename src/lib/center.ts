@@ -369,7 +369,7 @@ export const scenarios: Scenario[] = [
     dark: [],
     elapsedDays: 0,
     lesson:
-      "A healthy center. Three vacancies, every named tenant trading, occupancy comfortably above the floor. Nothing to claim. This is the state almost every lease file quietly assumes is still true.",
+      "A healthy center. Three vacancies, every named tenant open and operating, occupancy comfortably above the floor. Nothing to claim. This is the state almost every lease file quietly assumes is still true.",
   },
   {
     id: "anchor",
@@ -378,7 +378,7 @@ export const scenarios: Scenario[] = [
     dark: ["a-br"],
     elapsedDays: 45,
     lesson:
-      "The headline everyone reacts to, and on its own it changes nothing. Two of three Named Anchors are still trading, so the anchor test holds. This is precisely why teams who only watch anchors miss the events that actually pay.",
+      "The headline everyone reacts to, and on its own it changes nothing. Two of three Named Anchors are still open, so the anchor test holds. This is precisely why teams who only watch anchors miss the events that actually pay.",
   },
   {
     id: "bleed",

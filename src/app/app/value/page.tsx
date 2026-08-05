@@ -110,7 +110,7 @@ export default function ValuePage() {
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[
             [ScanSearch, "Sweeps completed", l.sweeps.toLocaleString("en-US"), "One pass over every center"],
-            [ShieldCheck, "Storefronts confirmed", l.storefrontsConfirmed.toLocaleString("en-US"), "Observed trading on the last pass"],
+            [ShieldCheck, "Storefronts confirmed", l.storefrontsConfirmed.toLocaleString("en-US"), "Observed open on the last pass"],
             [BadgeCheck, "Clause tests evaluated", l.clauseTestsEvaluated.toLocaleString("en-US"), "Each on its own denominator"],
             [Landmark, "Centers under watch", String(l.centersSurveyed), "Across your footprint"],
           ].map(([Icon, k, v, hint], i) => {

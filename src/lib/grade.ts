@@ -174,7 +174,7 @@ export function gradeClause(clause: Clause): Grade {
       ? "A documented sales decline is the hardest of these to satisfy. Keep sales reporting current or the right is theoretical."
       : clause.preconditions.includes("original_tenant_only")
         ? "This right does not survive assignment. Flag it in any transfer."
-        : "Standard set. Keep the store trading and stay out of default.",
+        : "Standard set. Keep the store open and stay out of default.",
   });
 
   const weighted =

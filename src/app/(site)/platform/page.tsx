@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 const sources = [
   "Anchor and inline closure announcements",
-  "Store-locator and trading-hours changes",
+  "Store-locator and open-hours changes",
   "Building permit and sign permit activity",
   "Landlord marketing plans and leasing flyers",
   "County and municipal filings",
@@ -90,7 +90,7 @@ export default function PlatformPage() {
             <Lede>
               A lease platform can tell you the floor is 70%. It cannot tell
               you where the center is today. We assemble occupied GLA month by
-              month, track which named tenants are trading, and date every
+              month, track which named tenants are open and operating, and date every
               closure, then hold it as a record you can attach to
               a&nbsp;notice.
             </Lede>

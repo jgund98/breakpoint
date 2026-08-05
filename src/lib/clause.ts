@@ -374,7 +374,7 @@ export const ENTITLEMENT_META: Record<
   },
   anchor_roster: {
     label: "Anchor roster",
-    unlocks: "Which named anchors the landlord agrees are trading.",
+    unlocks: "Which named anchors the landlord agrees are open and operating.",
   },
   sales_certification: {
     label: "Sales certification",
@@ -607,7 +607,7 @@ export function evaluateClause(
         cite: t.cite,
         label: "Named tenant",
         requirement: suites.map((s) => s.name).join(", ") + " open and operating",
-        observed: `${openOnes.length} of ${suites.length} trading`,
+        observed: `${openOnes.length} of ${suites.length} open`,
         failing,
         ratio: suites.length ? openOnes.length / suites.length : 1,
         headroom: failing ? "Failing now" : "No margin. Any closure trips it.",
@@ -632,7 +632,7 @@ export function evaluateClause(
         cite: t.cite,
         label: `${t.poolLabel} count`,
         requirement: `At least ${t.requiredCount} of ${suites.length} open and operating`,
-        observed: `${openOnes.length} of ${suites.length} trading`,
+        observed: `${openOnes.length} of ${suites.length} open`,
         failing,
         ratio: t.requiredCount ? openOnes.length / t.requiredCount : 1,
         headroom: failing

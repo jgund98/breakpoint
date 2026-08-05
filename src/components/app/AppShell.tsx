@@ -14,6 +14,7 @@ import {
   Radar,
   RefreshCw,
   Settings2,
+  Sparkles,
   Store,
   TrendingUp,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const NAV = [
     heading: "Monitor",
     items: [
       { href: "/app", label: "Overview", exact: true, Icon: LayoutDashboard },
+      { href: "/app/theo", label: "Ask Theo", Icon: Sparkles },
       { href: "/app/locations", label: "Locations", Icon: Store },
       { href: "/app/coverage", label: "Coverage", Icon: Radar },
       { href: "/app/activity", label: "Activity", Icon: RefreshCw },

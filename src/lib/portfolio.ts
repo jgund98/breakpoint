@@ -464,7 +464,7 @@ export type Location = {
   clause: Clause;
   claim: ClaimStatus;
   evidence: Evidence[];
-  /** Set when the store itself is not trading. Kills most claims. */
+  /** Set when the store itself is not open. Kills most claims. */
   ownStatus: "open" | "dark" | "remodeling";
 };
 

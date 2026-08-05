@@ -1,0 +1,312 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { ArrowUp, FileText, Info } from "lucide-react";
+import {
+  type AnswerBlock,
+  type TheoAnswer,
+  ask,
+  suggestedQuestions,
+  theo,
+} from "@/lib/theo";
+import { BrandMark } from "@/components/brand/BrandMark";
+import { cn } from "@/lib/cn";
+import { ActionButton, Panel, Pill } from "./ui";
+
+/**
+ * THEO
+ *
+ * Not a chat bubble in the corner. A working surface: answers arrive as
+ * tables, figures and verbatim lease text rather than paragraphs, each
+ * one stamped with where it came from.
+ *
+ * The routing is a keyword matcher today and a model tomorrow. Either
+ * way the answer comes from a tool in lib/theo.ts, which is what stops
+ * it inventing anything.
+ */
+
+type Turn =
+  | { role: "user"; text: string }
+  | { role: "theo"; answer: TheoAnswer };
+
+export function Theo() {
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [input, setInput] = useState("");
+  const [thinking, setThinking] = useState(false);
+  const endRef = useRef<HTMLDivElement>(null);
+  const suggestions = suggestedQuestions();
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [turns, thinking]);
+
+  const send = (text: string) => {
+    const q = text.trim();
+    if (!q || thinking) return;
+    setInput("");
+    setTurns((t) => [...t, { role: "user", text: q }]);
+    setThinking(true);
+
+    // A beat, so the answer reads as considered rather than canned.
+    window.setTimeout(() => {
+      setTurns((t) => [...t, { role: "theo", answer: ask(q) }]);
+      setThinking(false);
+    }, 520);
+  };
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <Panel flush className="flex min-h-[560px] flex-col">
+        {/* conversation */}
+        <div className="flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+          {turns.length === 0 && (
+            <div className="py-6">
+              <div className="flex items-center gap-3">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-petrol-900">
+                  <BrandMark size={30} tone="light" sweep={false} />
+                </span>
+                <div>
+                  <p className="text-[0.9375rem] font-semibold text-ink">
+                    {theo.name}
+                  </p>
+                  <p className="text-[0.75rem] text-muted">{theo.role}</p>
+                </div>
+              </div>
+              <p className="mt-4 max-w-lg text-[0.875rem] leading-relaxed text-ink-soft">
+                {theo.charter}
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => send(s)}
+                    className="rounded-lg border border-line bg-surface px-3 py-2 text-left text-[0.8125rem] text-ink-soft transition-colors duration-200 hover:border-petrol-300 hover:bg-petrol-50 hover:text-petrol-800"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <AnimatePresence initial={false}>
+            {turns.map((t, i) =>
+              t.role === "user" ? (
+                <motion.div
+                  key={`u${i}`}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-end"
+                >
+                  <p className="max-w-[80%] rounded-xl rounded-br-sm bg-petrol-800 px-3.5 py-2.5 text-[0.875rem] text-cream">
+                    {t.text}
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`t${i}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="space-y-3"
+                >
+                  <p className="text-[0.75rem] font-medium text-muted">
+                    {t.answer.interpreted}
+                  </p>
+                  {t.answer.blocks.map((b, k) => (
+                    <Block key={k} block={b} />
+                  ))}
+                  <p className="flex items-center gap-1.5 border-t border-line pt-2 text-[0.6875rem] text-faint">
+                    <Info className="h-3 w-3" />
+                    {t.answer.provenance}
+                  </p>
+                  {t.answer.followUps.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {t.answer.followUps.map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => send(f)}
+                          className="rounded-md border border-line px-2.5 py-1.5 text-[0.75rem] text-muted transition-colors hover:border-petrol-300 hover:text-petrol-700"
+                        >
+                          {f}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </motion.div>
+              ),
+            )}
+          </AnimatePresence>
+
+          {thinking && (
+            <div className="flex items-center gap-2 text-[0.8125rem] text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-petrol-600 anim-pulse-dot" />
+              Reading your portfolio
+            </div>
+          )}
+          <div ref={endRef} />
+        </div>
+
+        {/* composer */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+          className="flex items-center gap-2 border-t border-line p-3"
+        >
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={`Ask ${theo.name} about your portfolio`}
+            className="flex-1 rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[0.875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+          />
+          <ActionButton type="submit" disabled={!input.trim() || thinking} className="px-3">
+            <ArrowUp className="h-4 w-4" />
+          </ActionButton>
+        </form>
+      </Panel>
+
+      {/* what he can answer */}
+      <div className="space-y-3">
+        <Panel>
+          <p className="text-[0.8125rem] font-semibold text-ink">
+            What {theo.name} can answer
+          </p>
+          <ul className="mt-3 space-y-2.5 text-[0.8125rem] text-muted">
+            {[
+              "Which leases depend on a given retailer",
+              "What is happening at any center",
+              "The exact wording of a clause, with its section",
+              "When a store was last checked, and by which sources",
+              "What qualifies for rent relief, and what it is worth",
+              "Which reporting rights you can exercise",
+            ].map((x) => (
+              <li key={x} className="flex gap-2">
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-petrol-600" />
+                {x}
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <Panel>
+          <p className="text-[0.8125rem] font-semibold text-ink">Limits</p>
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-muted">
+            {theo.name} answers only from your own data and cites the source
+            each time. He does not estimate occupancy where the denominator
+            lives in a site plan we have not been given, and he does not give
+            legal advice.
+          </p>
+          <Link
+            href="/app/coverage"
+            className="mt-3 inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-petrol-700 hover:underline"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            See coverage
+          </Link>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+
+function Block({ block }: { block: AnswerBlock }) {
+  if (block.type === "text")
+    return (
+      <p className="text-[0.875rem] leading-relaxed text-ink-soft">{block.body}</p>
+    );
+
+  if (block.type === "stat")
+    return (
+      <div className="grid gap-2 sm:grid-cols-3">
+        {block.items.map((s) => (
+          <div key={s.label} className="rounded-xl border border-line bg-surface-sunk p-3">
+            <p className="text-[0.75rem] text-muted">{s.label}</p>
+            <p className="tnum font-display mt-1 text-[1.25rem] leading-none text-ink">
+              {s.value}
+            </p>
+            {s.hint && (
+              <p className="mt-1 text-[0.6875rem] leading-snug text-faint">{s.hint}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+
+  if (block.type === "verbatim")
+    return (
+      <div className="rounded-xl border border-line bg-surface-sunk p-4">
+        <p className="text-[0.6875rem] font-semibold tracking-wide text-muted uppercase">
+          {block.cite}
+        </p>
+        <p className="mt-2 text-[0.8125rem] leading-[1.8] text-ink-soft">
+          {block.body}
+        </p>
+      </div>
+    );
+
+  if (block.type === "gap")
+    return (
+      <div className="rounded-xl border border-brass-200 bg-brass-50 p-4">
+        <p className="text-[0.8125rem] leading-relaxed text-ink-soft">{block.body}</p>
+        {block.action && (
+          <Link
+            href={block.action.href}
+            className="mt-2.5 inline-block text-[0.8125rem] font-semibold text-brass-700 hover:underline"
+          >
+            {block.action.label}
+          </Link>
+        )}
+      </div>
+    );
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-line">
+      <table className="w-full border-collapse text-left">
+        <thead>
+          <tr className="bg-surface-sunk">
+            {block.columns.map((c) => (
+              <th
+                key={c}
+                className="px-3 py-2 text-[0.6875rem] font-semibold tracking-wide text-faint uppercase"
+              >
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-line">
+          {block.rows.map((r, i) => (
+            <tr key={i} className="hover:bg-petrol-50/40">
+              {r.cells.map((cell, j) => (
+                <td key={j} className="px-3 py-2 text-[0.8125rem] text-ink-soft">
+                  {j === 0 && r.href ? (
+                    <Link
+                      href={r.href}
+                      className="font-semibold text-petrol-800 hover:underline"
+                    >
+                      {cell}
+                    </Link>
+                  ) : (
+                    cell
+                  )}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {block.caption && (
+        <p className="border-t border-line px-3 py-2 text-[0.75rem] text-muted">
+          {block.caption}
+        </p>
+      )}
+    </div>
+  );
+}

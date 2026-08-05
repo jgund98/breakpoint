@@ -119,7 +119,7 @@ export default function NoticesPage() {
                         </p>
                         {t.culprits.length > 0 && (
                           <p className="mt-1 text-[0.75rem] text-muted">
-                            Not trading: {t.culprits.slice(0, 4).join(", ")}
+                            Not open: {t.culprits.slice(0, 4).join(", ")}
                           </p>
                         )}
                       </li>

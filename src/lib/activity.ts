@@ -66,8 +66,8 @@ export const sweeps: Sweep[] = (() => {
     const moved = caught.slice(0, 3).map((s) => ({
       store: s.unitName,
       center: s.centerName,
-      from: "Trading",
-      to: "Not trading",
+      from: "Open",
+      to: "Not open",
     }));
 
     out.push({

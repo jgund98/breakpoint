@@ -179,7 +179,7 @@ export default function CoTenancyPage() {
                   Opening co&#8209;tenancy governs the start of the lease. It
                   typically allows the tenant to delay opening, and delay paying
                   rent, until the center reaches an agreed occupancy level, or
-                  until specified anchors are open and trading.
+                  until specified anchors are open and open and operating.
                 </p>
                 <p className="no-orphan balance mt-5 text-[1.0625rem] leading-relaxed text-ink-soft">
                   In a new or repositioned center this produces the standoff the
@@ -198,7 +198,7 @@ export default function CoTenancyPage() {
                   Ongoing (sometimes called operating) co&#8209;tenancy runs through
                   the term, and it is where the great majority of unclaimed money
                   sits. It holds the landlord to a standard for the life of the
-                  lease: keep the named tenants trading and occupancy above the
+                  lease: keep the named tenants open and occupancy above the
                   floor, or the rent changes.
                 </p>
                 <div className="mt-7 rounded-xl border border-brass-200 bg-brass-50 p-6">
@@ -341,7 +341,7 @@ export default function CoTenancyPage() {
                   </G>
                   <G term="Named tenant">
                     A specific retailer identified in the lease whose continued
-                    trading the tenant has bargained for. Modern leases name
+                    open the tenant has bargained for. Modern leases name
                     inline brands as often as anchors.
                   </G>
                   <G term="Gross leasable area (GLA)">

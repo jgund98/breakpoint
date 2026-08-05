@@ -52,7 +52,7 @@ function darken(row: Row, names: Set<string>): Suite[] {
   );
 }
 
-/** Every anchor and junior operator trading across the portfolio. */
+/** Every anchor and junior operator open across the portfolio. */
 export function operators(): { name: string; centers: number; locations: number }[] {
   const map = new Map<string, { centers: Set<string>; locations: number }>();
   for (const r of rows) {

@@ -30,7 +30,7 @@ const CELL: Record<
   present: {
     fill: "bg-petrol-100",
     ring: "ring-petrol-100",
-    label: "Trading, not named",
+    label: "Open, not named",
   },
   dark: { fill: "bg-clay-500", ring: "ring-clay-600", label: "Dark" },
   absent: { fill: "bg-surface-sunk", ring: "ring-line", label: "Not present" },

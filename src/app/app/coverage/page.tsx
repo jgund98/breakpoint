@@ -205,7 +205,7 @@ export default function CoveragePage() {
             hint="One row per store a clause depends on. This is the unit we actually monitor."
           />
           <Pill tone="muted">
-            {byStatus.length} not trading
+            {byStatus.length} not open
           </Pill>
         </div>
         <div className="mt-4 max-h-[560px] overflow-auto">
@@ -265,7 +265,7 @@ export default function CoveragePage() {
                       }
                       dot
                     >
-                      {t.status === "open" ? "Trading" : t.status}
+                      {t.status === "open" ? "Open" : t.status}
                     </Pill>
                   </td>
                 </tr>

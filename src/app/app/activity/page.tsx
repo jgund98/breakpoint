@@ -99,7 +99,7 @@ export default function ActivityPage() {
                     <>
                       {" · "}
                       <span className="text-clay-600">
-                        {s.moved.map((m) => m.store).join(", ")} stopped trading
+                        {s.moved.map((m) => m.store).join(", ")} closed
                       </span>
                     </>
                   )}
