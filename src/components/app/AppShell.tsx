@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   X,
+  Activity,
   FileSignature,
   FileText,
   LayoutDashboard,
@@ -28,7 +29,8 @@ const NAV = [
     items: [
       { href: "/app", label: "Overview", exact: true, Icon: LayoutDashboard },
       { href: "/app/locations", label: "Locations", Icon: Store },
-      { href: "/app/signals", label: "Signals", Icon: Radar },
+      { href: "/app/coverage", label: "Coverage", Icon: Radar },
+      { href: "/app/signals", label: "Signals", Icon: Activity },
     ],
   },
   {

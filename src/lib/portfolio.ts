@@ -318,6 +318,15 @@ function clauseA(center: CenterFacts): Clause {
     },
     preconditions: ["tenant_open_and_operating", "not_in_default"],
     definedTerms: ["Gross Leasable Area", "Named Anchor Tenants", "Gross Sales", "Outparcels", "Force Majeure"],
+    entitlements: [
+      {
+        kind: "occupancy_report",
+        cite: "Section 14.6(d)",
+        text: "Landlord shall, not more than once per calendar year and within thirty (30) days following Tenant's written request, deliver to Tenant a report certifying the percentage of the Gross Leasable Area of the Shopping Center then open and operating and the names of the Anchor Tenants then operating.",
+        frequency: "annual",
+        responseDays: 30,
+      },
+    ],
     confidence: 0.94,
     ambiguityNotes: [
       "Alternative Rent has no floor. Where sales fall toward zero the payable rent approaches zero, which is the fact pattern courts have scrutinised most closely.",
@@ -368,6 +377,15 @@ function clauseB(center: CenterFacts): Clause {
     },
     preconditions: ["tenant_open_and_operating", "not_in_default", "original_tenant_only"],
     definedTerms: ["Key Tenants", "Minimum Rent", "Premises"],
+    entitlements: [
+      {
+        kind: "anchor_roster",
+        cite: "Section 9.4(c)",
+        text: "Upon Tenant's written request, Landlord shall confirm in writing which of the Key Tenants are then open and operating.",
+        frequency: "on_request",
+        responseDays: 15,
+      },
+    ],
     confidence: 0.87,
     ambiguityNotes: [
       "Cure clock runs from Tenant's written notice, not from the failure. A condition nobody notices never starts a clock.",
