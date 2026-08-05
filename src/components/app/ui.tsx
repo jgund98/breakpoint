@@ -29,6 +29,18 @@ export const toneDot: Record<Tone, string> = {
   petrol: "bg-petrol-600",
 };
 
+/**
+ * Dot colour when the dot sits INSIDE a chip. The brass chip is the one
+ * filled state in the set, so a brass dot on it is invisible: it needs
+ * to invert. Every other tone has a soft background and can use its own
+ * colour. Without this, "Claimable" renders as the only status pill
+ * with no dot at all, which reads as a different component.
+ */
+export const chipDot: Record<Tone, string> = {
+  ...toneDot,
+  brass: "bg-petrol-950",
+};
+
 export const toneBar: Record<Tone, string> = {
   open: "bg-open-600",
   watch: "bg-brass-500",
@@ -57,7 +69,7 @@ export function Pill({
         className,
       )}
     >
-      {dot && <span className={cn("h-1.5 w-1.5 rounded-full", toneDot[tone])} />}
+      {dot && <span className={cn("h-1.5 w-1.5 rounded-full", chipDot[tone])} />}
       {children}
     </span>
   );

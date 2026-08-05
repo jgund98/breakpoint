@@ -135,28 +135,6 @@ export function LoginCard() {
           )}
         </AnimatePresence>
 
-        {/* Demonstration credentials. Remove with the demo session. */}
-        <div className="mt-6 rounded-lg border border-line bg-surface-sunk px-4 py-3.5">
-          <p className="text-xs font-semibold tracking-wide text-muted uppercase">
-            Demonstration access
-          </p>
-          <p className="mt-1.5 text-sm text-ink-soft">
-            <span className="font-medium text-ink">admin@gmail.com</span>
-            {" / "}
-            <span className="font-medium text-ink">password123</span>
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setEmail("admin@gmail.com");
-              setPassword("password123");
-            }}
-            className="mt-2 text-xs font-semibold text-petrol-700 underline decoration-petrol-300 underline-offset-4 hover:text-petrol-600"
-          >
-            Fill these in
-          </button>
-        </div>
-
         <p className="mt-6 border-t border-line pt-5 text-center text-sm text-muted">
           No workspace yet?{" "}
           <Link

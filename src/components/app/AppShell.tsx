@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
+  X,
   FileSignature,
   FileText,
   LayoutDashboard,
@@ -94,6 +96,16 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Close on navigation, and stop the page behind the drawer scrolling.
+  useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
 
   return (
     <div className="min-h-screen bg-surface-sunk/40">
@@ -189,26 +201,75 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* ---- mobile drawer ---- */}
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            aria-label="Close navigation"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-petrol-950/40"
-          />
-          <div className="absolute inset-y-0 left-0 w-72 overflow-y-auto border-r border-line bg-canvas px-2 py-5">
-            <div className="mb-5 px-3">
-              <p className="text-[0.9375rem] font-semibold text-ink">{org.name}</p>
-              <p className="text-[0.75rem] text-muted">
-                {org.watched} watched locations
-              </p>
-            </div>
-            <NavList onNavigate={() => setOpen(false)} />
+      {/* ---- mobile drawer ----
+           The panel carries its own header bar at the same height as
+           the app header. Without it the drawer's first row sits at
+           y=0 and reads as though it has merged with the header
+           behind it, which is exactly how it looked before. */}
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.button
+              type="button"
+              aria-label="Close navigation"
+              onClick={() => setOpen(false)}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="absolute inset-0 bg-petrol-950/45"
+            />
+
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-y-0 left-0 flex w-[17.5rem] flex-col border-r border-line bg-canvas"
+            >
+              <div className="flex h-16 shrink-0 items-center justify-between border-b border-line pl-5 pr-3">
+                <Link
+                  href="/app"
+                  onClick={() => setOpen(false)}
+                  aria-label="Breakpoint"
+                  className="text-ink"
+                >
+                  <Logo />
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close navigation"
+                  className="grid h-10 w-10 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-sunk hover:text-ink"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="border-b border-line px-5 py-4">
+                <p className="label text-faint">Account</p>
+                <p className="mt-1.5 text-[0.9375rem] font-semibold text-ink">
+                  {org.name}
+                </p>
+                <p className="text-[0.75rem] text-muted">
+                  {org.watched} watched of {org.totalDoors} doors
+                </p>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-2 py-5">
+                <NavList onNavigate={() => setOpen(false)} />
+              </div>
+
+              <div className="shrink-0 border-t border-line px-5 py-4">
+                <p className="label text-faint">Evaluated through</p>
+                <p className="tnum mt-1 text-[0.8125rem] font-medium text-ink">
+                  {prettyDate(TODAY)}
+                </p>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* ---- content ---- */}
       <main id="main" className="lg:pl-64">

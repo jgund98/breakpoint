@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LogoWord } from "@/components/brand/Logo";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { org, summary } from "@/lib/portfolio";
 
 /**
@@ -90,7 +91,7 @@ export function BootScreen() {
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col items-center"
             >
-              <Indicator done={done} />
+              <BrandMark size={84} tone="light" />
               <div className="mt-6 text-cream">
                 <LogoWord className="text-[1.75rem]" />
               </div>
@@ -180,68 +181,5 @@ export function BootScreen() {
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-/**
- * The house mark, assembling: the column draws up, the brass square
- * drops in, and a survey line sweeps across it once it is whole.
- */
-function Indicator({ done }: { done: boolean }) {
-  return (
-    <div className="relative h-20 w-20">
-      <svg viewBox="0 0 80 80" className="h-full w-full">
-        {/* the column */}
-        <motion.rect
-          x="34"
-          y="34"
-          width="12"
-          height="34"
-          rx="2"
-          fill="var(--color-cream)"
-          initial={{ scaleY: 0, opacity: 0 }}
-          animate={{ scaleY: 1, opacity: 1 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-          style={{ transformOrigin: "40px 68px" }}
-        />
-        {/* the tittle */}
-        <motion.rect
-          x="34"
-          y="14"
-          width="12"
-          height="12"
-          rx="2"
-          fill="var(--color-brass-500)"
-          initial={{ y: -14, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 260,
-            damping: 16,
-            delay: 0.55,
-          }}
-        />
-        {/* the heartbeat, once assembled */}
-        {done && (
-          <circle
-            cx="40"
-            cy="20"
-            r="8"
-            fill="none"
-            stroke="var(--color-brass-400)"
-            strokeWidth="1.5"
-            className="glyph-ring"
-          />
-        )}
-      </svg>
-
-      {/* the sweep */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 -left-6 w-6 overflow-hidden"
-      >
-        <span className="anim-sweep block h-full w-full bg-gradient-to-r from-transparent via-white/45 to-transparent" />
-      </span>
-    </div>
   );
 }
