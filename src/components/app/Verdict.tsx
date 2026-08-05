@@ -69,25 +69,32 @@ export function Verdict({
                 {decisions} location{decisions === 1 ? "" : "s"}{" "}
                 {decisions === 1 ? "qualifies" : "qualify"} for{" "}
                 <span className="whitespace-nowrap">
-                  rent <span className="display-em text-brass-400">relief.</span>
+                  co-tenancy{" "}
+                  <span className="display-em text-brass-400">rent.</span>
                 </span>
               </h2>
-              <p className="no-orphan mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-cream-soft">
-                At each of these stores, a co-tenancy test in your lease has
-                failed, the landlord&#8217;s window to fix it has passed, and
-                you meet every condition to claim. Co-tenancy rent applies from
-                the date you serve notice.
-                {monthlyTotal > 0 && (
-                  <>
-                    {" "}
-                    Where you have given us sales, that is an estimated{" "}
-                    <span className="tnum font-semibold text-cream">
-                      {usd(Math.round(monthlyTotal))}
-                    </span>{" "}
-                    per month.
-                  </>
+              <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
+                <Fact k="Cure elapsed" v="Yes" />
+                <Fact k="Preconditions" v="Met" />
+                <Fact
+                  k="Applies from"
+                  v="Notice date"
+                />
+                {soonestDays != null && (
+                  <Fact
+                    k="Soonest deadline"
+                    v={`${soonestDays} days`}
+                    sub={soonestLabel ?? undefined}
+                  />
                 )}
-              </p>
+                {monthlyTotal > 0 && (
+                  <Fact
+                    k="Where sales reported"
+                    v={`${usd(Math.round(monthlyTotal))}/mo`}
+                    sub="estimated"
+                  />
+                )}
+              </dl>
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link
                   href="/app/notices"
@@ -109,10 +116,11 @@ export function Verdict({
                 Every test in your portfolio is{" "}
                 <span className="display-em text-brass-400">satisfied.</span>
               </h2>
-              <p className="no-orphan mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-cream-soft">
-                That is the answer, and it is worth having in writing. Here is
-                what it took to reach it this period.
-              </p>
+              <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
+                <Fact k="Failing tests" v="0" />
+                <Fact k="Centers watched" v={String(centersSurveyed)} />
+                <Fact k="Last scan" v={lastSweep} />
+              </dl>
             </>
           )}
         </div>
@@ -160,6 +168,25 @@ export function Verdict({
         </div>
       </div>
     </motion.div>
+  );
+}
+
+/** A labelled fact. Software states values; it does not narrate them. */
+function Fact({ k, v, sub }: { k: string; v: string; sub?: string }) {
+  return (
+    <div>
+      <dt className="text-[0.6875rem] font-medium tracking-wide text-cream-faint uppercase">
+        {k}
+      </dt>
+      <dd className="tnum mt-0.5 text-[0.9375rem] font-semibold text-cream">
+        {v}
+        {sub && (
+          <span className="ml-1.5 text-[0.75rem] font-normal text-cream-faint">
+            {sub}
+          </span>
+        )}
+      </dd>
+    </div>
   );
 }
 

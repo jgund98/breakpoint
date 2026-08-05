@@ -110,6 +110,9 @@ export default function OverviewPage() {
       ).length
     );
   }, 0);
+  /** Of the qualifying locations, how many have sales we can compute from. */
+  const withSales = decisions.filter((r) => r.econ.ttmGrossSales != null).length;
+
   const decisionMonthly = decisions.reduce(
     (sum, r) => sum + (r.evaluation.monthlyDelta ?? 0),
     0,
@@ -164,21 +167,28 @@ export default function OverviewPage() {
           />
         </Item>
         <Item>
+          {/* Money is stated only against the locations that actually
+              have sales on file, and says so. A portfolio-wide figure
+              extrapolated from a third of the data is not defensible. */}
           <Stat
             label="Co-tenancy rent available"
             tone="brass"
-            value={compactUsd(summary.atRiskAnnual)}
-            sub="Estimated, across locations awaiting a decision."
+            value={
+              withSales > 0 ? compactUsd(summary.atRiskAnnual) : "Sales needed"
+            }
+            sub={
+              withSales > 0
+                ? `Annualized, across the ${withSales} of ${decisions.length} with sales on file.`
+                : "No sales reported for the qualifying locations."
+            }
           />
         </Item>
         <Item>
           <Stat
             label="Remedy running"
             tone="open"
-            value={compactUsd(summary.activeAnnual)}
-            sub={`${summary.byState.get("remedy_active") ?? 0} location${
-              (summary.byState.get("remedy_active") ?? 0) === 1 ? "" : "s"
-            } already on alternative rent.`}
+            value={summary.byState.get("remedy_active") ?? 0}
+            sub="Locations already paying co-tenancy rent."
           />
         </Item>
         <Item>
@@ -200,7 +210,7 @@ export default function OverviewPage() {
       <Panel className="card-enter d-4">
         <PanelHead
           title="Twelve weeks of monitoring"
-          hint="Each bar is one full pass over every watched door. Taller means more changed that week."
+          hint="One bar per scan."
           right={
             <LinkButton href="/app/activity">Scan history</LinkButton>
           }
@@ -227,33 +237,14 @@ export default function OverviewPage() {
             );
           })}
         </div>
-        <p className="mt-3 text-[0.75rem] text-muted">
-          {sweeps.filter((s) => s.changes === 0).length} of {sweeps.length} passes
-          found nothing, which is the result you are paying for most weeks.
-          Every pass is recorded either way.
-        </p>
       </Panel>
-
-      {summary.potentialMissed > 0 && (
-        <Note tone="brass" title="Beyond the lookback">
-          Roughly{" "}
-          <strong className="tnum font-semibold text-ink">
-            {usd(Math.round(summary.potentialMissed))}
-          </strong>{" "}
-          of potential co-tenancy rent sits in months these clauses can no longer reach.
-          Most provisions make relief retroactive to the failure but cap the
-          lookback a fixed number of days before notice, so anything older than
-          the cap is out of reach however strong the claim. That cap is what
-          detection speed is worth. It is an estimate, not a sum owed.
-        </Note>
-      )}
 
       {/* ---- decisions ---- */}
       <Panel flush>
         <div className="px-5 pt-5 sm:px-6 sm:pt-6">
           <PanelHead
             title="Needs a decision"
-            hint="Ranked by monthly value. Every row here has cleared its cure period and its preconditions."
+            hint="Cure elapsed, preconditions met."
             right={<LinkButton href="/app/locations">All locations</LinkButton>}
           />
         </div>
@@ -348,7 +339,7 @@ export default function OverviewPage() {
         <Panel>
           <PanelHead
             title="Clocks running"
-            hint="Cure windows closing and elections that lapse if nobody moves."
+            hint="Cure windows and election deadlines."
           />
           <ul className="mt-4 divide-y divide-line">
             {clocks.map((r) => {
@@ -396,7 +387,7 @@ export default function OverviewPage() {
         <Panel>
           <PanelHead
             title="Latest signals"
-            hint="Raw observations. A signal is not a finding until it is corroborated or verified."
+            hint="Recent observations."
             right={<LinkButton href="/app/signals">All signals</LinkButton>}
           />
           <ul className="mt-4 divide-y divide-line">
@@ -426,7 +417,7 @@ export default function OverviewPage() {
         <Panel>
           <PanelHead
             title="Failing, but not claimable"
-            hint="A test has failed and the tenant still has no right. These are the claims that die on preconditions."
+            hint="A test has failed but a precondition is not met."
           />
           {blocked.length ? (
             <ul className="mt-4 space-y-3">
@@ -461,7 +452,7 @@ export default function OverviewPage() {
         <Panel>
           <PanelHead
             title="Denominator gaps"
-            hint="Percentage tests we cannot compute to a defensible standard because we do not hold enough of the center's rent roll."
+            hint="Occupancy tests needing more of the center rent roll."
           />
           {needsRentRoll.length ? (
             <ul className="mt-4 space-y-3">

@@ -81,7 +81,7 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
       <div className="px-5 pt-5 sm:px-6 sm:pt-6">
         <PanelHead
           title="Margin to threshold"
-          hint="Every watched door placed by how much room its tightest test has left."
+          hint="Each door by the margin left on its tightest test."
           right={
             <span className="text-[0.75rem] text-muted">
               <span className="tnum font-semibold text-ink">{atRisk}</span> of{" "}
