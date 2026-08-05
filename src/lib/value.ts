@@ -96,8 +96,19 @@ export function buildLedger(data: Row[] = rows): Ledger {
   for (const r of data) {
     const ev = r.evaluation;
 
-    storefrontsConfirmed += r.center.suites.filter(
-      (s) => s.status === "open",
+    /*
+     * Only the tenants a clause actually depends on. Those are the
+     * stores we can name from the lease and verify in the field.
+     * Counting every open suite in every center would claim coverage
+     * we do not have, and this figure goes in front of a CFO.
+     */
+    const named = new Set<string>();
+    for (const t of r.clause.triggers) {
+      if (t.kind === "named_tenant") t.names.forEach((n) => named.add(n));
+      else if (t.kind === "tenant_count") t.pool.forEach((n) => named.add(n));
+    }
+    storefrontsConfirmed += [...named].filter(
+      (id) => r.center.suites.find((s) => s.id === id)?.status === "open",
     ).length;
     clauseTestsEvaluated += ev.triggers.length * sweeps;
 
