@@ -1,18 +1,54 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LogoBadge, LogoWord } from "@/components/brand/Logo";
 
 /**
- * Workspace sign-in. Authentication isn't wired yet — submissions get
- * an honest early-access message rather than a fake session.
+ * Workspace sign-in.
+ *
+ * Backed by a hardcoded demo credential so the product can be walked
+ * through in a pitch. See src/lib/session.ts: this is not real
+ * authentication and every sign-in lands in the same sample portfolio.
  */
 export function LoginCard() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const next = params.get("next") || "/app";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setNotice(false);
+    setBusy(true);
+
+    try {
+      const res = await fetch("/login/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.ok) {
+        router.push(next.startsWith("/") ? next : "/app");
+        router.refresh();
+        return;
+      }
+      setError("That email and password combination was not recognised.");
+    } catch {
+      setError("Something went wrong. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <div className="relative w-full max-w-md">
@@ -20,18 +56,10 @@ export function LoginCard() {
         <div className="flex flex-col items-center text-center">
           <LogoBadge className="h-12 w-12" />
           <LogoWord className="mt-4 text-[1.625rem]" />
-          <p className="mt-2 text-sm text-muted">
-            Sign in to your workspace
-          </p>
+          <p className="mt-2 text-sm text-muted">Sign in to your workspace</p>
         </div>
 
-        <form
-          className="mt-8 space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setNotice(true);
-          }}
-        >
+        <form className="mt-8 space-y-4" onSubmit={submit}>
           <label className="block">
             <span className="text-sm font-medium text-ink">Work email</span>
             <input
@@ -62,9 +90,10 @@ export function LoginCard() {
 
           <button
             type="submit"
-            className="w-full rounded-full bg-petrol-800 px-6 py-3.5 text-[0.9375rem] font-semibold whitespace-nowrap text-cream transition-colors hover:bg-petrol-700"
+            disabled={busy}
+            className="w-full rounded-full bg-petrol-800 px-6 py-3.5 text-[0.9375rem] font-semibold whitespace-nowrap text-cream transition-colors hover:bg-petrol-700 disabled:opacity-60"
           >
-            Sign in
+            {busy ? "Signing in" : "Sign in"}
           </button>
 
           <button
@@ -77,6 +106,18 @@ export function LoginCard() {
         </form>
 
         <AnimatePresence>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <span className="mt-4 block rounded-lg bg-clay-50 px-4 py-3 text-sm leading-relaxed text-clay-700">
+                {error}
+              </span>
+            </motion.p>
+          )}
           {notice && (
             <motion.p
               initial={{ opacity: 0, height: 0 }}
@@ -85,12 +126,34 @@ export function LoginCard() {
               className="overflow-hidden"
             >
               <span className="mt-4 block rounded-lg bg-brass-50 px-4 py-3 text-sm leading-relaxed text-brass-700">
-                Breakpoint is in early access. Workspaces are provisioned with
-                your first evaluation.
+                Single sign-on is provisioned with your workspace. Use the
+                demonstration credentials below for now.
               </span>
             </motion.p>
           )}
         </AnimatePresence>
+
+        {/* Demonstration credentials. Remove with the demo session. */}
+        <div className="mt-6 rounded-lg border border-line bg-surface-sunk px-4 py-3.5">
+          <p className="text-xs font-semibold tracking-wide text-muted uppercase">
+            Demonstration access
+          </p>
+          <p className="mt-1.5 text-sm text-ink-soft">
+            <span className="font-medium text-ink">admin@gmail.com</span>
+            {" / "}
+            <span className="font-medium text-ink">password123</span>
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("admin@gmail.com");
+              setPassword("password123");
+            }}
+            className="mt-2 text-xs font-semibold text-petrol-700 underline decoration-petrol-300 underline-offset-4 hover:text-petrol-600"
+          >
+            Fill these in
+          </button>
+        </div>
 
         <p className="mt-6 border-t border-line pt-5 text-center text-sm text-muted">
           No workspace yet?{" "}

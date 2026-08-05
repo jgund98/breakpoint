@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { LoginCard } from "@/components/forms/LoginCard";
 
 export const metadata: Metadata = {
@@ -27,7 +28,11 @@ export default function LoginPage() {
             "radial-gradient(closest-side, rgba(243,215,156,0.35), transparent 72%)",
         }}
       />
-      <LoginCard />
+      {/* LoginCard reads the ?next= param, so it needs a boundary for
+          this page to stay statically rendered. */}
+      <Suspense fallback={<div className="h-[560px] w-full max-w-md" />}>
+        <LoginCard />
+      </Suspense>
     </section>
   );
 }

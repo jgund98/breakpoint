@@ -1,0 +1,28 @@
+/**
+ * Demo workspace sign-in.
+ *
+ * IMPORTANT: this is a hardcoded demo credential so the workspace can
+ * be walked through in a pitch. It is not authentication. There is no
+ * user store, no hashing, no rate limiting and no per-account data.
+ * Every sign-in lands in the same illustrative sample portfolio.
+ *
+ * Before a real customer touches this, replace it with proper auth
+ * (SSO plus a session store) and delete this file. The routes it
+ * protects are /app and /onboarding, gated in src/proxy.ts.
+ */
+
+export const SESSION_COOKIE = "bp_session";
+
+/** Opaque marker. Carries no user identity because there are no users. */
+export const SESSION_TOKEN = "demo-workspace-session-v1";
+
+export const DEMO_EMAIL = "admin@gmail.com";
+export const DEMO_PASSWORD = "password123";
+
+/** The account the demo session presents as. */
+export const DEMO_USER = {
+  name: "R. Alvarez",
+  initials: "RA",
+  role: "Director, Lease Administration",
+  email: DEMO_EMAIL,
+} as const;

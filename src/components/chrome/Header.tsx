@@ -34,7 +34,13 @@ export function Header() {
   }, [open]);
 
   // The lock screen renders bare — no nav to a site you can't enter.
-  if (pathname.startsWith("/unlock")) return null;
+  // The workspace and the onboarding wizard carry their own chrome.
+  if (
+    pathname.startsWith("/unlock") ||
+    pathname.startsWith("/app") ||
+    pathname.startsWith("/onboarding")
+  )
+    return null;
 
   return (
     <>
