@@ -364,14 +364,43 @@ export default async function LocationPage({
               ]}
             />
 
-            {ev.monthsBeforeNotice > 0 && ev.potentialMissed ? (
-              <Note tone="brass" title="Detection gap">
+            {ev.monthsBeforeNotice > 0 ? (
+              <Note
+                tone={ev.potentialMissed ? "brass" : "open"}
+                title="Lookback"
+              >
                 {ev.monthsBeforeNotice} month
-                {ev.monthsBeforeNotice === 1 ? "" : "s"} elapsed between the
-                condition becoming observable and notice.{" "}
-                {clause.remedy.reliefRunsFrom !== "failure"
-                  ? `Relief here runs from notice, so roughly ${usd(Math.round(ev.potentialMissed))} of potential relief sits in months that are generally not recoverable.`
-                  : "Relief here runs from the failure itself, so the exposure is narrower."}
+                {ev.monthsBeforeNotice === 1 ? "" : "s"} between the condition
+                becoming observable and notice.{" "}
+                {clause.remedy.reliefRunsFrom === "failure" ? (
+                  clause.remedy.retroactiveCapDays != null ? (
+                    <>
+                      Relief reaches back to the failure but no more than{" "}
+                      {clause.remedy.retroactiveCapDays} days before notice, so{" "}
+                      {ev.recoverableMonths} of those months are recoverable
+                      {ev.potentialMissed ? (
+                        <>
+                          {" "}
+                          and roughly{" "}
+                          {usd(Math.round(ev.potentialMissed))} sits beyond the
+                          cap
+                        </>
+                      ) : null}
+                      .
+                    </>
+                  ) : (
+                    <>
+                      Relief reaches back to the failure with no cap, so the
+                      full period remains recoverable.
+                    </>
+                  )
+                ) : (
+                  <>
+                    Relief runs from notice with no lookback, so roughly{" "}
+                    {usd(Math.round(ev.potentialMissed ?? 0))} of potential
+                    relief is out of reach.
+                  </>
+                )}
               </Note>
             ) : null}
           </Panel>

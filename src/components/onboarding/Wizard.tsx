@@ -829,11 +829,19 @@ function LeasesStep({
   const [progress, setProgress] = useState(0);
   const timer = useRef<number | null>(null);
 
+  /*
+   * Calibrated against the real gold set: 175 tenant folders across two
+   * malls produced 106 clauses, and 124 of the 175 records needed a
+   * human. Auto-acceptance is roughly three in ten, not eight in ten.
+   * See docs/gold-set-findings.md. Overstating this is how a pilot
+   * fails in month two.
+   */
   const total = Math.max(locationCount, 1);
-  const withClause = Math.round(total * 0.62);
-  const autoAccepted = Math.round(withClause * 0.78);
+  const withClause = Math.round(total * 0.61);
+  const autoAccepted = Math.round(withClause * 0.29);
   const needsReview = withClause - autoAccepted;
   const noClause = total - withClause;
+  const noTextLayer = Math.round(total * 0.49);
 
   const run = () => {
     set("leaseCount", total);
@@ -966,6 +974,13 @@ function LeasesStep({
               </div>
             ))}
           </div>
+
+          <Note tone="watch" title={`${noTextLayer} documents arrived as scanned images`}>
+            Roughly half of a real lease repository has no text layer. Those
+            are put through optical character recognition before extraction,
+            which is why the read takes hours rather than minutes, and why we
+            quote first answers in 48 hours rather than instantly.
+          </Note>
 
           <Note tone="petrol" title={`${noClause} leases carry no co-tenancy language`}>
             That is a finding, not an error, and it is worth knowing. Those

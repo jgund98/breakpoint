@@ -306,7 +306,10 @@ function clauseA(center: CenterFacts): Clause {
       cureBasis: "consecutive",
       clockStartsAt: "failure",
       noticeRequired: true,
-      reliefRunsFrom: "first_of_month_after_notice",
+      // Matches the shape seen most often in real leases: relief reaches
+      // back to the failure, but no further than 90 days before notice.
+      reliefRunsFrom: "failure",
+      retroactiveCapDays: 90,
       capMonths: 12,
       postCapElection: "tenant_choice",
       electionWindowDays: 60,

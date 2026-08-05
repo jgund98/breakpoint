@@ -148,15 +148,16 @@ export default function OverviewPage() {
       </Stagger>
 
       {summary.potentialMissed > 0 && (
-        <Note tone="brass" title="The gap between failure and notice">
-          Across the locations awaiting a decision, roughly{" "}
+        <Note tone="brass" title="Beyond the lookback">
+          Roughly{" "}
           <strong className="tnum font-semibold text-ink">
             {usd(Math.round(summary.potentialMissed))}
           </strong>{" "}
-          of potential relief sits in months that elapsed before notice could be
-          served. Where a clause runs relief from notice rather than from
-          failure, those months are generally not recoverable. This is an
-          estimate of what detection speed is worth, not a sum owed.
+          of potential relief sits in months these clauses can no longer reach.
+          Most provisions make relief retroactive to the failure but cap the
+          lookback a fixed number of days before notice, so anything older than
+          the cap is out of reach however strong the claim. That cap is what
+          detection speed is worth. It is an estimate, not a sum owed.
         </Note>
       )}
 

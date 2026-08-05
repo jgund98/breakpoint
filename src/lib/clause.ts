@@ -281,8 +281,20 @@ export type Remedy = {
   /** Whether the cure clock starts at the failure or at tenant's notice. */
   clockStartsAt: "failure" | "tenant_notice";
   noticeRequired: boolean;
-  /** Relief runs from this event, which is usually not the failure. */
+  /**
+   * When relief begins. In the real gold set 65% run from the condition
+   * itself and only 21% from notice, so "failure" is the common case,
+   * not the exception.
+   */
   reliefRunsFrom: "failure" | "first_of_month_after_notice" | "notice";
+  /**
+   * How far back relief may reach before the tenant's notice. This is
+   * the field that actually makes detection speed worth money: relief
+   * is retroactive to the failure "but not more than ninety (90) days
+   * prior to Tenant's notice". Everything beyond the cap is gone no
+   * matter how strong the claim. Undefined means uncapped.
+   */
+  retroactiveCapDays?: number;
   capMonths?: number;
   postCapElection?: "resume_full_rent" | "terminate" | "tenant_choice";
   /** Days after the cap in which the election must be made, or it lapses. */
@@ -498,9 +510,11 @@ export type Evaluation = {
   state: ClauseState;
   /** Money the remedy is worth per month once running. */
   monthlyDelta: number | null;
-  /** Months between first observation and notice. Structurally unrecoverable. */
+  /** Months between the condition becoming observable and notice. */
   monthsBeforeNotice: number;
-  /** Estimated value of that gap. Potential, never "owed". */
+  /** Of those, the months relief can still reach back and capture. */
+  recoverableMonths: number;
+  /** Value of the months the cap puts out of reach. Potential, never "owed". */
   potentialMissed: number | null;
   /** Value of the remedy over the next twelve months if it runs. */
   forwardTwelveMonths: number | null;
@@ -686,8 +700,25 @@ export function evaluateClause(
         ? Math.max(0, monthsBetween(firstObserved, asOf))
         : 0;
 
+  /*
+   * Only the months inside the retroactive cap can still be captured.
+   * Where relief runs from notice there is no lookback at all, so every
+   * month before notice is lost. Where it runs from the failure with a
+   * cap, the months beyond the cap are lost. Uncapped and running from
+   * the failure means nothing is lost, and we should say so.
+   */
+  const capMonths =
+    r.reliefRunsFrom === "failure"
+      ? r.retroactiveCapDays != null
+        ? r.retroactiveCapDays / 30.44
+        : Infinity
+      : 0;
+
+  const recoverableMonths = Math.min(monthsBeforeNotice, capMonths);
+  const lostMonths = Math.max(0, monthsBeforeNotice - recoverableMonths);
+
   const potentialMissed =
-    monthlyDelta == null ? null : monthlyDelta * monthsBeforeNotice;
+    monthlyDelta == null ? null : monthlyDelta * lostMonths;
 
   const electionDeadline =
     noticeServed && r.capMonths
@@ -708,6 +739,9 @@ export function evaluateClause(
     state,
     monthlyDelta,
     monthsBeforeNotice,
+    recoverableMonths: Number.isFinite(recoverableMonths)
+      ? Math.round(recoverableMonths * 10) / 10
+      : monthsBeforeNotice,
     potentialMissed,
     forwardTwelveMonths: monthlyDelta == null ? null : monthlyDelta * 12,
     cureEndsOn: cureEnds ? iso(cureEnds) : null,
