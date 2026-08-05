@@ -440,7 +440,7 @@ function OutcomeCard({
             <div className="mt-4 space-y-3 border-t border-brass-200 pt-4">
               <p className="text-sm leading-relaxed text-ink-soft">
                 ≈ <span className="tnum font-semibold text-ink">{usd(evaluation.annualDelta)}</span>{" "}
-                per year in potential rent relief on this store.
+                per year in potential co-tenancy rent on this store.
               </p>
               <div>
                 <span className="label text-muted">What changed</span>

@@ -165,7 +165,7 @@ export default function OverviewPage() {
         </Item>
         <Item>
           <Stat
-            label="Potential annual relief"
+            label="Co-tenancy rent available"
             tone="brass"
             value={compactUsd(summary.atRiskAnnual)}
             sub="Estimated, across locations awaiting a decision."
@@ -240,7 +240,7 @@ export default function OverviewPage() {
           <strong className="tnum font-semibold text-ink">
             {usd(Math.round(summary.potentialMissed))}
           </strong>{" "}
-          of potential relief sits in months these clauses can no longer reach.
+          of potential co-tenancy rent sits in months these clauses can no longer reach.
           Most provisions make relief retroactive to the failure but cap the
           lookback a fixed number of days before notice, so anything older than
           the cap is out of reach however strong the claim. That cap is what

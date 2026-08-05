@@ -16,13 +16,10 @@ export type TableRow = {
   stateKey: string;
   stateLabel: string;
   stateTone: Tone;
-  grade: string;
-  gradeTone: Tone;
   failing: string;
   monthly: number | null;
   evidence: string;
   evidenceTone: Tone;
-  occupancy: string;
   clockDays: number | null;
   clockLabel: string | null;
 };
@@ -32,10 +29,9 @@ const VIEWS = [
   { id: "decision", label: "Needs a decision" },
   { id: "watch", label: "Watch and curing" },
   { id: "running", label: "Remedy running" },
-  { id: "weak", label: "Weak clauses" },
 ] as const;
 
-type SortKey = "monthly" | "center" | "clock" | "grade";
+type SortKey = "monthly" | "center" | "clock";
 
 export function LocationsTable({ rows }: { rows: TableRow[] }) {
   const [view, setView] = useState<(typeof VIEWS)[number]["id"]>("all");
@@ -57,7 +53,6 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
     if (view === "watch")
       out = out.filter((r) => r.stateKey === "watch" || r.stateKey === "curing");
     if (view === "running") out = out.filter((r) => r.stateKey === "remedy_active");
-    if (view === "weak") out = out.filter((r) => ["C", "D", "F"].includes(r.grade));
 
     if (region !== "All regions") out = out.filter((r) => r.region === region);
 
@@ -71,7 +66,6 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
 
     return [...out].sort((a, b) => {
       if (sort === "center") return a.centerName.localeCompare(b.centerName);
-      if (sort === "grade") return a.grade.localeCompare(b.grade);
       if (sort === "clock")
         return (a.clockDays ?? 99999) - (b.clockDays ?? 99999);
       return (b.monthly ?? -1) - (a.monthly ?? -1);
@@ -87,7 +81,6 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
       watch: rows.filter((r) => r.stateKey === "watch" || r.stateKey === "curing")
         .length,
       running: rows.filter((r) => r.stateKey === "remedy_active").length,
-      weak: rows.filter((r) => ["C", "D", "F"].includes(r.grade)).length,
     }),
     [rows],
   );
@@ -152,10 +145,9 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
           onChange={(e) => setSort(e.target.value as SortKey)}
           className="rounded-lg border border-line bg-surface px-3 py-2.5 text-[0.8125rem] font-medium text-ink-soft focus:border-petrol-300 focus:outline-none"
         >
-          <option value="monthly">Sort: value per month</option>
+          <option value="monthly">Sort: co-tenancy rent</option>
           <option value="clock">Sort: soonest clock</option>
           <option value="center">Sort: center name</option>
-          <option value="grade">Sort: clause strength</option>
         </select>
 
         <span className="ml-auto text-[0.75rem] whitespace-nowrap text-muted">
@@ -172,12 +164,10 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
                 "Location",
                 "Center",
                 "Status",
-                "Clause",
-                "Occupancy",
                 "Failing test",
                 "Evidence",
                 "Clock",
-                "Per month",
+                "Co-tenancy rent",
               ].map((h) => (
                 <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
                   {h}
@@ -210,24 +200,6 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
                   <Pill tone={r.stateTone} dot>
                     {r.stateLabel}
                   </Pill>
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={cn(
-                      "grid h-7 w-7 place-items-center rounded-lg text-[0.8125rem] font-bold",
-                      r.gradeTone === "open"
-                        ? "bg-open-50 text-open-700"
-                        : r.gradeTone === "watch"
-                          ? "bg-brass-50 text-brass-700"
-                          : "bg-clay-50 text-clay-700",
-                    )}
-                    title="Clause strength"
-                  >
-                    {r.grade}
-                  </span>
-                </td>
-                <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
-                  {r.occupancy}
                 </td>
                 <td className="px-4 py-3 text-[0.8125rem] text-ink-soft">
                   {r.failing || <span className="text-faint">None</span>}

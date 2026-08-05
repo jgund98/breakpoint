@@ -1121,7 +1121,7 @@ function WatchStep({
               [
                 ["weekly", "Weekly", "Every center, every week. The default."],
                 ["biweekly", "Every two weeks", "Lower touch for stable portfolios."],
-                ["monthly", "Monthly", "Minimum viable. Not recommended where relief runs from notice."],
+                ["monthly", "Monthly", "Minimum viable. Not recommended where co-tenancy rent runs from notice."],
               ] as const
             ).map(([id, title, blurb]) => (
               <Choice

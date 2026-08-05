@@ -35,14 +35,12 @@ const NAV = [
       { href: "/app/theo", label: "Ask Theo", Icon: Sparkles },
       { href: "/app/locations", label: "Locations", Icon: Store },
       { href: "/app/coverage", label: "Coverage", Icon: Radar },
-      { href: "/app/activity", label: "Activity", Icon: RefreshCw },
-      { href: "/app/signals", label: "Signals", Icon: Activity },
+      { href: "/app/activity", label: "Activity", Icon: Activity },
     ],
   },
   {
     heading: "Analyze",
     items: [
-      { href: "/app/cascade", label: "Anchor exposure", Icon: Network },
       { href: "/app/clauses", label: "Clause library", Icon: FileText },
       { href: "/app/value", label: "Value realized", Icon: TrendingUp },
     ],

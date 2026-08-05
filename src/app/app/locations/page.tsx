@@ -1,5 +1,4 @@
 import { STATE_META, TIER_META, verificationOf } from "@/lib/clause";
-import { GRADE_TONE, gradeClause } from "@/lib/grade";
 import { rows } from "@/lib/portfolio";
 import { PageHead, type Tone } from "@/components/app/ui";
 import {
@@ -10,8 +9,6 @@ import {
 export default function LocationsPage() {
   const data: TableRow[] = rows.map((r) => {
     const v = verificationOf(r.evidence);
-    const grade = gradeClause(r.clause);
-    const occ = r.evaluation.triggers.find((t) => t.label === "Occupancy");
     const failing = r.evaluation.triggers.filter((t) => t.failing);
 
     const election = r.evaluation.daysUntilElection;
@@ -33,8 +30,6 @@ export default function LocationsPage() {
       stateKey: r.evaluation.state,
       stateLabel: STATE_META[r.evaluation.state].label,
       stateTone: STATE_META[r.evaluation.state].tone as Tone,
-      grade: grade.letter,
-      gradeTone: GRADE_TONE[grade.letter] as Tone,
       failing: failing.map((t) => t.label).join(", "),
       monthly: r.evaluation.anyFailing ? r.evaluation.monthlyDelta : 0,
       evidence: TIER_META[v.tier].label,
@@ -43,7 +38,6 @@ export default function LocationsPage() {
         : v.tier === "corroborated"
           ? "watch"
           : "muted") as Tone,
-      occupancy: occ ? occ.observed : "n/a",
       clockDays,
       clockLabel:
         election != null && election > 0

@@ -168,7 +168,7 @@ export default function NoticesPage() {
                       v: lead.clause.remedy.altRent?.text ?? `${lead.clause.remedy.abatementPct}% abatement`,
                     },
                     {
-                      k: "Relief runs from",
+                      k: "Co-tenancy rent runs from",
                       v:
                         lead.clause.remedy.reliefRunsFrom === "failure"
                           ? "The failure"

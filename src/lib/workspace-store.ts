@@ -143,7 +143,7 @@ export const NOTICE_META: Record<
   },
   served: {
     label: "Served",
-    blurb: "Recorded as delivered. Relief runs from this date forward.",
+    blurb: "Recorded as delivered. Co-tenancy rent runs from this date forward.",
   },
   declined: {
     label: "Not pursuing",

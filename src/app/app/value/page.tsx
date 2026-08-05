@@ -40,7 +40,7 @@ export default function ValuePage() {
       <PageHead
         eyebrow="Analyze"
         title="Value realized"
-        lede={`Since ${prettyDate(contract.startedOn)}. Estimates of potential relief, not amounts owed.`}
+        lede={`Since ${prettyDate(contract.startedOn)}. Estimates of potential co-tenancy rent, not amounts owed.`}
         right={<LinkButton href="/app/notices">Notice desk</LinkButton>}
       />
 
@@ -56,7 +56,7 @@ export default function ValuePage() {
               </span>
             </h2>
             <p className="no-orphan mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-cream-soft">
-              {usd(Math.round(realized))} of relief secured or identified against{" "}
+              {usd(Math.round(realized))} of co-tenancy rent secured or identified against{" "}
               {usd(Math.round(l.feeToDate))} of fee over {l.monthsElapsed} months.
               Identified means a verified condition makes it available. It is
               not money owed and it is not booked until a notice is served.
@@ -139,7 +139,7 @@ export default function ValuePage() {
 
         {l.detectionGap > 0 && (
           <Note tone="watch" title="What slow detection has cost historically">
-            {usd(Math.round(l.detectionGap))} of potential relief sits in months
+            {usd(Math.round(l.detectionGap))} of potential co-tenancy rent sits in months
             that elapsed before notice could be served on conditions we now
             monitor. Where a clause runs relief from notice rather than from
             failure, those months are generally not recoverable. This is the
@@ -257,7 +257,7 @@ export default function ValuePage() {
       </Panel>
 
       <p className="rounded-xl border border-line bg-surface-sunk p-5 text-[0.75rem] leading-relaxed text-muted">
-        Illustrative sample data. Figures are estimates of potential relief
+        Illustrative sample data. Figures are estimates of potential co-tenancy rent
         based on the terms in each lease and observed conditions in each center.
         They are not amounts owed, and whether any right exists is a decision
         for you and your counsel.

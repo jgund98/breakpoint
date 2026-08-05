@@ -666,7 +666,20 @@ function buildLocation(script: Script, i: number): Location {
     econ: {
       gla,
       rentPsf,
-      ttmGrossSales: script.salesUnreported ? null : Math.round((gla * salesPsf) / 1000) * 1000,
+      /*
+       * Sales are the exception, not the rule.
+       *
+       * Tenants are not obliged to report sales and are sensitive about
+       * them, so most locations arrive without any. The product has to
+       * work in that state: the base capability is telling you a
+       * co-tenancy condition has been met, and the money is computed
+       * only where sales exist. Modelling sales as universally present
+       * would make the demo promise arithmetic we usually cannot do.
+       */
+      ttmGrossSales:
+        script.salesUnreported || r() > 0.35
+          ? null
+          : Math.round((gla * salesPsf) / 1000) * 1000,
       salesEstimated: false,
       commencement: iso(addDays(new Date(TODAY), -Math.floor(1100 + r() * 2600))),
       expiration: iso(addDays(new Date(TODAY), Math.floor(300 + r() * 2200))),

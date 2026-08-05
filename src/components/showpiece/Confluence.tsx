@@ -29,7 +29,7 @@ const RIGHT = [
 
 const OUT = [
   { x: 26, label: "Potential trigger flagged" },
-  { x: 50, label: "Estimated rent relief" },
+  { x: 50, label: "Estimated co-tenancy rent" },
   { x: 74, label: "Review package" },
 ];
 

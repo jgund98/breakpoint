@@ -75,13 +75,18 @@ export function Verdict({
               <p className="no-orphan mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-cream-soft">
                 At each of these stores, a co-tenancy test in your lease has
                 failed, the landlord&#8217;s window to fix it has passed, and
-                you meet every condition to claim. Together they are worth an
-                estimated{" "}
-                <span className="tnum font-semibold text-cream">
-                  {usd(Math.round(monthlyTotal))}
-                </span>{" "}
-                per month in reduced rent, for as long as the failure lasts.
-                Estimated, not owed, and it begins when you serve notice.
+                you meet every condition to claim. Co-tenancy rent applies from
+                the date you serve notice.
+                {monthlyTotal > 0 && (
+                  <>
+                    {" "}
+                    Where you have given us sales, that is an estimated{" "}
+                    <span className="tnum font-semibold text-cream">
+                      {usd(Math.round(monthlyTotal))}
+                    </span>{" "}
+                    per month.
+                  </>
+                )}
               </p>
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link
@@ -134,7 +139,7 @@ export function Verdict({
             />
             <Row k="Centers surveyed" v={String(centersSurveyed)} />
             <Row
-              k="Monthly relief running"
+              k="Co-tenancy rent running"
               v={compactUsd(monthlyTotal)}
               muted={!live}
             />

@@ -179,7 +179,7 @@ export function toolCenter(name: string): TheoAnswer {
           action: { label: "Browse locations", href: "/app/locations" },
         },
       ],
-      followUps: ["Which locations qualify for rent relief?"],
+      followUps: ["Which locations qualify for co-tenancy rent?"],
     };
   }
 
@@ -244,7 +244,7 @@ export function toolCenter(name: string): TheoAnswer {
     blocks,
     followUps: [
       `When was ${center.name} last checked?`,
-      "Which locations qualify for rent relief?",
+      "Which locations qualify for co-tenancy rent?",
     ],
   };
 }
@@ -347,7 +347,7 @@ export function toolClaimable(): TheoAnswer {
 
   if (claimable.length === 0) {
     return {
-      interpreted: "Locations that qualify for rent relief",
+      interpreted: "Locations that qualify for co-tenancy rent",
       lead: "Nothing qualifies today, which is the good outcome.",
       provenance: asOf,
       blocks: [
@@ -366,7 +366,7 @@ export function toolClaimable(): TheoAnswer {
   );
 
   return {
-    interpreted: "Locations that qualify for rent relief",
+    interpreted: "Locations that qualify for co-tenancy rent",
     lead: `${claimable.length} ${claimable.length === 1 ? "location qualifies" : "locations qualify"} right now, worth about ${usd(Math.round(total))} a month combined. Each one has a failing test, the landlord's window to fix it has passed, and you meet the conditions to claim.`,
     provenance: asOf,
     blocks: [
@@ -434,7 +434,7 @@ export function toolNearMiss(): TheoAnswer {
           near.length === 0 ? "Nothing is inside the watch band." : undefined,
       },
     ],
-    followUps: ["Which locations qualify for rent relief?"],
+    followUps: ["Which locations qualify for co-tenancy rent?"],
   };
 }
 
@@ -504,7 +504,7 @@ export function toolChanges(): TheoAnswer {
             body: "Nothing changed in the last four sweeps. Every named tenant we watch was open on each pass.",
           },
         ],
-    followUps: ["Which locations qualify for rent relief?", "What is closest to failing?"],
+    followUps: ["Which locations qualify for co-tenancy rent?", "What is closest to failing?"],
   };
 }
 
@@ -571,7 +571,7 @@ export function toolValue(): TheoAnswer {
         body: "Available means a verified condition makes relief claimable. It is an estimate of what the lease allows, not money owed, and nothing is booked until a notice is served.",
       },
     ],
-    followUps: ["Which locations qualify for rent relief?"],
+    followUps: ["Which locations qualify for co-tenancy rent?"],
   };
 }
 
@@ -631,7 +631,7 @@ export function ask(question: string): TheoAnswer {
       },
     ],
     followUps: [
-      "Which locations qualify for rent relief?",
+      "Which locations qualify for co-tenancy rent?",
       "What does Breakpoint monitor?",
       "What changed in the last sweep?",
     ],
@@ -646,7 +646,7 @@ export function suggestedQuestions(): string[] {
   const worst = rows.find((r) => r.evaluation.state === "election_open");
 
   if (claimable.length)
-    out.push("Which locations qualify for rent relief?");
+    out.push("Which locations qualify for co-tenancy rent?");
   if (worst) out.push(`What is the deadline at ${worst.center.name}?`);
   if (top) out.push(`What happens if ${top.operator} closes everywhere?`);
   out.push("What is closest to failing?");
@@ -668,7 +668,7 @@ export function greeting(): string {
   if (lapsing > 0)
     return `Worth starting here: ${lapsing} ${lapsing === 1 ? "location has an election window" : "locations have election windows"} closing, and those rights lapse if nobody acts on them. Ask me about those, or anything else in the portfolio.`;
   if (claimable > 0)
-    return `${claimable} ${claimable === 1 ? "location currently qualifies" : "locations currently qualify"} for rent relief. Ask me about those, or anything else across your ${rows.length} watched doors.`;
+    return `${claimable} ${claimable === 1 ? "location currently qualifies" : "locations currently qualify"} for co-tenancy rent. Ask me about those, or anything else across your ${rows.length} watched doors.`;
   if (watching > 0)
     return `Nothing qualifies for relief today. ${watching} ${watching === 1 ? "location is" : "locations are"} close to a threshold and worth a look. Ask me anything about the portfolio.`;
   return `All quiet. Every co-tenancy test across your ${rows.length} watched doors is satisfied. Ask me anything and I will pull what I have.`;

@@ -131,7 +131,7 @@ export function CascadeBoard({
                 <Cell
                   label="Annual"
                   value={compactUsd(result.annualDelta)}
-                  hint="Estimated relief"
+                  hint="Estimated co-tenancy rent"
                   wide
                 />
                 <Cell

@@ -10,7 +10,7 @@
  *
  * The ledger is deliberately conservative and split into identified,
  * secured, and at risk of lapsing. Nothing here is presented as money
- * owed. Identified is an estimate of relief a verified condition makes
+ * owed. Identified is an estimate of co-tenancy rent a verified condition makes
  * available. Secured is relief actually running under a served notice.
  * Lapsing is value that disappears if an election window closes.
  */

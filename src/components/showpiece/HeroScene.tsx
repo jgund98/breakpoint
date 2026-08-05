@@ -191,7 +191,7 @@ export function HeroScene({ className }: { className?: string }) {
                   +$18,917<span className="text-[0.55em]">/mo</span>
                 </p>
                 <p className="mt-1 text-[0.6875rem] font-semibold tracking-tight text-cream/90">
-                  potential rent relief identified
+                  potential co-tenancy rent identified
                 </p>
               </div>
             </motion.div>

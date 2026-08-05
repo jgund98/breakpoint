@@ -363,7 +363,7 @@ export function Board({ center, clause, econ, claim, asOf }: Props) {
         {/* ---- the readout ---- */}
         <div className="p-5 sm:p-6">
           <p className="label text-muted">
-            {live.anyFailing ? "Estimated monthly relief" : "Nothing claimable"}
+            {live.anyFailing ? "Estimated co-tenancy rent" : "Nothing claimable"}
           </p>
           <p
             className={cn(

@@ -324,7 +324,7 @@ export default function CoTenancyPage() {
                   </figcaption>
                 </figure>
                 <p className="no-orphan balance mt-6 text-[1.0625rem] leading-relaxed text-ink-soft">
-                  Add the commencement rule, relief running from notice rather
+                  Add the commencement rule, co-tenancy rent running from notice rather
                   than from failure, and the cost of the gap compounds every
                   month it stays open.
                 </p>

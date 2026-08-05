@@ -149,7 +149,7 @@ export function WorkspaceMock({ className }: { className?: string }) {
             </div>
             <p className="mt-1.5 text-[0.75rem] leading-relaxed text-ink-soft">
               §4.3(b) named inline and §4.3(c) occupancy tests appear to have
-              failed. Estimated relief $18,917/mo, pending your review and
+              failed. Estimated co-tenancy rent $18,917/mo, pending your review and
               written notice.
             </p>
             <div className="mt-2.5 flex flex-col gap-2 sm:flex-row">

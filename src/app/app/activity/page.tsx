@@ -1,12 +1,11 @@
 import Link from "next/link";
 import {
   Bell,
-  CalendarClock,
   Download,
   FileBarChart,
   RefreshCw,
 } from "lucide-react";
-import { prettyDate, shortDate } from "@/lib/clause";
+import { SOURCE_META, prettyDate, shortDate } from "@/lib/clause";
 import {
   REPORT_META,
   activitySummary,
@@ -14,6 +13,7 @@ import {
   reports,
   sweeps,
 } from "@/lib/activity";
+import { signalFeed } from "@/lib/portfolio";
 import {
   ActionButton,
   LinkButton,
@@ -38,16 +38,15 @@ export default function ActivityPage() {
       <PageHead
         eyebrow="Monitor"
         title="Activity"
-        lede="Every sweep that ran, every report delivered, every alert sent."
+        lede="Scans, observations, alerts and reports."
         right={<LinkButton href="/app/coverage">Coverage</LinkButton>}
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Sweeps run", a.sweepsRun, `Last ${shortDate(a.lastSweep)}`],
-          ["Source checks", a.totalChecks.toLocaleString("en-US"), "Across all sweeps"],
-          ["Status changes caught", a.changesDetected, "Stores that moved"],
-          ["Reports delivered", a.reportsDelivered, "Automatically"],
+          ["Scans run", a.sweepsRun, `Last ${shortDate(a.lastSweep)}`],
+          ["Changes found", a.changesDetected, "Stores that closed or reopened"],
+          ["Reports sent", a.reportsDelivered, "To your team"],
         ].map(([k, v, hint], i) => (
           <div
             key={k as string}
@@ -62,17 +61,12 @@ export default function ActivityPage() {
         ))}
       </div>
 
-      {/* ---- sweep history ---- */}
+      {/* ---- scans ---- */}
       <Panel flush className="card-enter d-2">
         <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
-          <PanelHead
-            title="Sweep history"
-            hint="One pass over every watched store, weekly. A pass with nothing to report is still the product working."
-          />
+          <PanelHead title="Scan history" hint="Weekly, across every store your clauses name." />
           <Pill tone="open" dot>
-            {a.daysSinceLastSweep === 0
-              ? "Ran today"
-              : `${a.daysSinceLastSweep}d ago`}
+            {a.daysSinceLastSweep === 0 ? "Ran today" : `${a.daysSinceLastSweep}d ago`}
           </Pill>
         </div>
 
@@ -93,8 +87,7 @@ export default function ActivityPage() {
                   <span className="ml-2 font-normal text-faint">{s.id}</span>
                 </p>
                 <p className="text-[0.75rem] text-muted">
-                  {s.targetsChecked} stores · {s.sourceCalls} source checks ·{" "}
-                  {s.durationMin} min
+                  {s.targetsChecked} stores checked
                   {s.moved.length > 0 && (
                     <>
                       {" · "}
@@ -114,74 +107,70 @@ export default function ActivityPage() {
                 >
                   {s.changes === 0 ? "No change" : `${s.changes} changed`}
                 </p>
-                {s.findings > 0 && (
-                  <p className="text-[0.75rem] text-clay-600">
-                    {s.findings} finding{s.findings === 1 ? "" : "s"}
-                  </p>
-                )}
               </div>
             </li>
           ))}
         </ul>
       </Panel>
 
-      <div className="grid gap-3 lg:grid-cols-2">
-        {/* ---- reports ---- */}
-        <Panel flush className="card-enter d-3">
-          <div className="px-5 pt-5">
-            <PanelHead
-              title="Reports"
-              hint="Delivered on schedule to the people who need them."
-            />
-          </div>
-          <ul className="mt-4 divide-y divide-line">
-            {reports.map((r) => {
-              const meta = REPORT_META[r.kind];
-              return (
-                <li key={r.id} className="flex items-start gap-3 px-5 py-3.5">
-                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-petrol-50 text-petrol-700">
-                    <FileBarChart className="h-3.5 w-3.5" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[0.875rem] font-medium text-ink">
-                      {meta.label}
-                      <span className="ml-2 font-normal text-muted">
-                        {r.period}
-                      </span>
+      {/* ---- observations, merged in from the old Signals page ---- */}
+      <Panel flush className="card-enter d-3">
+        <div className="px-5 pt-5">
+          <PanelHead
+            title="Observations"
+            hint="What each scan saw, and where it came from. A single third-party listing is not treated as confirmation."
+          />
+        </div>
+        <ul className="max-h-[520px] divide-y divide-line overflow-y-auto">
+          {signalFeed.slice(0, 24).map((s) => {
+            const meta = SOURCE_META[s.source];
+            return (
+              <li key={s.id} className="flex flex-wrap items-start gap-4 px-5 py-3.5">
+                <span
+                  className={`mt-1 h-[14px] w-[14px] shrink-0 rounded-full border-2 ${
+                    meta.tier === "primary"
+                      ? "border-open-600 bg-open-50"
+                      : "border-faint bg-surface"
+                  }`}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2.5">
+                    <p className="text-[0.875rem] font-semibold text-ink">
+                      {s.unitName}
                     </p>
-                    <p className="text-[0.75rem] text-muted">
-                      {r.pages} pages · {r.findings} finding
-                      {r.findings === 1 ? "" : "s"} · sent to{" "}
-                      {r.recipients.join(", ")}
-                    </p>
-                    <p className="text-[0.75rem] text-faint">
-                      Generated {shortDate(r.generatedOn)} · for {meta.audience}
-                    </p>
+                    <Link
+                      href={`/app/locations/${s.locationId}`}
+                      className="text-[0.8125rem] text-petrol-700 hover:underline"
+                    >
+                      {s.centerName}
+                    </Link>
+                    <span className="text-[0.75rem] text-faint">{s.city}</span>
                   </div>
-                  <ActionButton variant="quiet" className="shrink-0 px-2.5 py-1.5">
-                    <Download className="h-3.5 w-3.5" />
-                  </ActionButton>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="border-t border-line px-5 py-3">
-            <p className="flex items-center gap-1.5 text-[0.75rem] text-muted">
-              <CalendarClock className="h-3.5 w-3.5" />
-              Next scheduled report {a.nextReport}
-            </p>
-          </div>
-        </Panel>
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                    {s.statement}
+                  </p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <Pill tone={meta.tier === "primary" ? "open" : "muted"}>
+                    {meta.label}
+                  </Pill>
+                  <p className="tnum mt-1.5 text-[0.75rem] text-faint">
+                    {prettyDate(s.observedAt)}
+                  </p>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </Panel>
 
-        {/* ---- notifications ---- */}
+      <div className="grid gap-3 lg:grid-cols-2">
+        {/* ---- alerts ---- */}
         <Panel flush className="card-enter d-4">
           <div className="px-5 pt-5">
-            <PanelHead
-              title="Alerts sent"
-              hint="What we told you, when, and who received it."
-            />
+            <PanelHead title="Alerts sent" hint="What we told you, and who received it." />
           </div>
-          <ul className="max-h-[520px] divide-y divide-line overflow-y-auto">
+          <ul className="max-h-[480px] divide-y divide-line overflow-y-auto">
             {notifications.map((n) => {
               const sev = SEVERITY[n.severity];
               return (
@@ -219,18 +208,39 @@ export default function ActivityPage() {
               );
             })}
           </ul>
-          {notifications.length === 0 && (
-            <p className="px-5 py-12 text-center text-[0.8125rem] text-muted">
-              No alerts sent. Nothing has crossed a threshold.
-            </p>
-          )}
+        </Panel>
+
+        {/* ---- reports ---- */}
+        <Panel flush className="card-enter d-5">
+          <div className="px-5 pt-5">
+            <PanelHead title="Reports" hint="Sent on schedule." />
+          </div>
+          <ul className="mt-4 divide-y divide-line">
+            {reports.map((r) => {
+              const meta = REPORT_META[r.kind];
+              return (
+                <li key={r.id} className="flex items-start gap-3 px-5 py-3.5">
+                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-petrol-50 text-petrol-700">
+                    <FileBarChart className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.875rem] font-medium text-ink">
+                      {meta.label}
+                      <span className="ml-2 font-normal text-muted">{r.period}</span>
+                    </p>
+                    <p className="text-[0.75rem] text-muted">
+                      Sent {shortDate(r.generatedOn)} to {r.recipients.join(", ")}
+                    </p>
+                  </div>
+                  <ActionButton variant="quiet" className="shrink-0 px-2.5 py-1.5">
+                    <Download className="h-3.5 w-3.5" />
+                  </ActionButton>
+                </li>
+              );
+            })}
+          </ul>
         </Panel>
       </div>
-
-      <p className="rounded-xl border border-line bg-surface-sunk p-4 text-[0.75rem] leading-relaxed text-muted">
-        Sweeps, reports and alerts are recorded so the watch can be evidenced
-        later. Illustrative sample data.
-      </p>
     </div>
   );
 }

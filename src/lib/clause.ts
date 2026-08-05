@@ -828,7 +828,7 @@ export function evaluateClause(
 
   /*
    * Only the months inside the retroactive cap can still be captured.
-   * Where relief runs from notice there is no lookback at all, so every
+   * Where co-tenancy rent runs from notice there is no lookback at all, so every
    * month before notice is lost. Where it runs from the failure with a
    * cap, the months beyond the cap are lost. Uncapped and running from
    * the failure means nothing is lost, and we should say so.

@@ -193,7 +193,7 @@ export function Theo() {
               "What is happening at any center",
               "The exact wording of a clause, with its section",
               "When a store was last checked, and by which sources",
-              "What qualifies for rent relief, and what it is worth",
+              "What qualifies for co-tenancy rent, and what it is worth",
               "Which reporting rights you can exercise",
             ].map((x) => (
               <li key={x} className="flex gap-2">

@@ -375,7 +375,7 @@ export default async function LocationPage({
                 {clause.remedy.reliefRunsFrom === "failure" ? (
                   clause.remedy.retroactiveCapDays != null ? (
                     <>
-                      Relief reaches back to the failure but no more than{" "}
+                      Co-tenancy rent reaches back to the failure but no more than{" "}
                       {clause.remedy.retroactiveCapDays} days before notice, so{" "}
                       {ev.recoverableMonths} of those months are recoverable
                       {ev.potentialMissed ? (
@@ -390,13 +390,13 @@ export default async function LocationPage({
                     </>
                   ) : (
                     <>
-                      Relief reaches back to the failure with no cap, so the
+                      Co-tenancy rent reaches back to the failure with no cap, so the
                       full period remains recoverable.
                     </>
                   )
                 ) : (
                   <>
-                    Relief runs from notice with no lookback, so roughly{" "}
+                    Co-tenancy rent runs from notice with no lookback, so roughly{" "}
                     {usd(Math.round(ev.potentialMissed ?? 0))} of potential
                     relief is out of reach.
                   </>
@@ -478,7 +478,7 @@ export default async function LocationPage({
         Illustrative sample data. Breakpoint flags conditions and assembles the
         supporting file. Whether a right exists, and whether to exercise it, is
         a decision for you and your counsel on the executed lease and its
-        amendments. Figures shown are estimates of potential relief, not amounts
+        amendments. Figures shown are estimates of potential co-tenancy rent, not amounts
         owed.
       </p>
     </div>
