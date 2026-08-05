@@ -24,6 +24,11 @@ import {
 } from "@/components/app/ui";
 import { Verdict } from "@/components/app/Verdict";
 import { Item, Stagger } from "@/components/app/Motion";
+import {
+  ThresholdRail,
+  type RailPoint,
+} from "@/components/app/ThresholdRail";
+import { sweeps } from "@/lib/activity";
 
 export default function OverviewPage() {
   const decisions = rows
@@ -59,6 +64,33 @@ export default function OverviewPage() {
   const needsRentRoll = rows.filter(
     (r) => r.evaluation.anyFailing && r.evaluation.evidenceCeiling !== "observable",
   );
+
+  /* ---- margin to threshold, per door ----
+     The tightest test on each lease decides where that door sits. A
+     count test's ratio is open over required, an occupancy test's is
+     observed over threshold, so both normalize to the same axis: how
+     much room is left before this one trips. */
+  const railPoints: RailPoint[] = rows.map((r) => {
+    const tightest = [...r.evaluation.triggers].sort((a, b) => a.ratio - b.ratio)[0];
+    const margin = tightest.ratio - 1;
+    return {
+      id: r.id,
+      center: r.center.name,
+      city: `${r.center.city}, ${r.center.state}`,
+      margin,
+      label: tightest.headroom,
+      test: tightest.label,
+      state: r.evaluation.state,
+      tone: (tightest.failing
+        ? "clay"
+        : margin < 0.03
+          ? "brass"
+          : margin < 0.1
+            ? "watch"
+            : "open") as Tone,
+      monthly: r.evaluation.anyFailing ? r.evaluation.monthlyDelta : null,
+    };
+  });
 
   /* ---- the watch record: what the year bought, even in a quiet one ----
      Counts only the tenants a clause actually depends on. Those are the
@@ -159,6 +191,48 @@ export default function OverviewPage() {
           />
         </Item>
       </Stagger>
+
+      <div className="card-enter d-3">
+        <ThresholdRail points={railPoints} />
+      </div>
+
+      {/* ---- twelve weeks of sweeps, so continuity is visible ---- */}
+      <Panel className="card-enter d-4">
+        <PanelHead
+          title="Twelve weeks of monitoring"
+          hint="Each bar is one full pass over every watched door. Taller means more changed that week."
+          right={
+            <LinkButton href="/app/activity">Scan history</LinkButton>
+          }
+        />
+        <div className="mt-4 flex items-end gap-1.5">
+          {[...sweeps].reverse().map((s) => {
+            const height = 8 + Math.min(52, s.changes * 14);
+            return (
+              <div
+                key={s.id}
+                className="group relative flex flex-1 flex-col items-center gap-1.5"
+                title={`${prettyDate(s.ranOn)} · ${s.sourceCalls} checks · ${s.changes} changed`}
+              >
+                <span
+                  className={`w-full rounded-t-sm transition-colors ${
+                    s.changes > 0
+                      ? "bg-brass-500 group-hover:bg-brass-600"
+                      : "bg-open-600/35 group-hover:bg-open-600/60"
+                  }`}
+                  style={{ height }}
+                />
+                <span className="h-1 w-full rounded-b-sm bg-surface-sunk" />
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-3 text-[0.75rem] text-muted">
+          {sweeps.filter((s) => s.changes === 0).length} of {sweeps.length} passes
+          found nothing, which is the result you are paying for most weeks.
+          Every pass is recorded either way.
+        </p>
+      </Panel>
 
       {summary.potentialMissed > 0 && (
         <Note tone="brass" title="Beyond the lookback">
