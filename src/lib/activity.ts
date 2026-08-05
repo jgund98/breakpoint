@@ -23,9 +23,7 @@ export type SweepStatus = "complete" | "complete_with_changes" | "running";
 export type Sweep = {
   id: string;
   ranOn: string;
-  durationMin: number;
   targetsChecked: number;
-  sourceCalls: number;
   /** Stores whose status changed on this pass. */
   changes: number;
   /** Changes that opened or advanced a finding. */
@@ -73,9 +71,7 @@ export const sweeps: Sweep[] = (() => {
     out.push({
       id: `SW-${iso(ranOn).replace(/-/g, "")}`,
       ranOn: iso(ranOn),
-      durationMin: 18 + (h % 22),
       targetsChecked: coverage.storesWatched,
-      sourceCalls: coverage.checksPerSweep,
       changes: caught.length,
       findings: caught.filter((s) => s.state !== "compliant").length,
       status: caught.length ? "complete_with_changes" : "complete",
@@ -119,7 +115,6 @@ export type Report = {
   kind: ReportKind;
   period: string;
   generatedOn: string;
-  pages: number;
   findings: number;
   /** Who it went to automatically. */
   recipients: string[];
@@ -140,7 +135,6 @@ export const reports: Report[] = (() => {
       kind: "monthly",
       period: label,
       generatedOn: iso(addDays(d, 32)),
-      pages: 6 + (h % 5),
       findings: h % 4,
       recipients: ["Real estate", "Lease administration"],
     });
@@ -158,7 +152,6 @@ export const reports: Report[] = (() => {
       kind: "quarterly_assurance",
       period: label,
       generatedOn: iso(addDays(d, 96)),
-      pages: 14 + (h % 8),
       findings: h % 5,
       recipients: ["Finance", "Associate General Counsel"],
     });
@@ -248,7 +241,6 @@ export const activitySummary = {
   daysSinceLastSweep: sweeps[0]
     ? daysBetween(new Date(sweeps[0].ranOn), new Date(TODAY))
     : 0,
-  totalChecks: sweeps.reduce((s, x) => s + x.sourceCalls, 0),
   changesDetected: sweeps.reduce((s, x) => s + x.changes, 0),
   reportsDelivered: reports.length,
   notificationsSent: notifications.length,

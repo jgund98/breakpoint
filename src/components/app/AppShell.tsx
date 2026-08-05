@@ -42,7 +42,6 @@ const NAV = [
     heading: "Analyze",
     items: [
       { href: "/app/clauses", label: "Clause library", Icon: FileText },
-      { href: "/app/value", label: "Assurance", Icon: TrendingUp },
     ],
   },
   {

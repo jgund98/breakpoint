@@ -65,9 +65,7 @@ export function ScanStatus({ compact = false }: { compact?: boolean }) {
       <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
         {[
           [coverage.storesWatched.toLocaleString("en-US"), "stores"],
-          [coverage.checksPerSweep.toLocaleString("en-US"), "checks"],
           [String(last?.changes ?? 0), last?.changes === 1 ? "change" : "changes"],
-          [String(last?.durationMin ?? 0) + "m", "runtime"],
         ].map(([v, k]) => (
           <p key={k} className="text-[0.6875rem] text-muted">
             <span className="tnum font-semibold text-ink-soft">{v}</span> {k}

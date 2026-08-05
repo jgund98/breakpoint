@@ -147,7 +147,6 @@ export default function OverviewPage() {
         }
         right={
           <>
-            <LinkButton href="/app/cascade">Run a cascade</LinkButton>
             <LinkButton href="/app/notices" variant="primary">
               Notice desk
             </LinkButton>
@@ -222,7 +221,7 @@ export default function OverviewPage() {
               <div
                 key={s.id}
                 className="group relative flex flex-1 flex-col items-center gap-1.5"
-                title={`${prettyDate(s.ranOn)} · ${s.sourceCalls} checks · ${s.changes} changed`}
+                title={`${prettyDate(s.ranOn)} · ${s.changes} changed`}
               >
                 <span
                   className={`w-full rounded-t-sm transition-colors ${

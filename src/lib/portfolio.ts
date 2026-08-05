@@ -196,8 +196,6 @@ function buildCenter(index: number, spec: CenterSpec = {}): CenterFacts {
       gla: Math.round((95_000 + r() * 80_000) / 1000) * 1000,
       status: "open",
       kind: "anchor",
-      // Anchor terms run long; a handful roll inside the risk window.
-      leaseExpiry: iso(addDays(new Date(TODAY), Math.floor(120 + r() * 2900))),
     });
   }
   for (let i = 0; i < juniorCount; i++) {
@@ -207,7 +205,6 @@ function buildCenter(index: number, spec: CenterSpec = {}): CenterFacts {
       gla: Math.round((16_000 + r() * 26_000) / 500) * 500,
       status: "open",
       kind: "junior",
-      leaseExpiry: iso(addDays(new Date(TODAY), Math.floor(90 + r() * 2200))),
     });
   }
   for (let i = 0; i < inlineCount; i++) {

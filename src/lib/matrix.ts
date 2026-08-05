@@ -17,7 +17,6 @@
 
 import { runCascade } from "./cascade";
 import { rows, type Row } from "./portfolio";
-import { rolloverRisks } from "./value";
 
 export type CellState = "named" | "present" | "dark" | "absent";
 
@@ -40,8 +39,6 @@ export type MatrixRow = {
   wouldTrip: number;
   /** Share of your watched doors exposed to this one operator. */
   concentration: number;
-  rolloverDays: number | null;
-  rolloverOn: string | null;
 };
 
 export type Matrix = {
@@ -76,10 +73,6 @@ export function buildMatrix(data: Row[] = rows): Matrix {
     .map(([name, m]) => ({ name, ...m }))
     .sort((a, b) => b.doors - a.doors || a.name.localeCompare(b.name));
 
-  const rollovers = new Map(
-    rolloverRisks(data).map((x) => [x.operator, x]),
-  );
-
   const operators = new Map<string, MatrixRow>();
 
   for (const r of data) {
@@ -91,7 +84,6 @@ export function buildMatrix(data: Row[] = rows): Matrix {
 
       let row = operators.get(suite.name);
       if (!row) {
-        const ro = rollovers.get(suite.name);
         row = {
           operator: suite.name,
           cells: {},
@@ -101,8 +93,6 @@ export function buildMatrix(data: Row[] = rows): Matrix {
           monthlyAtStake: 0,
           wouldTrip: 0,
           concentration: 0,
-          rolloverDays: ro?.daysToSoonest ?? null,
-          rolloverOn: ro?.soonestExpiry ?? null,
         };
         operators.set(suite.name, row);
       }
