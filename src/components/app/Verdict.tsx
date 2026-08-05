@@ -67,19 +67,21 @@ export function Verdict({
             <>
               <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-cream">
                 {decisions} location{decisions === 1 ? "" : "s"}{" "}
+                {decisions === 1 ? "qualifies" : "qualify"} for{" "}
                 <span className="whitespace-nowrap">
-                  can move{" "}
-                  <span className="display-em text-brass-400">now.</span>
+                  rent <span className="display-em text-brass-400">relief.</span>
                 </span>
               </h2>
               <p className="no-orphan mt-3 max-w-lg text-[0.9375rem] leading-relaxed text-cream-soft">
-                Cure periods have elapsed and preconditions are met. Estimated
-                combined relief of{" "}
+                At each of these stores, a co-tenancy test in your lease has
+                failed, the landlord&#8217;s window to fix it has passed, and
+                you meet every condition to claim. Together they are worth an
+                estimated{" "}
                 <span className="tnum font-semibold text-cream">
                   {usd(Math.round(monthlyTotal))}
                 </span>{" "}
-                per month while the conditions continue. Potential, not owed,
-                and it starts running from notice.
+                per month in reduced rent, for as long as the failure lasts.
+                Estimated, not owed, and it begins when you serve notice.
               </p>
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link
