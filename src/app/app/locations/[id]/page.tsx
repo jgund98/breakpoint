@@ -14,7 +14,7 @@ import {
 } from "@/lib/clause";
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
 import { TODAY, rowById, rows } from "@/lib/portfolio";
-import { Board } from "@/components/app/Board";
+import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { Rise } from "@/components/app/Motion";
 import {
   ActionButton,
@@ -97,9 +97,9 @@ export default async function LocationPage({
         </div>
       </div>
 
-      {/* ---- THE BOARD ---- */}
+      {/* ---- the simulator ---- */}
       <Rise>
-        <Board
+        <ClauseSimulator
           center={center}
           clause={clause}
           econ={econ}
