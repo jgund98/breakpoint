@@ -269,6 +269,17 @@ function clauseA(center: CenterFacts): Clause {
     locations: ["Section 14.6"],
     sourceText: `If at any time following the Commencement Date fewer than two (2) of the Named Anchor Tenants (being ${named.map((a) => a.name).join(", ")}, or a replacement thereof that is a nationally recognized retailer of comparable quality occupying not less than ninety percent (90%) of the premises formerly occupied by the vacating Named Anchor Tenant) are open and operating for business, or less than seventy percent (70%) of the Gross Leasable Area of the Shopping Center, excluding Anchor Premises and all Outparcels, is open and operating for business with the public, then provided Tenant is itself open and operating and is not then in default beyond any applicable notice and cure period, Tenant shall be entitled to pay, in lieu of Minimum Annual Rent, Alternative Rent equal to the lesser of (i) Minimum Annual Rent or (ii) four percent (4%) of Gross Sales, commencing on the first day of the calendar month following the date on which Tenant delivers written notice to Landlord of such condition, and continuing until such condition is cured. Tenants closed for remodeling for a period not to exceed ninety (90) days, and tenants closed by reason of casualty or Force Majeure, shall be deemed open and operating for purposes of this Section. Should such condition continue for twelve (12) consecutive months, Tenant may, within sixty (60) days thereafter, elect either to resume payment of Minimum Annual Rent or to terminate this Lease upon ninety (90) days' prior written notice.`,
     triggerLogic: "any",
+    // The requirement as the lease states it: both limbs must hold.
+    // Written out rather than inferred, so it can be checked against
+    // the sentence it came from.
+    logic: {
+      kind: "group",
+      op: "and",
+      children: [
+        { kind: "test", triggerId: "t-anchor" },
+        { kind: "test", triggerId: "t-occ" },
+      ],
+    },
     triggers: [
       {
         id: "t-anchor",

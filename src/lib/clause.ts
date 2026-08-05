@@ -250,6 +250,52 @@ export type Trigger =
       deemedOpen: DeemedOpenRule[];
     };
 
+/**
+ * COMPOUND REQUIREMENTS
+ *
+ * Compound is the most common trigger type in the real gold set, 48% of
+ * 172 triggers, and a flat list with a single any/all switch cannot
+ * represent it. Clauses genuinely read:
+ *
+ *   "(A) at least two Named Anchors are open AND (B) not less than 75%
+ *    of the Floor Area is open"
+ *
+ * and sometimes nest a third limb inside one of those.
+ *
+ * We model the REQUIREMENT as written, not the failure. That is the way
+ * the lease reads, so the tree can be checked against the document
+ * sentence by sentence, and failure is simply the requirement not being
+ * met. Modelling failure directly means inverting every operator by
+ * hand during abstraction, which is where mistakes get made.
+ */
+export type TriggerNode =
+  | { kind: "test"; triggerId: string }
+  | { kind: "group"; op: "and" | "or"; children: TriggerNode[] };
+
+/** Does the requirement hold, given which individual tests are satisfied? */
+export function nodeSatisfied(
+  node: TriggerNode,
+  satisfied: Map<string, boolean>,
+): boolean {
+  if (node.kind === "test") return satisfied.get(node.triggerId) ?? true;
+  return node.op === "and"
+    ? node.children.every((c) => nodeSatisfied(c, satisfied))
+    : node.children.some((c) => nodeSatisfied(c, satisfied));
+}
+
+/** A readable rendering of the structure, for the clause record. */
+export function describeNode(
+  node: TriggerNode,
+  labelOf: (id: string) => string,
+): string {
+  if (node.kind === "test") return labelOf(node.triggerId);
+  const joiner = node.op === "and" ? " and " : " or ";
+  const parts = node.children.map((c) =>
+    c.kind === "group" ? `(${describeNode(c, labelOf)})` : describeNode(c, labelOf),
+  );
+  return parts.join(joiner);
+}
+
 export type ReplacementStandard = {
   kind: "named_only" | "any" | "category_match" | "comparable_quality";
   /** Verbatim from the lease. Never paraphrased in the record. */
@@ -390,7 +436,15 @@ export type Clause = {
   locations: string[];
   sourceText: string;
   triggers: Trigger[];
+  /**
+   * Legacy shorthand, kept so existing records keep working.
+   * "any" means any single failing test breaks the clause, which is a
+   * requirement of AND across all tests. "all" is the reverse.
+   * Prefer `logic` for anything real: it survives nesting.
+   */
   triggerLogic: "any" | "all";
+  /** The requirement as the lease states it. Overrides triggerLogic. */
+  logic?: TriggerNode;
   remedy: Remedy;
   preconditions: TenantPrecondition[];
   definedTerms: string[];
@@ -555,6 +609,10 @@ export type ClaimStatus = {
 export type Evaluation = {
   triggers: TriggerResult[];
   anyFailing: boolean;
+  /** The requirement as written, rendered in words. */
+  requirementText: string;
+  /** True when the requirement as a whole holds. */
+  requirementMet: boolean;
   state: ClauseState;
   /** Money the remedy is worth per month once running. */
   monthlyDelta: number | null;
@@ -691,8 +749,28 @@ export function evaluateClause(
   });
 
   const failing = triggers.filter((t) => t.failing);
-  const anyFailing =
-    clause.triggerLogic === "any" ? failing.length > 0 : failing.length === triggers.length;
+
+  /*
+   * Walk the requirement tree. A clause with an explicit `logic` node
+   * uses it; anything still on the legacy switch is lifted into the
+   * equivalent tree so there is exactly one evaluation path.
+   */
+  const requirement: TriggerNode =
+    clause.logic ??
+    ({
+      kind: "group",
+      op: clause.triggerLogic === "any" ? "and" : "or",
+      children: triggers.map((t) => ({ kind: "test", triggerId: t.id }) as const),
+    } as TriggerNode);
+
+  const satisfiedById = new Map(triggers.map((t) => [t.id, !t.failing]));
+  const requirementMet = nodeSatisfied(requirement, satisfiedById);
+  const anyFailing = !requirementMet;
+
+  const requirementText = describeNode(
+    requirement,
+    (id) => triggers.find((t) => t.id === id)?.label ?? id,
+  );
 
   const nearMiss = triggers.some(
     (t) => !t.failing && t.ratio < 1 + WATCH_BAND,
@@ -784,6 +862,8 @@ export function evaluateClause(
   return {
     triggers,
     anyFailing,
+    requirementText,
+    requirementMet,
     state,
     monthlyDelta,
     monthsBeforeNotice,

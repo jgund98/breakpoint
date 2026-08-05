@@ -399,8 +399,26 @@ export function Board({ center, clause, econ, claim, asOf }: Props) {
             </motion.div>
           )}
 
+          {/* the requirement, as the lease states it */}
+          <div className="mt-5 rounded-xl border border-line bg-surface-sunk p-3.5">
+            <p className="text-[0.6875rem] font-semibold tracking-wide text-muted uppercase">
+              Requirement
+            </p>
+            <p className="mt-1 text-[0.8125rem] leading-snug text-ink-soft">
+              {live.requirementText}
+              <span
+                className={cn(
+                  "ml-1.5 font-semibold",
+                  live.requirementMet ? "text-open-700" : "text-clay-600",
+                )}
+              >
+                {live.requirementMet ? "· met" : "· not met"}
+              </span>
+            </p>
+          </div>
+
           {/* tests */}
-          <div className="mt-6 space-y-4">
+          <div className="mt-4 space-y-4">
             {live.triggers.map((t) => {
               const tone: Tone = t.failing
                 ? "clay"
