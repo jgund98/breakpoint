@@ -36,38 +36,55 @@ export function BootScreen() {
     `Reconciling evidence against every open finding`,
   ];
 
+  /*
+   * Claiming the flag and running the sequence are two separate
+   * effects on purpose.
+   *
+   * When they were one, Strict Mode's double invocation broke it: the
+   * first pass consumed the flag and scheduled the timers, cleanup
+   * cleared them, and the second pass found no flag and returned
+   * early. The overlay stayed up with nothing left to take it down,
+   * which is why it sometimes needed a refresh to get through.
+   *
+   * Now the flag is claimed once into state, and the sequence is
+   * driven by that state, so re-running the effect reschedules
+   * correctly instead of stalling.
+   */
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.sessionStorage.getItem(BOOT_FLAG) !== "1") return;
     window.sessionStorage.removeItem(BOOT_FLAG);
-
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
     setShow(true);
+  }, []);
+
+  useEffect(() => {
+    if (!show) return;
+
     document.body.style.overflow = "hidden";
 
     const timers: number[] = [];
-    steps.forEach((_, i) => {
-      timers.push(
-        window.setTimeout(() => setStep(i + 1), STEP_MS * (i + 1)),
-      );
-    });
-    timers.push(
-      window.setTimeout(
-        () => {
-          setShow(false);
-          document.body.style.overflow = "";
-        },
-        STEP_MS * steps.length + 900,
-      ),
+    steps.forEach((_, i) =>
+      timers.push(window.setTimeout(() => setStep(i + 1), STEP_MS * (i + 1))),
     );
+
+    const finish = () => {
+      setShow(false);
+      document.body.style.overflow = "";
+    };
+
+    timers.push(window.setTimeout(finish, STEP_MS * steps.length + 900));
+
+    // Backstop: whatever else happens, the workspace is never held
+    // behind this screen.
+    timers.push(window.setTimeout(finish, 9000));
 
     return () => {
       timers.forEach(clearTimeout);
       document.body.style.overflow = "";
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [show]);
 
   const done = step >= steps.length;
 
