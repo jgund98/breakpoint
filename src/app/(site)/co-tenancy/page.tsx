@@ -44,8 +44,8 @@ const faqs = [
     a: "Alternative rent is the substitute rent a tenant pays while a co-tenancy failure continues. It is often expressed as the lesser of minimum rent or a stated percentage of gross sales, which converts a fixed cost into a variable one for as long as the condition lasts.",
   },
   {
-    q: "Does co-tenancy relief apply retroactively?",
-    a: "Usually not. Many clauses provide that the remedy commences on the first day of the month following written notice from the tenant. Where that is the case, months that pass before the tenant notices and serves notice are generally not recoverable, which is why detection speed matters more than almost anything else.",
+    q: "Does co-tenancy rent apply retroactively?",
+    a: "Often yes, but with a cap. Most provisions run the remedy from the condition itself rather than from notice, and then limit how far back it can reach: relief is retroactive to the failure but not more than a stated number of days before the tenant's notice, ninety being common. That cap is why detection speed matters. Miss a failure by six months against a ninety-day lookback and the months beyond it are gone however strong the claim. A minority of clauses run from notice with no lookback at all, in which case everything before notice is lost.",
   },
   {
     q: "Can a landlord cure a co-tenancy failure?",

@@ -265,7 +265,7 @@ export default function OverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
-              {decisions.map((r) => {
+              {decisions.slice(0, 8).map((r) => {
                 const failing = r.evaluation.triggers.filter((t) => t.failing);
                 const v = verificationOf(r.evidence);
                 const tone = STATE_META[r.evaluation.state].tone as Tone;
@@ -331,6 +331,12 @@ export default function OverviewPage() {
             </tbody>
           </table>
         </div>
+        {decisions.length > 8 && (
+          <p className="border-t border-line px-5 py-3 text-[0.75rem] text-muted">
+            Showing the 8 highest by value. {decisions.length - 8} more on the
+            notice desk.
+          </p>
+        )}
       </Panel>
 
       <div className="grid gap-3 lg:grid-cols-2">
@@ -420,7 +426,7 @@ export default function OverviewPage() {
           />
           {blocked.length ? (
             <ul className="mt-4 space-y-3">
-              {blocked.map((r) => (
+              {blocked.slice(0, 4).map((r) => (
                 <li
                   key={r.id}
                   className="rounded-xl border border-clay-100 bg-clay-50 p-3.5"

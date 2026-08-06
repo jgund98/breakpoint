@@ -66,8 +66,9 @@ export default function DemoPage() {
                 test appears to have failed, inside 48 hours.
               </p>
               <p className="no-orphan mt-6 border-l-2 border-brass-500 pl-4 text-[0.9375rem] leading-relaxed text-ink-soft">
-                The notice clock only runs forward. Every month a trigger goes
-                undetected is potential savings that can&#8217;t be recovered.
+                Most clauses reach back to the failure but no further than a
+                stated number of days before your notice. Months beyond that
+                cap are out of reach however strong the claim.
               </p>
               <p className="mt-6 text-sm text-muted">
                 Prefer email?{" "}
