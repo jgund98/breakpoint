@@ -9,6 +9,10 @@ import {
 } from "@/lib/clause";
 import { org, rows } from "@/lib/portfolio";
 import {
+  NoticeDesk,
+  type NoticeCandidate,
+} from "@/components/app/NoticeDesk";
+import {
   ActionButton,
   KeyValue,
   Note,
@@ -38,6 +42,23 @@ export default function NoticesPage() {
   );
 
   const lead = ready[0];
+
+  const deskRows: NoticeCandidate[] = candidates.map((r) => ({
+    id: r.id,
+    center: r.center.name,
+    city: `${r.center.city}, ${r.center.state}`,
+    stateLabel: STATE_META[r.evaluation.state].label,
+    stateTone: STATE_META[r.evaluation.state].tone as Tone,
+    failing: r.evaluation.triggers
+      .filter((t) => t.failing)
+      .map((t) => t.label)
+      .join(", "),
+    monthly:
+      r.evaluation.monthlyDelta == null
+        ? "Sales needed"
+        : `${usd(Math.round(r.evaluation.monthlyDelta))}/mo`,
+    verified: verificationOf(r.evidence).tier === "verified",
+  }));
 
   return (
     <div className="space-y-6">
@@ -91,10 +112,9 @@ export default function NoticesPage() {
                 {lead.id} · prepared for {org.name}. Awaiting counsel review.
               </p>
             </div>
-            <div className="flex gap-2">
-              <ActionButton variant="secondary">Send to counsel</ActionButton>
-              <ActionButton variant="brass">Release to signatory</ActionButton>
-            </div>
+            <p className="text-[0.75rem] text-muted">
+              Move it through review below.
+            </p>
           </div>
 
           <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-2">
@@ -223,73 +243,7 @@ export default function NoticesPage() {
         </Panel>
       )}
 
-      {/* ---- queue ---- */}
-      <Panel flush>
-        <div className="px-5 pt-5">
-          <PanelHead
-            title="All candidates"
-            hint="Held items are failing tests that do not yet rest on primary evidence."
-          />
-        </div>
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[820px] border-collapse text-left">
-            <thead>
-              <tr className="border-y border-line bg-surface-sunk/50">
-                {["Location", "Center", "Status", "Evidence", "Per month", ""].map((h) => (
-                  <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {candidates.map((r) => {
-                const v = verificationOf(r.evidence);
-                const verified = v.tier === "verified";
-                return (
-                  <tr key={r.id} className="hover:bg-petrol-50/40">
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/app/locations/${r.id}`}
-                        className="text-[0.875rem] font-semibold text-petrol-800 hover:underline"
-                      >
-                        {r.id}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-[0.875rem] text-ink">
-                      {r.center.name}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Pill tone={STATE_META[r.evaluation.state].tone as Tone} dot>
-                        {STATE_META[r.evaluation.state].label}
-                      </Pill>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Pill tone={verified ? "open" : "muted"}>
-                        {TIER_META[v.tier].label}
-                      </Pill>
-                    </td>
-                    <td className="tnum px-4 py-3 text-[0.875rem] font-semibold text-brass-600">
-                      {r.evaluation.monthlyDelta == null
-                        ? "Sales needed"
-                        : usd(Math.round(r.evaluation.monthlyDelta))}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span
-                        className={`text-[0.8125rem] font-semibold whitespace-nowrap ${
-                          verified ? "text-petrol-700" : "text-faint"
-                        }`}
-                      >
-                        {verified ? "Assemble" : "Held"}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
+      <NoticeDesk candidates={deskRows} />
     </div>
   );
 }

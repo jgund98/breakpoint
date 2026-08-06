@@ -3,6 +3,7 @@ import { PRECONDITION_META, prettyDate } from "@/lib/clause";
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
 import { rows } from "@/lib/portfolio";
 import {
+  EmptyState,
   Note,
   PageHead,
   Panel,
@@ -77,6 +78,13 @@ export default function ClausesPage() {
             hint="Where a lease is open, these are the terms to renegotiate first."
           />
         </div>
+        {graded.length === 0 ? (
+          <EmptyState
+            title="No clauses abstracted yet"
+            body="Once your leases are read, every co-tenancy provision appears here graded on the terms that decide whether it pays."
+            action={{ label: "Portfolio setup", href: "/app/setup" }}
+          />
+        ) : (
         <ul className="mt-4 divide-y divide-line">
           {weakest.map(({ row, grade }) => {
             const weakestDial = [...grade.dials].sort((a, b) => a.score - b.score)[0];
@@ -129,6 +137,7 @@ export default function ClausesPage() {
             );
           })}
         </ul>
+        )}
       </Panel>
 
       {withAmendments.length > 0 && (

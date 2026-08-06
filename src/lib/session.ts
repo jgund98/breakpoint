@@ -23,6 +23,14 @@ export const DEMO_PASSWORD = "password123";
 export const DEMO_USER = {
   name: "R. Alvarez",
   initials: "RA",
-  role: "Director, Lease Administration",
+  title: "Director, Lease Administration",
+  /**
+   * The demo signs in as the account owner so every workflow can be
+   * walked end to end. Permissions are still checked against this
+   * value rather than bypassed, so the separation of duties in
+   * lib/team.ts stays real: change this to "counsel" and serving a
+   * notice becomes unavailable, as it should be.
+   */
+  role: "owner",
   email: DEMO_EMAIL,
 } as const;

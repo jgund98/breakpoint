@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ENTITLEMENT_META, prettyDate, shortDate } from "@/lib/clause";
 import { SOURCE_INFO, type SourceId, coverage } from "@/lib/coverage";
+import { PendingAction } from "@/components/app/PendingAction";
 import {
-  ActionButton,
+  EmptyState,
   LinkButton,
   PageHead,
   Panel,
@@ -124,9 +125,11 @@ export default function CoveragePage() {
                 </span>
               </div>
               {label === "Ready to send" && n > 0 && (
-                <ActionButton variant="brass" className="mt-3 w-full px-3 py-2">
-                  Draft {n} requests
-                </ActionButton>
+                <PendingAction
+                  className="mt-3"
+                  label={`Draft ${n} requests`}
+                  confirmation="Drafted for your signatory"
+                />
               )}
               {label === "Awaiting landlord" && n > 0 && (
                 <p className="mt-2 text-[0.75rem] text-muted">
@@ -155,6 +158,13 @@ export default function CoveragePage() {
             hint="Named tenants are the stores your clauses depend on. Those are what we check each scan."
           />
         </div>
+        {byCenter.length === 0 ? (
+          <EmptyState
+            title="Nothing under watch yet"
+            body="Centers appear here once a lease has been read and we know which named tenants its co-tenancy clause depends on."
+            action={{ label: "Portfolio setup", href: "/app/setup" }}
+          />
+        ) : (
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-left">
             <thead>
@@ -220,6 +230,7 @@ export default function CoveragePage() {
             </tbody>
           </table>
         </div>
+        )}
       </Panel>
 
       {/* ---- sources ---- */}

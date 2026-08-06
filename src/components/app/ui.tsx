@@ -312,6 +312,37 @@ export function LinkButton({
  * a paragraph. Anything longer belongs in the help affordance next to
  * it, where a reader can ask for it instead of scrolling past it.
  */
+/**
+ * What a page shows before there is anything to show.
+ *
+ * Every account is empty on day one, and several pages rendered bare
+ * tables in that state. An empty screen reads as a broken product; it
+ * should say what will appear here and what makes it appear.
+ */
+export function EmptyState({
+  title,
+  body,
+  action,
+}: {
+  title: string;
+  body: string;
+  action?: { label: string; href: string };
+}) {
+  return (
+    <div className="px-6 py-14 text-center">
+      <p className="text-[0.9375rem] font-semibold text-ink">{title}</p>
+      <p className="mx-auto mt-1.5 max-w-md text-[0.8125rem] leading-relaxed text-muted">
+        {body}
+      </p>
+      {action && (
+        <LinkButton href={action.href} className="mt-4">
+          {action.label}
+        </LinkButton>
+      )}
+    </div>
+  );
+}
+
 export function PageHead({
   eyebrow,
   title,

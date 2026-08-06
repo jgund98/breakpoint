@@ -14,8 +14,9 @@ import {
   sweeps,
 } from "@/lib/activity";
 import { signalFeed } from "@/lib/portfolio";
+import { PendingAction } from "@/components/app/PendingAction";
 import {
-  ActionButton,
+  EmptyState,
   LinkButton,
   PageHead,
   Panel,
@@ -70,6 +71,12 @@ export default function ActivityPage() {
           </Pill>
         </div>
 
+        {sweeps.length === 0 ? (
+          <EmptyState
+            title="No scans yet"
+            body="The first scan runs once your locations are live. Every pass is recorded here, including the ones that find nothing."
+          />
+        ) : (
         <ul className="mt-4 divide-y divide-line">
           {sweeps.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center gap-4 px-5 py-3">
@@ -111,6 +118,7 @@ export default function ActivityPage() {
             </li>
           ))}
         </ul>
+        )}
       </Panel>
 
       {/* ---- observations, merged in from the old Signals page ---- */}
@@ -121,6 +129,12 @@ export default function ActivityPage() {
             hint="What each scan saw, and where it came from. A single third-party listing is not treated as confirmation."
           />
         </div>
+        {signalFeed.length === 0 && (
+          <EmptyState
+            title="Nothing observed yet"
+            body="Every named tenant we check was open on the last pass. Observations appear here when one changes."
+          />
+        )}
         <ul className="max-h-[520px] divide-y divide-line overflow-y-auto">
           {signalFeed.slice(0, 24).map((s) => {
             const meta = SOURCE_META[s.source];
@@ -232,9 +246,12 @@ export default function ActivityPage() {
                       Sent {shortDate(r.generatedOn)} to {r.recipients.join(", ")}
                     </p>
                   </div>
-                  <ActionButton variant="quiet" className="shrink-0 px-2.5 py-1.5">
-                    <Download className="h-3.5 w-3.5" />
-                  </ActionButton>
+                  <PendingAction
+                    className="shrink-0"
+                    variant="quiet"
+                    label="Download"
+                    confirmation="Preparing"
+                  />
                 </li>
               );
             })}

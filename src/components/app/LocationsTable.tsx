@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
-import { Pill, type Tone } from "./ui";
+import { EmptyState, Pill, type Tone } from "./ui";
 
 export type TableRow = {
   id: string;
@@ -245,7 +245,15 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
         </table>
       </div>
 
-      {filtered.length === 0 && (
+      {rows.length === 0 && (
+        <EmptyState
+          title="No locations yet"
+          body="Once your portfolio is loaded and the leases are read, every location with co-tenancy language appears here."
+          action={{ label: "Portfolio setup", href: "/app/setup" }}
+        />
+      )}
+
+      {rows.length > 0 && filtered.length === 0 && (
         <div className="px-6 py-14 text-center">
           <p className="text-[0.9375rem] font-semibold text-ink">
             Nothing matches that view
