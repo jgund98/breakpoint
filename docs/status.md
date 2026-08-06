@@ -9,20 +9,16 @@ Last updated 2026-08-05.
 These are blocking or shaping, and guessing at them is more expensive
 than asking.
 
-### 1.1 Is the multi-brand hierarchy near-term? BLOCKING
+### 1.1 Multi-brand hierarchy: DECIDED, not a focus
 
-A holding company or PE owner (the Sycamore case: Walgreens, Staples,
-Hot Topic, ~9,500 doors) needs a brand switcher and a roll-up above the
-brands. That is not a UI change. Every query needs a tenant scope, and
-retrofitting scope into an engine that assumes one portfolio is far more
-expensive than building it in now.
+Answered 2026-08-05: a holding company or PE-owned portfolio is not a
+near-term target. Build single-tenant.
 
-- **If a PE-owned portfolio is a real prospect in the next two quarters**,
-  we should do this before more surfaces are built on the single-tenant
-  assumption.
-- **If it is aspirational**, leave it, and we accept a rewrite later.
-
-I need your read on the pipeline, not a technical answer.
+**One hedge is being taken anyway.** Every table carries an `org_id`
+from the first migration, always the same value for a single-brand
+client. No switcher, no roll-up, no UI. It costs a column now and saves
+a full migration plus re-keying every row if a Sycamore-shaped
+prospect ever appears. Nothing else about the hierarchy gets built.
 
 ### 1.2 Pricing shape
 
