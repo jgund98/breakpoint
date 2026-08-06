@@ -26,6 +26,7 @@ import {
   type Suite,
   type SuiteStatus,
   addDays,
+  clauseInForce,
   evaluateClause,
   iso,
 } from "./clause";
@@ -469,7 +470,8 @@ export type Location = {
   center: CenterFacts;
   region: string;
   econ: LeaseEconomics;
-  clause: Clause;
+  /** Every version of the co-tenancy provision, oldest first. */
+  clauses: Clause[];
   claim: ClaimStatus;
   evidence: Evidence[];
   /** Set when the store itself is not open. Kills most claims. */
@@ -681,7 +683,42 @@ function buildLocation(script: Script, i: number): Location {
       commencement: iso(addDays(new Date(TODAY), -Math.floor(1100 + r() * 2600))),
       expiration: iso(addDays(new Date(TODAY), Math.floor(300 + r() * 2200))),
     },
-    clause,
+    /*
+     * The first scripted location carries two versions, mirroring the
+     * lululemon file in the real gold set: an original requiring all
+     * three named anchors, superseded by an amendment that reduced it
+     * to two. Evaluating today's conditions against the original text
+     * would report a failure that the amendment cured, which is exactly
+     * the confident wrong answer versioning exists to prevent.
+     */
+    clauses:
+      i === 0
+        ? [
+            {
+              ...clause,
+              id: `${clause.id}-v1`,
+              effectiveTo: "2023-07-18",
+              supersededBy: "Lease Amendment No. 4",
+              locations: ["Section 14.6 (original)"],
+              triggers: clause.triggers.map((t) =>
+                t.kind === "tenant_count" ? { ...t, requiredCount: 3 } : t,
+              ),
+              amendments: [],
+            },
+            {
+              ...clause,
+              effectiveFrom: "2023-07-18",
+              amendments: [
+                {
+                  label: "Lease Amendment No. 4",
+                  dated: "2023-07-18",
+                  effect:
+                    "Reduced the Named Anchor requirement from three to two and struck the requirement to name a specific anchor.",
+                },
+              ],
+            },
+          ]
+        : [clause],
     claim: {
       firstObservedAt: script.claim?.firstObservedAt,
       noticeServedAt: script.claim?.noticeServedAt,
@@ -735,14 +772,24 @@ org.watched = portfolio.length;
    derived views
    ------------------------------------------------------------------ */
 
-export function evaluationFor(loc: Location) {
-  return evaluateClause(loc.clause, loc.center, loc.econ, loc.claim, TODAY);
+/** The version governing today. Undated clauses count as in force. */
+export function activeClause(loc: Location): Clause {
+  return clauseInForce(loc.clauses, TODAY) ?? loc.clauses[0];
 }
 
-export type Row = Location & { evaluation: ReturnType<typeof evaluateClause> };
+export function evaluationFor(loc: Location) {
+  return evaluateClause(activeClause(loc), loc.center, loc.econ, loc.claim, TODAY);
+}
+
+/** A location with the clause in force today already resolved. */
+export type Row = Location & {
+  clause: Clause;
+  evaluation: ReturnType<typeof evaluateClause>;
+};
 
 export const rows: Row[] = portfolio.map((l) => ({
   ...l,
+  clause: activeClause(l),
   evaluation: evaluationFor(l),
 }));
 

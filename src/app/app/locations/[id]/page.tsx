@@ -7,6 +7,7 @@ import {
   STATE_META,
   TIER_META,
   baseRentMonthly,
+  clauseStatusOn,
   prettyDate,
   sf,
   usd,
@@ -159,6 +160,41 @@ export default async function LocationPage({
                       {n}
                     </li>
                   ))}
+                </ul>
+              </div>
+            )}
+
+            {row.clauses.length > 1 && (
+              <div className="mt-4">
+                <p className="label text-muted">Version history</p>
+                <ul className="mt-2.5 space-y-2">
+                  {row.clauses.map((c) => {
+                    const status = clauseStatusOn(c, TODAY);
+                    return (
+                      <li
+                        key={c.id}
+                        className={`flex flex-wrap items-baseline gap-x-2 rounded-xl border p-3 ${
+                          status === "in_force"
+                            ? "border-open-100 bg-open-50"
+                            : "border-line bg-surface-sunk"
+                        }`}
+                      >
+                        <span className="text-[0.8125rem] font-semibold text-ink">
+                          {c.locations[0]}
+                        </span>
+                        <Pill tone={status === "in_force" ? "open" : "muted"}>
+                          {status === "in_force" ? "In force" : "Superseded"}
+                        </Pill>
+                        <span className="text-[0.75rem] text-muted">
+                          {c.effectiveFrom
+                            ? `From ${prettyDate(c.effectiveFrom)}`
+                            : "From commencement"}
+                          {c.effectiveTo && ` to ${prettyDate(c.effectiveTo)}`}
+                          {c.supersededBy && ` · replaced by ${c.supersededBy}`}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

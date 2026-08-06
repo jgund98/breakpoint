@@ -240,7 +240,15 @@ export type Trigger =
       thresholdPct: number;
       basis: MeasurementBasis;
       areaBasis: AreaBasis;
+      /** Suite kinds we can actually filter on. */
       exclusions: Array<Suite["kind"]>;
+      /**
+       * The exclusions as the lease words them. Present in 70% of real
+       * records and frequently not reducible to a suite kind: "the
+       * Anchor Parcels and all Outparcels as shown on Exhibit B" needs
+       * a human to map to suites before the denominator is sound.
+       */
+      exclusionsText?: string[];
       deemedOpen: DeemedOpenRule[];
     };
 
@@ -341,6 +349,25 @@ export type Remedy = {
   electionWindowDays?: number;
   terminationNoticeDays?: number;
   unamortizedReimbursement: boolean;
+
+  /*
+   * The four fields below appear in most of the real gold set and had
+   * no home here. Frequencies measured across 106 clause records:
+   * termination_window 81%, recurrence 75%, sunset 44%. They are stored
+   * verbatim because the drafting varies too much to enumerate, and
+   * because each one can end a right on its own.
+   */
+
+  /** "within thirty (30) days after the twelfth month". Miss it, lose it. */
+  terminationWindow?: string;
+  /**
+   * Whether the right can be exercised again after it is used. A
+   * one-time right already consumed is spent, and treating it as live
+   * double counts exposure.
+   */
+  recurrence?: "one_time" | "recurring";
+  /** "this Section expires after Lease Year 5". Some clauses die alone. */
+  sunset?: string;
 };
 
 export type TenantPrecondition =
@@ -441,6 +468,13 @@ export type Clause = {
   logic?: TriggerNode;
   remedy: Remedy;
   preconditions: TenantPrecondition[];
+  /**
+   * Preconditions that do not fit our enum, verbatim. Three quarters of
+   * real records carry at least one. They still bar a claim, so losing
+   * them to an unrecognised-value branch would overstate what is
+   * actually claimable.
+   */
+  additionalPreconditions?: string[];
   definedTerms: string[];
   /** Abstraction confidence, 0 to 1. Below review threshold goes to a human. */
   confidence: number;
@@ -449,7 +483,54 @@ export type Clause = {
   reviewedAt?: string;
   /** Amendments that touched the clause, newest last. */
   amendments: { label: string; dated: string; effect: string }[];
+
+  /*
+   * VERSIONING
+   *
+   * A clause is not a fact about a lease. It is a fact about a lease ON
+   * A DATE, and the real gold set proves it: one lululemon provision is
+   * replaced outright by a Sixth Amendment effective 2/1/2026, a date
+   * in the future at the time of extraction, and an Aldo clause is
+   * marked "NO LONGER OPERATIVE". Evaluating either against today's
+   * conditions using the original text produces a confident wrong
+   * answer.
+   *
+   * So versions are rows with validity, and evaluation selects the one
+   * in force on the evaluation date. This is in the model before the
+   * database exists because it decides the table shape: retrofitting it
+   * means a migration plus re-evaluating every historical finding.
+   */
+  effectiveFrom?: string;
+  /** Undefined means still in force. */
+  effectiveTo?: string;
+  /** Set where a later instrument replaced or killed this version. */
+  supersededBy?: string;
 };
+
+export type ClauseStatus = "in_force" | "not_yet_effective" | "superseded";
+
+export function clauseStatusOn(clause: Clause, onDate: string): ClauseStatus {
+  if (clause.effectiveFrom && onDate < clause.effectiveFrom)
+    return "not_yet_effective";
+  if (clause.effectiveTo && onDate >= clause.effectiveTo) return "superseded";
+  return "in_force";
+}
+
+/**
+ * The version governing on a given date. Undated clauses are treated as
+ * in force, so a single-version lease needs no migration.
+ */
+export function clauseInForce(
+  versions: Clause[],
+  onDate: string,
+): Clause | null {
+  const live = versions.filter((c) => clauseStatusOn(c, onDate) === "in_force");
+  if (live.length === 0) return null;
+  // Latest effective date wins where several overlap.
+  return live.sort((a, b) =>
+    (a.effectiveFrom ?? "").localeCompare(b.effectiveFrom ?? ""),
+  )[live.length - 1];
+}
 
 export const REVIEW_THRESHOLD = 0.82;
 
