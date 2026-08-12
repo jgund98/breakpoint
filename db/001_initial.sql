@@ -38,7 +38,10 @@
 --    inventing them, because a renewal view built on a made-up
 --    expiration date is worse than no renewal view.
 
+-- gen_random_uuid on older servers; citext for case-insensitive email,
+-- because "Sumer@" and "sumer@" are one person and two rows otherwise.
 create extension if not exists "pgcrypto";
+create extension if not exists "citext";
 
 -- ------------------------------------------------------------------
 -- tenancy
