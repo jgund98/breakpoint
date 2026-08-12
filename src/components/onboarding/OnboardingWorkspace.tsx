@@ -237,9 +237,16 @@ export function OnboardingWorkspace({
               {s.source && (
                 <div className="mt-6 space-y-4">
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="text-[0.9375rem] font-semibold text-ink">
-                      Send the roster
-                    </h3>
+                    <div>
+                      <h3 className="text-[0.9375rem] font-semibold text-ink">
+                        Send whatever your system exports
+                      </h3>
+                      <p className="mt-1 max-w-xl text-[0.8125rem] leading-relaxed text-muted">
+                        Any columns, any order, any format. We map it, repair
+                        what we can, and take everything else off the leases
+                        rather than asking you to retype it.
+                      </p>
+                    </div>
                     <TemplateButton />
                   </div>
 

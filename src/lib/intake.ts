@@ -3,29 +3,27 @@
  * INTAKE: THE TEMPLATE, THE RULES, AND THE REJECTION
  * ============================================================
  *
- * Onboarding a portfolio is a data exchange, and every data exchange
- * that works has the same three parts: we say exactly what we want, we
- * check it the moment it arrives, and when it is wrong we hand back
- * something the client can fix rather than a sentence saying no.
+ * The client is paying us to do this. Every question we ask them is a
+ * question we failed to answer ourselves, so the order of preference is
+ * fixed:
  *
- * At ten stores a person can eyeball a spreadsheet. At eight hundred
- * they cannot, and a single bad column repeated eight hundred times is
- * how an onboarding stalls for a month. So:
+ *   REPAIR    fix it silently and say what we changed. "California"
+ *             becomes CA. A rent with a dollar sign is still a rent.
+ *   DEFER     take it from a document they already sent. Floor area,
+ *             base rent and lease dates are all in the lease, so asking
+ *             for them in a spreadsheet is asking a client to transcribe
+ *             a document they have handed over.
+ *   RESOLVE   work it out from what we hold. A missing state comes off
+ *             the address; a missing store status comes off the center's
+ *             own directory.
+ *   ASK       only what nobody but them can answer, and only once.
  *
- *   TEMPLATE     a file with the exact headers, an example row and the
- *                rules written in it, so nobody has to guess a format
- *   VALIDATE     every row checked on arrival, with the reason stated
- *                in the client's own terms rather than a field name
- *   HAND BACK    only the failing rows, in the same shape they sent, so
- *                the fix is edit-and-return rather than start again
- *
- * Nothing here blocks an upload. A row with warnings loads and is
- * flagged; only a row we genuinely cannot place is held. Refusing an
- * entire portfolio because sixty rows lack a postal code is how you
- * lose the onboarding, not how you protect the data.
+ * A row is held solely where we cannot tell which store it is. Everything
+ * else loads with a note about who is solving it, and the note names us
+ * wherever it honestly can.
  */
 
-import { FIELDS, type FieldKey, type ParsedRow } from "./ingest";
+import { FIELDS, type FieldKey, type FieldSource, type ParsedRow } from "./ingest";
 
 /* ------------------------------------------------------------------
    what "wrong" means
@@ -49,9 +47,48 @@ export type IntakeReport = {
   withWarnings: number;
   held: number;
   issues: Issue[];
+  /** Fixed on the way in, so the client never sees these as work. */
+  repairs: Repair[];
   /** Fields the mapping never accounted for, so gaps are visible early. */
-  missingFields: { key: FieldKey; label: string; required: boolean }[];
+  missingFields: { key: FieldKey; label: string; required: boolean; from: FieldSource }[];
 };
+
+/**
+ * Spelled-out and commonly mangled state names, so "California",
+ * "Calif." and "N. Carolina" resolve instead of being handed back to
+ * the client to retype. Repairing our own inputs is cheaper than
+ * anyone's time, and a client who paid us to do this should not be
+ * cleaning a spreadsheet on our behalf.
+ */
+const STATE_NAMES: Record<string, string> = {
+  alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA",
+  calif: "CA", colorado: "CO", connecticut: "CT", conn: "CT", delaware: "DE",
+  florida: "FL", fla: "FL", georgia: "GA", hawaii: "HI", idaho: "ID",
+  illinois: "IL", ill: "IL", indiana: "IN", iowa: "IA", kansas: "KS",
+  kentucky: "KY", louisiana: "LA", maine: "ME", maryland: "MD",
+  massachusetts: "MA", mass: "MA", michigan: "MI", mich: "MI",
+  minnesota: "MN", minn: "MN", mississippi: "MS", missouri: "MO",
+  montana: "MT", nebraska: "NE", nevada: "NV", "new hampshire": "NH",
+  "new jersey": "NJ", "new mexico": "NM", "new york": "NY",
+  "north carolina": "NC", "n carolina": "NC", "north dakota": "ND",
+  ohio: "OH", oklahoma: "OK", okla: "OK", oregon: "OR", pennsylvania: "PA",
+  penn: "PA", "rhode island": "RI", "south carolina": "SC",
+  "s carolina": "SC", "south dakota": "SD", tennessee: "TN", tenn: "TN",
+  texas: "TX", tex: "TX", utah: "UT", vermont: "VT", virginia: "VA",
+  washington: "WA", wash: "WA", "west virginia": "WV", wisconsin: "WI",
+  wis: "WI", wyoming: "WY", "district of columbia": "DC",
+  "puerto rico": "PR",
+};
+
+/** What we corrected without asking, reported rather than hidden. */
+export type Repair = { row: number; field: FieldKey; from: string; to: string };
+
+function repairState(v: string): string | null {
+  const up = v.trim().toUpperCase();
+  if (US_STATES.has(up)) return up;
+  const key = v.trim().toLowerCase().replace(/\./g, "").replace(/\s+/g, " ");
+  return STATE_NAMES[key] ?? null;
+}
 
 const US_STATES = new Set(
   ("AL AK AZ AR CA CO CT DE FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO " +
@@ -102,12 +139,14 @@ export function validateIntake(
   mapping: Record<string, FieldKey>,
 ): IntakeReport {
   const issues: Issue[] = [];
+  const repairs: Repair[] = [];
   const mapped = new Set(Object.values(mapping));
 
   const missingFields = FIELDS.filter((f) => !mapped.has(f.key)).map((f) => ({
     key: f.key,
     label: f.label,
     required: f.required,
+    from: f.from,
   }));
 
   /** header -> our field, inverted for lookups */
@@ -161,9 +200,20 @@ export function validateIntake(
     if (!address && !center)
       add("address", "error", "No street address and no center name. We need one of the two to work out which center this store sits in.");
     if (!city) add("city", "warning", "No city. Center matching will be slower and may need confirming.");
-    if (!state) add("state", "warning", "No state.");
-    else if (!US_STATES.has(state))
-      add("state", "error", `"${state}" is not a US state code. Use the two letter form, for example NY.`, state);
+    if (!state) {
+      add("state", "warning", "No state. We will take it from the address.");
+    } else {
+      const fixed = repairState(val("state"));
+      if (fixed && fixed !== val("state").trim().toUpperCase())
+        repairs.push({ row: n, field: "state", from: val("state"), to: fixed });
+      else if (!fixed)
+        add(
+          "state",
+          "warning",
+          `We could not read "${val("state")}" as a state. We will resolve it from the address and confirm with you only if it stays unclear.`,
+          val("state"),
+        );
+    }
 
     /* the numbers --------------------------------------------------- */
     const gla = val("gla");
@@ -174,7 +224,7 @@ export function validateIntake(
       else if (nn < 200 || nn > 250000)
         add("gla", "warning", `Premises area of ${nn.toLocaleString("en-US")} sq ft looks unusual. Confirm the units are square feet.`, gla);
     } else {
-      add("gla", "warning", "No premises area. We can watch this store but cannot value a remedy at it.");
+      add("gla", "warning", "No premises area in this file. We take it from the lease.");
     }
 
     const rent = val("baseRent");
@@ -183,7 +233,7 @@ export function validateIntake(
       if (nn == null) add("baseRent", "error", `Base rent "${rent}" is not a number.`, rent);
       else if (nn < 0) add("baseRent", "error", "Base rent cannot be negative.", rent);
     } else {
-      add("baseRent", "warning", "No base rent. A remedy is measured against it, so we can confirm a right exists but not what it is worth.");
+      add("baseRent", "warning", "No base rent in this file. We take it from the lease.");
     }
 
     /* the dates ----------------------------------------------------- */
@@ -199,7 +249,7 @@ export function validateIntake(
     if (commD && expD && expD <= commD)
       add("expiration", "error", "Expiration is on or before commencement.", exp);
     if (!exp)
-      add("expiration", "warning", "No expiration. Renewal planning needs it, and it decides which clauses are worth renegotiating first.");
+      add("expiration", "warning", "No expiration in this file. We take it from the lease.");
 
     const opened = val("openDate");
     if (opened && !parseLooseDate(opened))
@@ -210,7 +260,11 @@ export function validateIntake(
     if (own && !OWN_STATUS.has(own))
       add("ownStatus", "warning", `Status "${own}" is not one we recognize. Use open, dark or remodeling.`, own);
     if (!own)
-      add("ownStatus", "warning", "No store status. Nearly every clause requires your own store to be open, and we cannot see that from outside.");
+      add(
+        "ownStatus",
+        "warning",
+        "No store status. We check each one against the center directory and come back to you only where it is unclear.",
+      );
 
     rowState.push(held ? "held" : warned ? "warning" : "ready");
   });
@@ -221,6 +275,7 @@ export function validateIntake(
     withWarnings: rowState.filter((s) => s === "warning").length,
     held: rowState.filter((s) => s === "held").length,
     issues,
+    repairs,
     missingFields,
   };
 }
@@ -239,6 +294,8 @@ export function validateIntake(
 export function intakeTemplateCsv(): string {
   const cols = FIELDS.filter((f) => f.key !== "ignore");
   const header = cols.map((f) => f.label).join(",");
+  const clientCols = cols.filter((f) => f.from === "client").map((f) => f.label);
+  const leaseCols = cols.filter((f) => f.from !== "client").map((f) => f.label);
 
   const example = [
     "4417",
@@ -276,14 +333,21 @@ export function intakeTemplateCsv(): string {
   const notes = [
     "# BREAKPOINT STORE ROSTER",
     "#",
-    "# One row per store. Delete the two example rows before sending.",
-    "# Extra columns are fine, we will ask you what they are.",
-    "# Nothing here is mandatory except a store number and either an address or a center name.",
+    "# You probably do not need this file. Send whatever your system",
+    "# already exports and we will map the columns ourselves. This is",
+    "# here only if starting from a blank sheet is easier.",
     "#",
-    "# Dates       YYYY-MM-DD or MM/DD/YYYY",
-    "# Base rent   annual minimum rent in dollars, digits only",
-    "# Area        square feet, digits only",
-    "# Status      open, dark or remodeling. Your store, not the center's",
+    `# ONLY THESE MATTER: ${clientCols.join(", ")}`,
+    "#   Enough to tell one store from another and find its center.",
+    "#",
+    `# NICE TO HAVE: ${leaseCols.join(", ")}`,
+    "#   All of it is in the leases you are sending us. Include it if",
+    "#   your export already has it, because it saves us a step. Do not",
+    "#   type it in by hand. Reading it off the lease is our job.",
+    "#",
+    "# Formats are not strict. Dates in any common order, rent with or",
+    "# without a dollar sign, states spelled out or abbreviated.",
+    "# Delete the example rows before sending.",
     "#",
   ].join("\n");
 

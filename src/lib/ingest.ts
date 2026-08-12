@@ -91,10 +91,24 @@ export type FieldKey =
   | "ownStatus"
   | "ignore";
 
+/**
+ * WHO SUPPLIES THIS, so we never ask twice for the same fact.
+ *
+ *   client    only they have it. The store's own identifier, where it is.
+ *   lease     it is in the lease they are already sending us. Welcome in
+ *             the roster because it saves us time, never required,
+ *             because asking for it is asking a client to transcribe a
+ *             document they have handed over.
+ *   observed  we can establish it ourselves from the center's directory
+ *             and only come back if it stays unclear.
+ */
+export type FieldSource = "client" | "lease" | "observed";
+
 export const FIELDS: {
   key: FieldKey;
   label: string;
   required: boolean;
+  from: FieldSource;
   hint: string;
   aliases: string[];
 }[] = [
@@ -102,6 +116,7 @@ export const FIELDS: {
     key: "storeNumber",
     label: "Store number",
     required: true,
+    from: "client",
     hint: "Your internal identifier. This is how leases get matched back to locations.",
     aliases: ["store", "store #", "store no", "store number", "site", "site id", "location id", "unit id", "shop"],
   },
@@ -109,6 +124,7 @@ export const FIELDS: {
     key: "address",
     label: "Street address",
     required: true,
+    from: "client",
     hint: "Used to resolve which shopping center the store sits in.",
     aliases: ["address", "street", "address 1", "addr", "street address", "location address"],
   },
@@ -116,6 +132,7 @@ export const FIELDS: {
     key: "city",
     label: "City",
     required: true,
+    from: "client",
     hint: "",
     aliases: ["city", "town", "municipality"],
   },
@@ -123,6 +140,7 @@ export const FIELDS: {
     key: "state",
     label: "State",
     required: true,
+    from: "client",
     hint: "",
     aliases: ["state", "st", "province", "region code"],
   },
@@ -130,6 +148,7 @@ export const FIELDS: {
     key: "postal",
     label: "Postal code",
     required: false,
+    from: "client",
     hint: "Improves center resolution accuracy.",
     aliases: ["zip", "zip code", "postal", "postal code", "postcode"],
   },
@@ -137,6 +156,7 @@ export const FIELDS: {
     key: "centerName",
     label: "Center name",
     required: false,
+    from: "client",
     hint: "If you already know it, resolution gets much faster.",
     aliases: ["center", "mall", "property", "shopping center", "center name", "property name", "site name"],
   },
@@ -144,6 +164,7 @@ export const FIELDS: {
     key: "landlord",
     label: "Landlord entity",
     required: false,
+    from: "lease",
     hint: "The entity on the lease, not the brand. Notices are served on the entity, and one owner often holds each center in a separate one.",
     aliases: ["landlord", "landlord entity", "lessor", "owner", "owner entity", "landlord name"],
   },
@@ -151,6 +172,7 @@ export const FIELDS: {
     key: "suite",
     label: "Suite or unit",
     required: false,
+    from: "client",
     hint: "Your unit number within the center.",
     aliases: ["suite", "unit", "unit number", "suite number", "space", "space number", "premises"],
   },
@@ -158,6 +180,7 @@ export const FIELDS: {
     key: "openDate",
     label: "Date opened",
     required: false,
+    from: "lease",
     hint: "When the store began operating. Used to read opening co-tenancy provisions.",
     aliases: ["open date", "opened", "date opened", "rent commencement", "opening date"],
   },
@@ -165,6 +188,7 @@ export const FIELDS: {
     key: "ownStatus",
     label: "Your store status",
     required: false,
+    from: "observed",
     hint: "Open, dark or remodeling. Nearly every clause conditions relief on your own store being open and operating, and this is the one thing we cannot observe from outside.",
     aliases: ["status", "store status", "operating", "open closed", "current status", "trading status"],
   },
@@ -172,6 +196,7 @@ export const FIELDS: {
     key: "gla",
     label: "Premises area",
     required: false,
+    from: "lease",
     hint: "Square feet. Needed to quantify relief.",
     aliases: ["gla", "sf", "sqft", "square feet", "size", "area", "rentable"],
   },
@@ -179,6 +204,7 @@ export const FIELDS: {
     key: "baseRent",
     label: "Base rent",
     required: false,
+    from: "lease",
     hint: "Annual or monthly minimum rent. Needed to quantify relief.",
     aliases: ["rent", "base rent", "minimum rent", "annual rent", "monthly rent", "fixed rent"],
   },
@@ -186,6 +212,7 @@ export const FIELDS: {
     key: "commencement",
     label: "Commencement",
     required: false,
+    from: "lease",
     hint: "",
     aliases: ["commencement", "start", "lease start", "commencement date", "begin"],
   },
@@ -193,6 +220,7 @@ export const FIELDS: {
     key: "expiration",
     label: "Expiration",
     required: false,
+    from: "lease",
     hint: "Drives rollover risk against anchors named in your clauses.",
     aliases: ["expiration", "expiry", "end", "lease end", "expiration date", "term end"],
   },

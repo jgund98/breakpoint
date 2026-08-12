@@ -219,17 +219,49 @@ export function IntakeReview({
         </div>
       )}
 
-      {/* ---- columns we never saw ---- */}
+      {/* ---- what we fixed ourselves ---- */}
+      {report.repairs.length > 0 && (
+        <div className="rounded-xl border border-open-100 bg-open-50 p-4">
+          <p className="text-[0.8125rem] font-semibold text-open-700">
+            {report.repairs.length} corrected on the way in
+          </p>
+          <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+            {[...new Set(report.repairs.map((r) => `${r.from} to ${r.to}`))]
+              .slice(0, 6)
+              .join(", ")}
+            {report.repairs.length > 6 ? ", and others." : "."} Nothing for you
+            to do. We list them so the change is on the record rather than
+            silent.
+          </p>
+        </div>
+      )}
+
+      {/* ---- columns we never saw, and who solves each ---- */}
       {report.missingFields.length > 0 && (
         <div className="rounded-xl border border-line bg-surface-sunk p-4">
           <p className="text-[0.8125rem] font-semibold text-ink">
             Not in this file
           </p>
-          <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
-            {report.missingFields.map((f) => f.label).join(", ")}. None of it
-            stops us starting. Each one narrows what we can answer, and we say
-            which when it comes up rather than guessing a value.
-          </p>
+          <ul className="mt-2 space-y-1.5">
+            {(["lease", "observed", "client"] as const).map((src) => {
+              const list = report.missingFields.filter((f) => f.from === src);
+              if (!list.length) return null;
+              return (
+                <li key={src} className="text-[0.8125rem] leading-relaxed">
+                  <span className="font-medium text-ink">
+                    {list.map((f) => f.label).join(", ")}.
+                  </span>{" "}
+                  <span className="text-ink-soft">
+                    {src === "lease"
+                      ? "We take these from the leases you are sending. Do not retype them."
+                      : src === "observed"
+                        ? "We establish this from the center's own directory and come back only if it stays unclear."
+                        : "Only you have this. We will ask once, for the stores it matters to."}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>
