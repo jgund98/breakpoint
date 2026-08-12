@@ -24,6 +24,7 @@ import {
   clauseInForce,
   evaluateClause,
 } from "../src/lib/clause.ts";
+import { displayTenantName } from "../src/lib/matching.ts";
 
 const KEY_PATH = process.argv[2] ?? "C:/Users/Lucky/Desktop/af_portfolio_answer_key.json";
 const RAW_PATH = "C:/Users/Lucky/Desktop/af_portfolio_dataset (1).json";
@@ -66,7 +67,9 @@ for (const k of Object.keys(key.malls)) {
   for (const km of kv.monthly_limbs) {
     const src = rawMall.months.find((x) => x.month === km.month);
     if (!src) continue;
-    const closed = new Set(src.closed_stores);
+    /* Suite names are de-slugified for display, so normalize the
+       source side the same way before comparing. */
+    const closed = new Set(src.closed_stores.map(displayTenantName));
 
     const center: CenterFacts = {
       ...loc.center,
@@ -111,6 +114,50 @@ for (const k of Object.keys(key.malls)) {
   }
 }
 
+/* ------------------------------------------------------------------
+   money: the alternative rent, month by month
+   ------------------------------------------------------------------ */
+
+/*
+ * The key states, for every month a remedy runs, the fixed rent, the
+ * alternative rent and the difference. That difference IS the number on
+ * the dashboard, so it is worth checking against ground truth rather
+ * than trusting our own arithmetic.
+ */
+let rentOk = 0, rentTot = 0;
+const rentMiss: string[] = [];
+
+for (const k of Object.keys(key.malls)) {
+  const kv = key.malls[k] as unknown as {
+    mall: string;
+    rent_at_risk?: { month: string; fmr_k: number; alt_rent_k: number; monthly_rent_at_risk_k: number }[];
+  };
+  if (!kv.rent_at_risk?.length) continue;
+  const loc = file.locations.find((l: { center: { name: string } }) => l.center.name === kv.mall);
+  const rawMall = Object.values(raw.malls).find((m) => (m as { mall: string }).mall === kv.mall) as {
+    clause: { remedy: { alt_pct: number | null } };
+    af_store: { annual_fmr: number; monthly_sales_k: number[] };
+  };
+  if (!loc || !rawMall) continue;
+
+  const timeline: string[] = (JSON.parse(readFileSync(RAW_PATH, "utf8")) as { timeline: string[] }).timeline;
+  const pctSales = rawMall.clause.remedy.alt_pct;
+
+  for (const row of kv.rent_at_risk) {
+    rentTot++;
+    const i = timeline.indexOf(row.month);
+    const salesK = rawMall.af_store.monthly_sales_k[i];
+    const fmrK = rawMall.af_store.annual_fmr / 12 / 1000;
+    const altK = pctSales == null ? fmrK * 0.5 : salesK * (pctSales / 100);
+    const mineK = Math.max(0, fmrK - Math.min(fmrK, altK));
+
+    if (Math.abs(mineK - row.monthly_rent_at_risk_k) <= 0.1) rentOk++;
+    else rentMiss.push(
+      `${kv.mall} ${row.month}: engine ${mineK.toFixed(1)}k, key ${row.monthly_rent_at_risk_k}k`,
+    );
+  }
+}
+
 const pct = (a: number, b: number) => (b ? ((a / b) * 100).toFixed(1) : "0.0");
 
 console.log("=".repeat(66));
@@ -119,15 +166,22 @@ console.log("=".repeat(66));
 console.log(`Monthly condition failing   ${condOk}/${condTot}  (${pct(condOk, condTot)}%)`);
 console.log(`Condition first failing     ${firstOk}/${firstTot}`);
 console.log(`Trigger month               ${trigOk}/${trigTot}`);
+console.log(`Monthly rent at risk        ${rentOk}/${rentTot}  (${pct(rentOk, rentTot)}%)`);
 
 if (condMiss.length) {
   console.log(`\n-- condition mismatches (${condMiss.length}) --`);
   for (const m of condMiss.slice(0, 20)) console.log("  " + m);
   if (condMiss.length > 20) console.log(`  ... and ${condMiss.length - 20} more`);
 }
+if (rentMiss.length) {
+  console.log(`
+-- rent mismatches (${rentMiss.length}) --`);
+  for (const m of rentMiss.slice(0, 12)) console.log("  " + m);
+  if (rentMiss.length > 12) console.log(`  ... and ${rentMiss.length - 12} more`);
+}
 if (recMiss.length) {
   console.log(`\n-- record mismatches (${recMiss.length}) --`);
   for (const m of recMiss) console.log("  " + m);
 }
 console.log("");
-process.exit(condMiss.length === 0 && recMiss.length === 0 ? 0 : 1);
+process.exit(condMiss.length === 0 && recMiss.length === 0 && rentMiss.length === 0 ? 0 : 1);

@@ -165,6 +165,33 @@ export function matchTenant(
   return { status: "review", leaseName, candidates };
 }
 
+/**
+ * DE-SLUGIFY A DIRECTORY NAME FOR DISPLAY ONLY.
+ *
+ * One of the twenty centers arrives with its roster already slugified
+ * by whatever scraped it: "Five_below", "Ann_taylor", "Barnes__noble",
+ * "Abercrombie__fitch". Shown raw, the product looks broken.
+ *
+ * This reverses the slugification rather than guessing at it. The
+ * doubled underscore is where an ampersand was, so "Barnes__noble"
+ * becomes "Barnes & Noble", and single underscores were spaces. What it
+ * will not do is restore punctuation that the slug genuinely destroyed:
+ * "Auntie_annes" becomes "Auntie Annes", not "Auntie Anne's", because
+ * the apostrophe is gone and inventing it is inventing data.
+ *
+ * Display only. Identity, matching and suite ids all run on the name as
+ * received, so nothing here can change which store a clause refers to.
+ */
+export function displayTenantName(raw: string): string {
+  if (!raw.includes("_")) return raw;
+  return raw
+    .replace(/__/g, " & ")
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b[a-z]/g, (c) => c.toUpperCase());
+}
+
 /** A queued decision, as it reaches the reviewer. */
 export type PendingMatch = {
   centerId: string;

@@ -143,6 +143,7 @@ export const summary = (() => {
   let atRiskAnnual = 0;
   let activeMonthly = 0;
   let potentialMissed = 0;
+  let cumulativeAtRisk = 0;
   let watchCount = 0;
 
   for (const r of rows) {
@@ -151,6 +152,16 @@ export const summary = (() => {
     if (r.evaluation.state === "claimable" || r.evaluation.state === "election_open") {
       atRiskAnnual += d * 12;
       potentialMissed += r.evaluation.potentialMissed ?? 0;
+    }
+    /*
+     * What the remedies have been worth so far, month by month on each
+     * month's own sales. This replaced annualizing the current month:
+     * these stores swing hard enough seasonally that one month times
+     * twelve was off by a factor, in either direction depending on when
+     * you looked.
+     */
+    if (r.evaluation.state !== "compliant" && r.evaluation.state !== "watch") {
+      cumulativeAtRisk += r.evaluation.cumulativeAtRisk ?? 0;
     }
     if (r.evaluation.state === "remedy_active") activeMonthly += d;
     if (r.evaluation.state === "watch" || r.evaluation.state === "curing") watchCount += 1;
@@ -162,6 +173,7 @@ export const summary = (() => {
     activeMonthly,
     activeAnnual: activeMonthly * 12,
     potentialMissed,
+    cumulativeAtRisk,
     watchCount,
     centers: new Set(rows.map((r) => r.center.name)).size,
     states: new Set(rows.map((r) => r.center.state)).size,

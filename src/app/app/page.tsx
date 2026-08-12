@@ -185,16 +185,21 @@ export default function OverviewPage() {
           {/* Money is stated only against the locations that actually
               have sales on file, and says so. A portfolio-wide figure
               extrapolated from a third of the data is not defensible. */}
+          {/* Actual, not annualized. Each month is valued on that
+              month's own sales, so a strong December is allowed to wipe
+              out the saving it really does wipe out. */}
           <Stat
-            label="Co-tenancy rent available"
+            label="Co-tenancy rent to date"
             tone="brass"
             value={
-              withSales > 0 ? compactUsd(summary.atRiskAnnual) : "Sales needed"
+              summary.cumulativeAtRisk > 0
+                ? compactUsd(summary.cumulativeAtRisk)
+                : "None yet"
             }
             sub={
-              withSales > 0
-                ? `Annualized. ${withSales} of ${decisions.length} produce a saving at current sales.`
-                : "No sales reported for the qualifying locations."
+              summary.cumulativeAtRisk > 0
+                ? `Month by month since each right arose, on reported sales.`
+                : "No location has reached its remedy."
             }
           />
         </Item>

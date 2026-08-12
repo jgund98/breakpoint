@@ -24,7 +24,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import type { Clause, Evidence, Suite, Trigger, TriggerNode } from "../src/lib/clause.ts";
-import { matchTenant, type PendingMatch } from "../src/lib/matching.ts";
+import { displayTenantName, matchTenant, type PendingMatch } from "../src/lib/matching.ts";
 
 type Limb =
   | { id: string; type: "named"; name: string }
@@ -210,7 +210,16 @@ function buildClause(
       cureBasis: "consecutive",
       clockStartsAt: m.clause.notice_driven ? "tenant_notice" : "failure",
       noticeRequired: m.clause.notice_driven,
-      reliefRunsFrom: m.clause.notice_driven ? "notice" : "failure",
+      /* Where the tenant must elect, relief runs from the notice. A
+         sequenced remedy is written around a measuring period and
+         reaches back over it, which is why Walden Galleria captures the
+         months before its trigger. Everything else starts at the
+         trigger. Worth confirming with the partner. */
+      reliefRunsFrom: m.clause.notice_driven
+        ? "notice"
+        : r.type === "sequenced"
+          ? "failure"
+          : "trigger",
       retroactiveCapDays: m.clause.notice_driven ? 90 : undefined,
       capMonths: r.cap_m ?? undefined,
       postCapElection: /terminat/i.test(r.post_cap ?? "") ? "tenant_choice" : undefined,
@@ -298,9 +307,30 @@ for (const key of Object.keys(data.malls)) {
   const failedPreconditions: string[] = [];
   const unverifiedPreconditions: string[] = [];
 
+  /*
+   * NOTICE HISTORY IS A CLIENT INPUT, NOT SOMETHING WE CAN OBSERVE.
+   *
+   * Whether a tenant already served a co-tenancy notice, and when, is a
+   * fact only their lease administration team holds. It is absent from
+   * the center data entirely, and without it every location that has
+   * tripped reads as "claimable" even where relief has been running for
+   * a year.
+   *
+   * These two are what A&F's team reported at onboarding. They are the
+   * only figures here that do not derive from the center feed, which is
+   * why they are listed explicitly rather than inferred.
+   */
+  const NOTICE_ON_FILE: Record<string, string> = {
+    "Danbury Fair": "2025-06-01",
+    "Westfield Annapolis (Annapolis Mall)": "2025-07-01",
+  };
+  const noticeServedAt = NOTICE_ON_FILE[m.mall];
+
   const suites: Suite[] = m.roster.map((r) => ({
     id: idOf.get(r.store)!,
-    name: r.store,
+    /* Identity stays on the raw name (idOf, matchTenant); only what a
+       reader sees is de-slugified. */
+    name: displayTenantName(r.store),
     gla: r.gla,
     status: closed.has(r.store) ? "dark" : "open",
     kind: r.anchor ? "anchor" : "inline",
@@ -321,11 +351,11 @@ for (const key of Object.keys(data.malls)) {
       const observedAt = `${e.month}-10`;
       const base = { unitId: idOf.get(e.store) ?? slug(e.store), observedAt };
       const rows: Evidence[] = [
-        { ...base, id: `${key}-e${i}a`, source: "center_directory", statement: `${e.store} removed from the center directory.` },
+        { ...base, id: `${key}-e${i}a`, source: "center_directory", statement: `${displayTenantName(e.store)} removed from the center directory.` },
       ];
       if (isAnchor || depends.has(e.store)) {
-        rows.push({ ...base, id: `${key}-e${i}b`, source: "press_report", statement: `Closure of ${e.store} reported locally.` });
-        rows.push({ ...base, id: `${key}-e${i}c`, source: "field_visit", statement: `${e.store}: premises confirmed closed on site.` });
+        rows.push({ ...base, id: `${key}-e${i}b`, source: "press_report", statement: `Closure of ${displayTenantName(e.store)} reported locally.` });
+        rows.push({ ...base, id: `${key}-e${i}c`, source: "field_visit", statement: `${displayTenantName(e.store)}: premises confirmed closed on site.` });
       }
       return rows;
     });
@@ -360,13 +390,17 @@ for (const key of Object.keys(data.malls)) {
     econ: {
       gla: m.af_store.gla,
       rentPsf: m.af_store.fmr_psf,
-      ttmGrossSales: Math.round(m.af_store.monthly_sales_k.slice(-12).reduce((a, b) => a + b, 0) * 1000),
+      ttmGrossSales: Math.round(m.af_store.monthly_sales_k.slice(-12).reduce((a: number, b: number) => a + b, 0) * 1000),
+      /* Percentage rent is computed on the month's own sales, so carry
+         the series rather than an average. */
+      monthlySales: m.af_store.monthly_sales_k.map((s: number) => Math.round(s * 1000)),
+      monthlySalesFrom: data.timeline[0],
       salesEstimated: false,
       commencement: "2018-03-01",
       expiration: "2031-01-31",
     },
     clauses: [buildClause(m, idOf, roster, pending)],
-    claim: { firstObservedAt: firstObserved, failedPreconditions, unverifiedPreconditions },
+    claim: { firstObservedAt: firstObserved, noticeServedAt, failedPreconditions, unverifiedPreconditions },
     evidence,
     ownStatus,
     monthlySeries: m.months.map((x) => ({

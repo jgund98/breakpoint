@@ -66,7 +66,12 @@ export default async function LocationPage({
       <div className="flex flex-wrap items-start justify-between gap-5">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-[clamp(1.5rem,3vw,2rem)]">{center.name}</h1>
+            {/* balance keeps a long center name like "Westfield
+                Annapolis (Annapolis Mall)" from dropping a lone word
+                onto its own line on a phone. */}
+            <h1 className="text-[clamp(1.5rem,3vw,2rem)] text-balance">
+              {center.name}
+            </h1>
             <Pill tone={tone} dot>
               {STATE_META[ev.state].label}
             </Pill>

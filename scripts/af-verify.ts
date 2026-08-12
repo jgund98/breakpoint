@@ -24,6 +24,7 @@
 
 import { readFileSync } from "node:fs";
 import { clauseInForce, evaluateClause } from "../src/lib/clause.ts";
+import { displayTenantName } from "../src/lib/matching.ts";
 import type { Suite } from "../src/lib/clause.ts";
 
 const src = process.argv[2] ?? "C:/Users/Lucky/Desktop/af_portfolio_dataset (1).json";
@@ -60,7 +61,7 @@ for (const key of keys) {
    * compares the wrong row against the wrong answer.
    */
   for (const r of m.roster) {
-    const s = loc.center.suites.find((x: Suite) => x.name === r.store);
+    const s = loc.center.suites.find((x: Suite) => x.name === displayTenantName(r.store));
     suiteChecks++;
     if (!s) { fail(`${m.mall}: suite ${r.store} missing`); continue; }
     const want = closed.has(r.store) ? "dark" : "open";

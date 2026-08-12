@@ -354,7 +354,16 @@ export type Remedy = {
    * itself and only 21% from notice, so "failure" is the common case,
    * not the exception.
    */
-  reliefRunsFrom: "failure" | "first_of_month_after_notice" | "notice";
+  /**
+   * When the money actually starts. "failure" reaches back over the
+   * clause's measuring period and captures the months before the right
+   * arose; "trigger" is the ordinary case and starts when it arose.
+   */
+  reliefRunsFrom:
+    | "failure"
+    | "trigger"
+    | "first_of_month_after_notice"
+    | "notice";
   /**
    * How far back relief may reach before the tenant's notice. This is
    * the field that actually makes detection speed worth money: relief
@@ -563,6 +572,17 @@ export type LeaseEconomics = {
   rentPsf: number;
   /** Trailing twelve month reported gross sales, or null if unreported. */
   ttmGrossSales: number | null;
+  /**
+   * Reported gross sales month by month, oldest first, in whole dollars.
+   *
+   * A percentage-rent remedy is computed on the month's ACTUAL sales,
+   * not on an annual average, and for this tenant the two are far apart:
+   * December runs nearly double a February. Averaging showed a saving in
+   * months that produce none and understated the months that do.
+   */
+  monthlySales?: number[];
+  /** Month label of monthlySales[0], e.g. "2024-09". */
+  monthlySalesFrom?: string;
   /** Where sales are unreported we model from category benchmarks. */
   salesEstimated: boolean;
   commencement: string;
@@ -581,8 +601,19 @@ export function altRentMonthly(
   const candidates: number[] = [];
 
   if (f.pctOfGrossSales != null) {
-    if (e.ttmGrossSales == null) return null;
-    candidates.push((e.ttmGrossSales / 12) * (f.pctOfGrossSales / 100));
+    /*
+     * The month's own sales where we hold them. Percentage rent is a
+     * monthly computation on monthly sales, and this tenant's December
+     * runs close to double its February, so an annual average reports a
+     * saving in months that produce none.
+     */
+    const monthly = e.monthlySales?.length
+      ? e.monthlySales[e.monthlySales.length - 1]
+      : e.ttmGrossSales == null
+        ? null
+        : e.ttmGrossSales / 12;
+    if (monthly == null) return null;
+    candidates.push(monthly * (f.pctOfGrossSales / 100));
   }
   if (f.pctOfMinimumRent != null) {
     candidates.push(base * (f.pctOfMinimumRent / 100));
@@ -729,6 +760,13 @@ export type Evaluation = {
   state: ClauseState;
   /** Money the remedy is worth per month once running. */
   monthlyDelta: number | null;
+  /**
+   * Every dollar the remedy has been worth since the right arose, summed
+   * month by month on that month's own sales. Annualizing one month
+   * misleads badly here: this tenant's December can wipe out a saving
+   * that February shows in full.
+   */
+  cumulativeAtRisk: number | null;
   /** Months between the condition becoming observable and notice. */
   monthsBeforeNotice: number;
   /** Of those, the months relief can still reach back and capture. */
@@ -1015,6 +1053,55 @@ export function evaluateClause(
   const payable = alt ?? abated;
   const monthlyDelta = payable == null ? null : Math.max(0, base - payable);
 
+  /*
+   * What the remedy has actually been worth, month by month, from the
+   * month the right arose to today. Each month is valued on its own
+   * sales, because that is how percentage rent is computed and because
+   * the months differ enormously: a strong December can produce no
+   * saving at all while the February either side of it produces the
+   * month's full spread.
+   */
+  const cumulativeAtRisk = (() => {
+    const from = econ.monthlySalesFrom;
+    if (!from || !cureEnds) return null;
+    const origin = new Date(`${from}-01`);
+
+    /*
+     * Relief does not necessarily begin when the right arises.
+     *
+     *   notice   the tenant elected, and relief runs from that month
+     *   failure  the remedy reaches back over its measuring period, so
+     *            the months before the trigger are captured too
+     *   trigger  the ordinary case
+     */
+    const startAt =
+      noticeServed && noticeServed > cureEnds
+        ? noticeServed
+        : r.reliefRunsFrom === "failure" && firstObserved
+          ? firstObserved
+          : cureEnds;
+
+    const startIdx = monthsBetween(origin, startAt);
+    const endIdx = monthsBetween(origin, asOf);
+    if (endIdx < 0) return null;
+
+    const series = econ.monthlySales;
+    let total = 0;
+    for (let i = Math.max(0, startIdx); i <= endIdx; i++) {
+      if (r.altRent) {
+        if (!series?.length || i > series.length - 1) continue;
+        const alt = altRentMonthly({ ...econ, monthlySales: series.slice(0, i + 1) }, r.altRent);
+        if (alt != null) total += Math.max(0, base - alt);
+      } else if (r.abatementPct != null) {
+        /* An abatement is a straight reduction of fixed rent and does
+           not depend on sales at all. Leaving it out reported nothing
+           for the single most valuable clause in this portfolio. */
+        total += base * (r.abatementPct / 100);
+      }
+    }
+    return Math.round(total);
+  })();
+
   const monthsBeforeNotice =
     firstObserved && noticeServed
       ? Math.max(0, monthsBetween(firstObserved, noticeServed))
@@ -1068,6 +1155,7 @@ export function evaluateClause(
       : monthsBeforeNotice,
     potentialMissed,
     forwardTwelveMonths: monthlyDelta == null ? null : monthlyDelta * 12,
+    cumulativeAtRisk,
     cureEndsOn: cureEnds ? iso(cureEnds) : null,
     daysUntilCureEnds: cureEnds ? daysBetween(asOf, cureEnds) : null,
     electionDeadline: electionDeadline ? iso(electionDeadline) : null,
