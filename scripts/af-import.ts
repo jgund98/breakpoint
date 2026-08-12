@@ -414,8 +414,8 @@ for (const key of Object.keys(data.malls)) {
       monthlySales: m.af_store.monthly_sales_k.map((s: number) => Math.round(s * 1000)),
       monthlySalesFrom: data.timeline[0],
       salesEstimated: false,
-      commencement: "2018-03-01",
-      expiration: "2031-01-31",
+      /* Not supplied by the center dataset. Onboarding has to collect
+         the lease term from the client; we do not guess it. */
     },
     clauses: [buildClause(m, idOf, roster, pending)],
     claim: { firstObservedAt: firstObserved, noticeServedAt, failedPreconditions, unverifiedPreconditions },

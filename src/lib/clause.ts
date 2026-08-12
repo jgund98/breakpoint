@@ -585,8 +585,14 @@ export type LeaseEconomics = {
   monthlySalesFrom?: string;
   /** Where sales are unreported we model from category benchmarks. */
   salesEstimated: boolean;
-  commencement: string;
-  expiration: string;
+  /**
+   * Lease term dates, where the client has supplied them. A center data
+   * feed never carries these; they come off the lease itself. Optional
+   * because inventing them puts a date on screen that is not a fact,
+   * and every renewal view built on them would be built on nothing.
+   */
+  commencement?: string;
+  expiration?: string;
 };
 
 export function baseRentMonthly(e: LeaseEconomics) {

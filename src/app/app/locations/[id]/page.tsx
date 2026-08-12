@@ -80,8 +80,10 @@ export default async function LocationPage({
             {center.city}, {center.state} · {center.format} · {center.owner}
           </p>
           <p className="mt-1 text-[0.8125rem] text-muted">
-            Store {row.storeNumber} · {row.unit} · {sf(econ.gla)} · lease to{" "}
-            {prettyDate(econ.expiration)}
+            Store {row.storeNumber} · {row.unit} · {sf(econ.gla)}
+            {econ.expiration
+              ? ` · lease to ${prettyDate(econ.expiration)}`
+              : " · lease term not supplied"}
           </p>
         </div>
 

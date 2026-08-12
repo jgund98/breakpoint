@@ -160,7 +160,10 @@ export default function ClausesPage() {
                       {row.center.name}
                     </Link>
                     <span className="text-[0.8125rem] text-muted">
-                      {row.id} · lease to {prettyDate(row.econ.expiration)}
+                      {row.id}
+                      {row.econ.expiration
+                        ? ` · lease to ${prettyDate(row.econ.expiration)}`
+                        : " · lease term not supplied"}
                     </span>
                   </div>
                   <p className="no-orphan mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
