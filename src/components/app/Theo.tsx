@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, FileText, Info } from "lucide-react";
+import { ArrowUp, Download, FileText, Info } from "lucide-react";
 import {
   type AnswerBlock,
   type TheoAnswer,
@@ -12,6 +12,13 @@ import {
   suggestedQuestions,
   theo,
 } from "@/lib/theo";
+import {
+  answerToCsv,
+  answerToPrintable,
+  hasTabularContent,
+} from "@/lib/theo-export";
+import { org, TODAY } from "@/lib/portfolio";
+import { prettyDate } from "@/lib/clause";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/cn";
 import { ActionButton, Panel, Pill } from "./ui";
@@ -129,10 +136,56 @@ export function Theo() {
                   {t.answer.blocks.map((b, k) => (
                     <Block key={k} block={b} />
                   ))}
-                  <p className="flex items-center gap-1.5 border-t border-line pt-2 text-[0.6875rem] text-faint">
-                    <Info className="h-3 w-3" />
-                    {t.answer.provenance}
-                  </p>
+                  {/* An answer that cannot leave the screen is half an
+                      answer. A real request from a regional manager was
+                      for "a one pager" to take into a meeting. */}
+                  <div className="flex flex-wrap items-center gap-2 border-t border-line pt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const w = window.open("", "_blank");
+                        if (!w) return;
+                        w.document.write(
+                          answerToPrintable(t.answer!, {
+                            org: org.name,
+                            asOf: `Evaluated ${prettyDate(TODAY)}`,
+                          }),
+                        );
+                        w.document.close();
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-semibold text-ink transition-colors hover:border-petrol-300 hover:bg-petrol-50"
+                    >
+                      <FileText className="h-3 w-3" />
+                      One pager
+                    </button>
+                    {hasTabularContent(t.answer) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const blob = new Blob([answerToCsv(t.answer!)], {
+                            type: "text/csv",
+                          });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = `breakpoint-${t.answer!.interpreted
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .slice(0, 48)}.csv`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-semibold text-ink transition-colors hover:border-petrol-300 hover:bg-petrol-50"
+                      >
+                        <Download className="h-3 w-3" />
+                        CSV
+                      </button>
+                    )}
+                    <p className="flex items-center gap-1.5 text-[0.6875rem] text-faint">
+                      <Info className="h-3 w-3" />
+                      {t.answer.provenance}
+                    </p>
+                  </div>
                   {t.answer.followUps.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {t.answer.followUps.map((f) => (
