@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   X,
   Activity,
+  ClipboardCheck,
   FileSignature,
   FileText,
   LayoutDashboard,
@@ -36,6 +37,7 @@ const NAV = [
       { href: "/app/theo", label: "Ask Theo", Icon: Sparkles },
       { href: "/app/locations", label: "Locations", Icon: Store },
       { href: "/app/coverage", label: "Coverage", Icon: Radar },
+      { href: "/app/check", label: "Weekly check", Icon: ClipboardCheck },
       { href: "/app/activity", label: "Activity", Icon: Activity },
     ],
   },
