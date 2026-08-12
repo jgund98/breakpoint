@@ -52,7 +52,7 @@ export default async function LocationPage({
     v.tier === "verified";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* ---- breadcrumb ---- */}
       <nav className="flex items-center gap-2 text-[0.8125rem] text-muted">
         <Link href="/app/locations" className="hover:text-petrol-700">

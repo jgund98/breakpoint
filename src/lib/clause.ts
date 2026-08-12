@@ -280,7 +280,7 @@ export type Trigger =
  * We model the REQUIREMENT as written, not the failure. That is the way
  * the lease reads, so the tree can be checked against the document
  * sentence by sentence, and failure is simply the requirement not being
- * met. Modelling failure directly means inverting every operator by
+ * met. Modeling failure directly means inverting every operator by
  * hand during abstraction, which is where mistakes get made.
  */
 export type TriggerNode =

@@ -90,14 +90,17 @@ export function MatchQueue({ items }: Props) {
                               setResolved((p) => ({ ...p, [key(m)]: c.id }))
                             }
                             className={cn(
-                              "rounded-lg border border-line bg-surface px-3 py-2 text-left",
+                              /* Two lines of text need more than 12px of
+                                 side padding, or the reason line runs
+                                 into the rounded corner. */
+                              "rounded-xl border border-line bg-surface px-4 py-3 text-left",
                               "transition-colors duration-200 hover:border-petrol-300 hover:bg-surface-sunk",
                             )}
                           >
                             <span className="block text-[0.8125rem] font-medium text-ink">
                               {c.name}
                             </span>
-                            <span className="block text-[0.6875rem] text-muted">
+                            <span className="mt-0.5 block text-[0.6875rem] leading-snug text-muted">
                               {c.reason}
                             </span>
                           </button>

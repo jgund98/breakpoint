@@ -493,7 +493,7 @@ function MessagesTab({
                 {
                   id: `m${t.messages.length + 1}`,
                   from: "client",
-                  author: "R. Alvarez",
+                  author: "S. Aggarwal",
                   at: "2026-08-04",
                   body: draft.trim(),
                 },
@@ -791,7 +791,7 @@ function InviteDrawer({
             <div className="mt-6 space-y-4">
               {(
                 [
-                  ["name", "Full name", "R. Alvarez"],
+                  ["name", "Full name", "S. Aggarwal"],
                   ["email", "Work email", "name@company.com"],
                   ["title", "Job title", "Director, Lease Administration"],
                 ] as const

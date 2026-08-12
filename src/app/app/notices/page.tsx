@@ -18,6 +18,7 @@ import {
   KeyValue,
   Note,
   PageHead,
+  Stat,
   Panel,
   PanelHead,
   Pill,
@@ -59,7 +60,7 @@ export default function NoticesPage() {
   }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHead
         eyebrow="Act"
         title="Notice packages"
@@ -76,8 +77,8 @@ export default function NoticesPage() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Ready to serve", ready.length, "text-brass-600"],
-          ["Held for verification", held.length, "text-muted"],
+          ["Ready to serve", ready.length, "brass"],
+          ["Held for verification", held.length, "muted"],
           [
             "Combined monthly value",
             usd(
@@ -85,15 +86,15 @@ export default function NoticesPage() {
                 ready.reduce((s, r) => s + (r.evaluation.monthlyDelta ?? 0), 0),
               ),
             ),
-            "text-ink",
+            "petrol",
           ],
         ].map(([l, v, c]) => (
-          <div key={l as string} className="rounded-2xl border border-line bg-surface p-5">
-            <p className="label text-muted">{l as string}</p>
-            <p className={`tnum font-display mt-2 text-[1.75rem] leading-none ${c as string}`}>
-              {v as React.ReactNode}
-            </p>
-          </div>
+          <Stat
+            key={l as string}
+            label={l as string}
+            value={v as React.ReactNode}
+            tone={c as Tone}
+          />
         ))}
       </div>
 

@@ -84,7 +84,25 @@ function identityMap(roster: { store: string }[]) {
 }
 const LAST = data.timeline.length - 1;
 /** Mid-month of the final period in the series. */
-export const TODAY = `${data.timeline[LAST]}-15`;
+/**
+ * The evaluation date.
+ *
+ * The real date where the data reaches it, never a date in the future.
+ * This used to be pinned to mid-month of the final period, which had
+ * the product reporting a scan that had not happened yet: the sidebar
+ * read "last scan today, Aug 15" on the twelfth. A monitoring service
+ * claiming a sweep it has not run is the one thing it cannot do.
+ *
+ * Where the real date runs past the data, it clamps to the end of the
+ * last period we hold rather than implying coverage we do not have.
+ */
+export const TODAY = (() => {
+  const [y, m] = data.timeline[LAST].split("-").map(Number);
+  const lastDayOfData = new Date(Date.UTC(y, m, 0));
+  const now = new Date();
+  const at = now < lastDayOfData ? now : lastDayOfData;
+  return at.toISOString().slice(0, 10);
+})();
 
 /**
  * COMBINE DESCRIBES THE FAILURE, SO THE REQUIREMENT INVERTS.

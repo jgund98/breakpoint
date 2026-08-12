@@ -100,7 +100,7 @@ export const org = {
   plan: "Portfolio",
   team: [
     { name: "D. Okonkwo", role: "VP, Real Estate", initials: "DO" },
-    { name: "R. Alvarez", role: "Director, Lease Administration", initials: "RA" },
+    { name: "S. Aggarwal", role: "Director, Lease Administration", initials: "SA" },
     { name: "S. Pratt", role: "Associate General Counsel", initials: "SP" },
   ],
 };

@@ -123,18 +123,31 @@ export function PanelHead({
   );
 }
 
+/**
+ * The one metric card.
+ *
+ * There were three of these at one point: this one, a p-4 variant with a
+ * 1.5rem number, and a p-5 variant with a 1.75rem number that colored
+ * the figure itself. Five pages each carried their own. Rows of them sat
+ * next to each other at different weights, which is exactly the thing
+ * that reads as unfinished however good the underlying numbers are.
+ * Color belongs on the dot, not the number, so the figures all share one
+ * weight and the eye can compare them.
+ */
 export function Stat({
   label,
   value,
   sub,
   tone = "petrol",
   href,
+  className,
 }: {
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
   tone?: Tone;
   href?: string;
+  className?: string;
 }) {
   const body = (
     <>
@@ -153,15 +166,21 @@ export function Stat({
     </>
   );
 
+  /* h-full so a card whose sub-line wraps to two lines does not stand
+     taller than the ones beside it. Grid children stretch, but the card
+     inside the motion wrapper has to be told to fill that height. */
   const cls =
-    "block rounded-2xl border border-line bg-surface p-5 transition-colors duration-300";
+    "block h-full rounded-2xl border border-line bg-surface p-5 transition-colors duration-300";
 
   return href ? (
-    <Link href={href} className={cn(cls, "hover:border-petrol-300 hover:bg-petrol-50/40")}>
+    <Link
+      href={href}
+      className={cn(cls, "hover:border-petrol-300 hover:bg-petrol-50/40", className)}
+    >
       {body}
     </Link>
   ) : (
-    <div className={cls}>{body}</div>
+    <div className={cn(cls, className)}>{body}</div>
   );
 }
 

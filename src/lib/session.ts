@@ -21,8 +21,8 @@ export const DEMO_PASSWORD = "password123";
 
 /** The account the demo session presents as. */
 export const DEMO_USER = {
-  name: "R. Alvarez",
-  initials: "RA",
+  name: "S. Aggarwal",
+  initials: "SA",
   title: "Director, Lease Administration",
   /**
    * The demo signs in as the account owner so every workflow can be

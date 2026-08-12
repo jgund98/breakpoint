@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { SOURCE_META, TIER_META, prettyDate, verificationOf } from "@/lib/clause";
 import { rows, signalFeed } from "@/lib/portfolio";
-import { PageHead, Panel, PanelHead, Pill, Note, type Tone } from "@/components/app/ui";
+import {
+  Note,
+  PageHead,
+  Panel,
+  PanelHead,
+  Pill,
+  Stat,
+  type Tone,
+} from "@/components/app/ui";
 
 export default function SignalsPage() {
   const byMonth = new Map<string, typeof signalFeed>();
@@ -21,7 +29,7 @@ export default function SignalsPage() {
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHead
         eyebrow="Monitor"
         title="Signals"
@@ -30,16 +38,16 @@ export default function SignalsPage() {
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
-          ["Observations logged", signalFeed.length, "text-ink"],
-          ["Primary evidence", primary, "text-open-700"],
-          ["Awaiting verification", pending.length, "text-brass-600"],
+          ["Observations logged", signalFeed.length, "petrol"],
+          ["Primary evidence", primary, "open"],
+          ["Awaiting verification", pending.length, "brass"],
         ].map(([l, v, c]) => (
-          <div key={l as string} className="rounded-2xl border border-line bg-surface p-5">
-            <p className="label text-muted">{l as string}</p>
-            <p className={`tnum font-display mt-2 text-[1.75rem] leading-none ${c as string}`}>
-              {v as number}
-            </p>
-          </div>
+          <Stat
+            key={l as string}
+            label={l as string}
+            value={v as number}
+            tone={c as Tone}
+          />
         ))}
       </div>
 

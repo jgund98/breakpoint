@@ -8,6 +8,7 @@ import {
   EmptyState,
   LinkButton,
   PageHead,
+  Stat,
   Panel,
   PanelHead,
   Pill,
@@ -106,16 +107,14 @@ export default function CoveragePage() {
           ],
           ["Next scan", shortDate(c.nextSweepISO), "Runs automatically"],
         ].map(([k, v, hint], i) => (
-          <div
+          <Stat
             key={k as string}
-            className={`card-enter d-${i + 1} rounded-2xl border border-line bg-surface p-4`}
-          >
-            <p className="text-[0.75rem] text-muted">{k as string}</p>
-            <p className="tnum font-display mt-1.5 text-[1.5rem] leading-none text-ink">
-              {v as string}
-            </p>
-            <p className="mt-1 text-[0.75rem] text-faint">{hint as string}</p>
-          </div>
+            label={k as string}
+            value={v as string}
+            sub={hint as string}
+            tone={"petrol" as Tone}
+            className={`card-enter d-${i + 1}`}
+          />
         ))}
       </div>
 

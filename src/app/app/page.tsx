@@ -141,7 +141,7 @@ export default function OverviewPage() {
     : null;
 
   return (
-    <div className="space-y-7">
+    <div className="space-y-5">
       <Verdict
         decisions={decisions.length}
         monthlyTotal={decisionMonthly}

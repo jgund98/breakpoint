@@ -175,7 +175,7 @@ export function Verdict({
   );
 }
 
-/** A labelled fact. Software states values; it does not narrate them. */
+/** A labeled fact. Software states values; it does not narrate them. */
 function Fact({ k, v, sub }: { k: string; v: string; sub?: string }) {
   return (
     <div>

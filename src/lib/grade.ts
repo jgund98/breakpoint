@@ -138,11 +138,11 @@ export function gradeClause(clause: Clause): Grade {
     weight: 1.1,
     score: exitScore,
     verdict: r.capMonths
-      ? `Termination available after ${r.capMonths} months${r.unamortizedReimbursement ? ", with unamortised improvements reimbursed" : ""}.`
+      ? `Termination available after ${r.capMonths} months${r.unamortizedReimbursement ? ", with unamortized improvements reimbursed" : ""}.`
       : "No termination right. Relief only.",
     advice: r.unamortizedReimbursement
       ? "Best in class. Most leases do not carry the reimbursement."
-      : "Ask for reimbursement of unamortised leasehold improvements on a co-tenancy termination.",
+      : "Ask for reimbursement of unamortized leasehold improvements on a co-tenancy termination.",
   });
 
   /* 7. Preconditions. Every one is a way the claim dies. */

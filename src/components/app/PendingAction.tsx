@@ -10,7 +10,7 @@ import { ActionButton } from "./ui";
  *
  * These used to be buttons that did nothing at all when clicked, which
  * reads as broken rather than unfinished. Until delivery is wired, the
- * honest behaviour is to acknowledge the request and say plainly what
+ * honest behavior is to acknowledge the request and say plainly what
  * will happen, so a reader can tell the difference between a feature
  * that is queued and a button that is dead.
  */

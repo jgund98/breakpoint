@@ -8,9 +8,12 @@ import {
   PageHead,
   Panel,
   PanelHead,
+  Stat,
   Pill,
   type Tone,
 } from "@/components/app/ui";
+
+const GRADES = ["A", "B", "C", "D"] as const;
 
 export default function ClausesPage() {
   const graded = rows
@@ -31,37 +34,84 @@ export default function ClausesPage() {
   const weakest = graded.slice(0, 8);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHead
         eyebrow="Analyze"
         title="Clause library"
         lede="Every co-tenancy provision, graded on the seven terms that decide whether it pays."
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl border border-line bg-surface p-5">
-          <p className="label text-muted">Portfolio median</p>
-          <p className="tnum font-display mt-2 text-[1.75rem] leading-none text-ink">
-            {median}
-            <span className="text-[1rem] text-muted"> / 100</span>
-          </p>
-        </div>
-        {(["A", "B", "C", "D"] as const).map((letter) => (
-          <div key={letter} className="rounded-2xl border border-line bg-surface p-5">
-            <p className="label text-muted">Grade {letter}</p>
-            <p
-              className={`tnum font-display mt-2 text-[1.75rem] leading-none ${
-                GRADE_TONE[letter] === "open"
-                  ? "text-open-700"
-                  : GRADE_TONE[letter] === "watch"
-                    ? "text-brass-600"
-                    : "text-clay-600"
-              }`}
-            >
-              {dist[letter] ?? 0}
-            </p>
+      {/*
+        A distribution is one fact, not four. Five equal cards in a four
+        column grid dropped the last grade onto a row of its own, and a
+        full card carrying the number zero earns none of the space it
+        takes. Median stands alone; the spread reads as a bar.
+      */}
+      <div className="grid gap-3 lg:grid-cols-3">
+        <Stat
+          label="Portfolio median"
+          value={
+            <>
+              {median}
+              <span className="text-[1rem] text-muted"> / 100</span>
+            </>
+          }
+          sub={`Across ${graded.length} graded provisions`}
+          tone="petrol"
+        />
+
+        <div className="rounded-2xl border border-line bg-surface p-5 lg:col-span-2">
+          <p className="label text-muted">Grade distribution</p>
+
+          <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full bg-surface-sunk">
+            {GRADES.map((letter) => {
+              const n = dist[letter] ?? 0;
+              if (n === 0) return null;
+              return (
+                <div
+                  key={letter}
+                  style={{ width: `${(n / graded.length) * 100}%` }}
+                  className={
+                    GRADE_TONE[letter] === "open"
+                      ? "bg-open-600"
+                      : GRADE_TONE[letter] === "watch"
+                        ? "bg-brass-500"
+                        : "bg-clay-500"
+                  }
+                />
+              );
+            })}
           </div>
-        ))}
+
+          <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+            {GRADES.map((letter) => {
+              const n = dist[letter] ?? 0;
+              return (
+                <div key={letter} className="flex items-baseline gap-1.5">
+                  <span
+                    className={`h-2 w-2 shrink-0 rounded-full ${
+                      n === 0
+                        ? "bg-line"
+                        : GRADE_TONE[letter] === "open"
+                          ? "bg-open-600"
+                          : GRADE_TONE[letter] === "watch"
+                            ? "bg-brass-500"
+                            : "bg-clay-500"
+                    }`}
+                  />
+                  <dt className="text-[0.75rem] text-muted">Grade {letter}</dt>
+                  <dd
+                    className={`tnum text-[0.9375rem] font-semibold ${
+                      n === 0 ? "text-faint" : "text-ink"
+                    }`}
+                  >
+                    {n}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
       </div>
 
       <Note tone="petrol" title="Read this before your next renewal">

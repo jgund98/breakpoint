@@ -131,13 +131,13 @@ export const members: Member[] = [
   },
   {
     id: "u-2",
-    name: "R. Alvarez",
+    name: "S. Aggarwal",
     email: "r.alvarez@marlowefinch.com",
     title: "Director, Lease Administration",
     role: "lease_admin",
     status: "active",
     lastActive: "2026-08-04",
-    initials: "RA",
+    initials: "SA",
   },
   {
     id: "u-3",
@@ -389,7 +389,7 @@ export const threads: Thread[] = [
       {
         id: "m1",
         from: "client",
-        author: "R. Alvarez",
+        author: "S. Aggarwal",
         at: "2026-07-14",
         body: "Sending the executed Sixth Amendment. I believe it changes the co-tenancy requirement but I have not read it closely.",
       },
@@ -413,7 +413,7 @@ export const threads: Thread[] = [
       {
         id: "m1",
         from: "client",
-        author: "R. Alvarez",
+        author: "S. Aggarwal",
         at: "2026-07-08",
         body: "Our district manager says that center feels much emptier than the figure shown.",
       },

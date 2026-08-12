@@ -171,7 +171,7 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
                       <span className="block text-[0.75rem] text-muted capitalize">
                         {s.kind} · {open ? "open and operating" : "closed"}
                         {changed && (
-                          <span className="ml-1.5 text-petrol-700">modelled</span>
+                          <span className="ml-1.5 text-petrol-700">modeled</span>
                         )}
                       </span>
                     </span>
@@ -287,7 +287,7 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
 
           {dirty && (
             <p className="mt-3 text-[0.75rem] leading-relaxed text-petrol-700">
-              Modelled, not observed. As observed today this lease is{" "}
+              Modeled, not observed. As observed today this lease is{" "}
               {STATE_META[baseline.state].label.toLowerCase()}.
             </p>
           )}

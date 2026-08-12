@@ -56,7 +56,7 @@ export default function LocationsPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PageHead
         eyebrow="Monitor"
         title="Locations"

@@ -134,7 +134,7 @@ export const FIELDS: {
     label: "Center name",
     required: false,
     hint: "If you already know it, resolution gets much faster.",
-    aliases: ["center", "centre", "mall", "property", "shopping center", "center name", "property name"],
+    aliases: ["center", "center", "mall", "property", "shopping center", "center name", "property name"],
   },
   {
     key: "gla",
@@ -220,7 +220,7 @@ export type IngestRow = {
 };
 
 const CENTER_HINTS = [
-  "mall", "center", "centre", "commons", "square", "galleria", "crossing",
+  "mall", "center", "center", "commons", "square", "galleria", "crossing",
   "town", "plaza", "shops", "market", "yards", "row", "landing", "park",
   "place", "court", "collection", "arcade", "green", "mills",
 ];

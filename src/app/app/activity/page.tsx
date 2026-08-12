@@ -19,6 +19,7 @@ import {
   EmptyState,
   LinkButton,
   PageHead,
+  Stat,
   Panel,
   PanelHead,
   Pill,
@@ -44,21 +45,21 @@ export default function ActivityPage() {
       />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          ["Scans run", a.sweepsRun, `Last ${shortDate(a.lastSweep)}`],
-          ["Changes found", a.changesDetected, "Stores that closed or reopened"],
-          ["Reports sent", a.reportsDelivered, "To your team"],
-        ].map(([k, v, hint], i) => (
-          <div
-            key={k as string}
-            className={`card-enter d-${i + 1} rounded-2xl border border-line bg-surface p-4`}
-          >
-            <p className="text-[0.75rem] text-muted">{k as string}</p>
-            <p className="tnum font-display mt-1.5 text-[1.5rem] leading-none text-ink">
-              {v as React.ReactNode}
-            </p>
-            <p className="mt-1 text-[0.75rem] text-faint">{hint as string}</p>
-          </div>
+        {(
+          [
+            ["Scans run", a.sweepsRun, `Last ${shortDate(a.lastSweep)}`, "petrol"],
+            ["Changes found", a.changesDetected, "Stores that closed or reopened", "brass"],
+            ["Reports sent", a.reportsDelivered, "To your team", "muted"],
+          ] as const
+        ).map(([k, v, hint, tone], i) => (
+          <Stat
+            key={k}
+            label={k}
+            value={v}
+            sub={hint}
+            tone={tone as Tone}
+            className={`card-enter d-${i + 1}`}
+          />
         ))}
       </div>
 
