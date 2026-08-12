@@ -13,6 +13,7 @@ import {
   Network,
   Radar,
   RefreshCw,
+  Scale,
   Settings2,
   SlidersHorizontal,
   Sparkles,
@@ -42,6 +43,7 @@ const NAV = [
     heading: "Analyze",
     items: [
       { href: "/app/clauses", label: "Clause library", Icon: FileText },
+      { href: "/app/clause-value", label: "Clause value", Icon: Scale },
     ],
   },
   {
