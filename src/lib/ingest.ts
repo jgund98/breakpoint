@@ -81,10 +81,14 @@ export type FieldKey =
   | "state"
   | "postal"
   | "centerName"
+  | "landlord"
+  | "suite"
   | "gla"
   | "baseRent"
   | "commencement"
   | "expiration"
+  | "openDate"
+  | "ownStatus"
   | "ignore";
 
 export const FIELDS: {
@@ -134,7 +138,35 @@ export const FIELDS: {
     label: "Center name",
     required: false,
     hint: "If you already know it, resolution gets much faster.",
-    aliases: ["center", "center", "mall", "property", "shopping center", "center name", "property name"],
+    aliases: ["center", "mall", "property", "shopping center", "center name", "property name", "site name"],
+  },
+  {
+    key: "landlord",
+    label: "Landlord entity",
+    required: false,
+    hint: "The entity on the lease, not the brand. Notices are served on the entity, and one owner often holds each center in a separate one.",
+    aliases: ["landlord", "landlord entity", "lessor", "owner", "owner entity", "landlord name"],
+  },
+  {
+    key: "suite",
+    label: "Suite or unit",
+    required: false,
+    hint: "Your unit number within the center.",
+    aliases: ["suite", "unit", "unit number", "suite number", "space", "space number", "premises"],
+  },
+  {
+    key: "openDate",
+    label: "Date opened",
+    required: false,
+    hint: "When the store began operating. Used to read opening co-tenancy provisions.",
+    aliases: ["open date", "opened", "date opened", "rent commencement", "opening date"],
+  },
+  {
+    key: "ownStatus",
+    label: "Your store status",
+    required: false,
+    hint: "Open, dark or remodeling. Nearly every clause conditions relief on your own store being open and operating, and this is the one thing we cannot observe from outside.",
+    aliases: ["status", "store status", "operating", "open closed", "current status", "trading status"],
   },
   {
     key: "gla",

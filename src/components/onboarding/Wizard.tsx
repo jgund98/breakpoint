@@ -14,6 +14,7 @@ import {
   parseDelimited,
   sampleCsv,
 } from "@/lib/ingest";
+import { IntakeReview, TemplateButton } from "./IntakeReview";
 import { ActionButton, Note, Panel, Pill } from "@/components/app/ui";
 import { useWorkspace } from "@/lib/workspace-store";
 
@@ -579,15 +580,20 @@ function LocationsStep({
                 </h2>
                 <p className="mt-1 text-[0.8125rem] text-muted">
                   CSV, TSV, or straight out of a spreadsheet. Headers in the
-                  first row.
+                  first row. Extra columns are fine, and nothing has to be in
+                  our order.
                 </p>
               </div>
-              <ActionButton
-                variant="secondary"
-                onClick={() => load(sampleCsv(248))}
-              >
-                Load a sample portfolio
-              </ActionButton>
+              {/* Never ask for a format without handing over the format. */}
+              <div className="flex flex-wrap gap-2">
+                <TemplateButton />
+                <ActionButton
+                  variant="secondary"
+                  onClick={() => load(sampleCsv(248))}
+                >
+                  Load a sample portfolio
+                </ActionButton>
+              </div>
             </div>
 
             <textarea
@@ -696,6 +702,13 @@ function LocationsStep({
               })}
             </ul>
           </Panel>
+
+          {/* What the file actually said, once the mapping is settled. */}
+          <IntakeReview
+            rows={s.parsed}
+            headers={s.headers}
+            mapping={s.mapping}
+          />
 
           <div className="flex gap-3">
             <ActionButton onClick={() => setPhase("resolve")}>

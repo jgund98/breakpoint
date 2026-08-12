@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { GATE_COOKIE, GATE_TOKEN } from "@/lib/gate";
 import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
 
-/** Routes that additionally require a workspace sign-in. */
-const WORKSPACE = ["/app", "/onboarding"];
+/**
+ * Routes that additionally require a workspace sign-in.
+ *
+ * Onboarding is deliberately NOT one of them. A client filling it in
+ * does not have an account yet, which is the entire point of it, and
+ * putting a sign-in in front of intake means the first thing a new
+ * customer meets is a door they have no key to.
+ */
+const WORKSPACE = ["/app"];
 
 /**
  * Two gates, in order.
@@ -11,8 +18,8 @@ const WORKSPACE = ["/app", "/onboarding"];
  * 1. Pre-launch lock: every route requires the access cookie set by
  *    /unlock. Remove this file (plus src/app/unlock and src/lib/gate.ts)
  *    to open the site.
- * 2. Workspace sign-in: /app and /onboarding additionally require the
- *    demo session cookie set by /login. See src/lib/session.ts.
+ * 2. Workspace sign-in: /app additionally requires the demo session
+ *    cookie set by /login. See src/lib/session.ts.
  */
 export default function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
