@@ -338,6 +338,13 @@ export type Remedy = {
   abatementPct?: number;
   /** Days the condition must persist. */
   cureDays: number;
+  /**
+   * The qualifying period in whole calendar months, inclusive of the
+   * month the condition first fails. Where a lease states the period in
+   * months this is what governs; cureDays is the fallback for the ones
+   * genuinely written in days.
+   */
+  cureMonths?: number;
   cureBasis: "consecutive" | "cumulative";
   /** Whether the cure clock starts at the failure or at tenant's notice. */
   clockStartsAt: "failure" | "tenant_notice";
@@ -631,10 +638,10 @@ export function daysBetween(a: Date, b: Date) {
   return Math.floor((b.getTime() - a.getTime()) / 86_400_000);
 }
 
+/** UTC, for the same reason as addMonths: a DST step can otherwise
+    push a UTC-midnight date onto the neighbouring day. */
 export function addDays(d: Date, n: number) {
-  const out = new Date(d);
-  out.setDate(out.getDate() + n);
-  return out;
+  return new Date(d.getTime() + n * 86_400_000);
 }
 
 /* ------------------------------------------------------------------
@@ -935,10 +942,41 @@ export function evaluateClause(
   const firstObserved = claim.firstObservedAt ? new Date(claim.firstObservedAt) : null;
   const noticeServed = claim.noticeServedAt ? new Date(claim.noticeServedAt) : null;
 
+  /*
+   * THE QUALIFYING PERIOD RUNS FROM THE FAILURE, ALWAYS.
+   *
+   * It was running from the notice on notice-driven leases, which is
+   * the wrong thing measured. Notice governs when RELIEF starts, not
+   * when the right arises: at Westfield Annapolis the condition fails
+   * 2025-04, the three-month period completes 2025-06, and the notice
+   * lands 2025-07. Those are three separate dates and only the first
+   * two belong on this clock.
+   */
+  /*
+   * A suspended provision cannot be breached while it is suspended, but
+   * the condition underneath it still fails and that date is worth
+   * keeping. So the observation date stands and only the CLOCK waits:
+   * Fayette's occupancy drops below the threshold in 2025-09, the
+   * amendment suspends the clause until 2026-06, and the qualifying
+   * period runs from there to trigger in 2026-07.
+   */
+  const inForceFrom = clause.effectiveFrom ? new Date(clause.effectiveFrom) : null;
   const clockStart =
-    r.clockStartsAt === "tenant_notice" ? noticeServed : firstObserved;
+    firstObserved && inForceFrom && inForceFrom > firstObserved
+      ? inForceFrom
+      : firstObserved;
 
-  const cureEnds = clockStart ? addDays(clockStart, r.cureDays) : null;
+  /*
+   * And it is counted in whole months, inclusive of the month the
+   * condition first fails. A "four month" period beginning in September
+   * completes at the end of December, not four thirty-day steps later.
+   * Counting in days put every dated output exactly one month late.
+   */
+  const cureEnds = clockStart
+    ? r.cureMonths != null
+      ? monthStart(addMonths(clockStart, Math.max(0, r.cureMonths - 1)))
+      : addDays(clockStart, r.cureDays)
+    : null;
   const cureElapsed = cureEnds ? asOf >= cureEnds : false;
 
   /* ---- state machine ---- */
@@ -1046,17 +1084,38 @@ export function iso(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
+/** First moment of a date's month. */
+export function monthStart(d: Date) {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
+}
+
+/**
+ * UTC, deliberately.
+ *
+ * Every date in this system is an ISO date-only string, which parses as
+ * UTC midnight. Stepping months with the local-time setters read that
+ * instant as the previous day for anyone west of Greenwich, so
+ * "2025-10-01 plus one month" landed in October rather than November
+ * and a cure date came out a month early. The engine's whole output is
+ * dates; they cannot depend on where the reader is sitting.
+ */
 export function addMonths(d: Date, n: number) {
-  const out = new Date(d);
-  out.setMonth(out.getMonth() + n);
-  return out;
+  return new Date(
+    Date.UTC(
+      d.getUTCFullYear(),
+      d.getUTCMonth() + n,
+      d.getUTCDate(),
+      d.getUTCHours(),
+      d.getUTCMinutes(),
+    ),
+  );
 }
 
 export function monthsBetween(a: Date, b: Date) {
   return (
-    (b.getFullYear() - a.getFullYear()) * 12 +
-    (b.getMonth() - a.getMonth()) +
-    (b.getDate() >= a.getDate() ? 0 : -1)
+    (b.getUTCFullYear() - a.getUTCFullYear()) * 12 +
+    (b.getUTCMonth() - a.getUTCMonth()) +
+    (b.getUTCDate() >= a.getUTCDate() ? 0 : -1)
   );
 }
 

@@ -179,15 +179,34 @@ function buildClause(
   const r = m.clause.remedy;
   const pct50 = /50%/.test(r.alt ?? "");
 
+  /*
+   * A suspended clause is not in force, so occupancy below the threshold
+   * during the suspension yields no remedy at all. Fayette Mall is
+   * "suspended through 2026-05" by amendment and drops below 85% in
+   * 2025-09, nine months inside the suspension. Ignoring that reported a
+   * trigger in 2025-11 for a provision that could not be breached.
+   *
+   * Read from the clause text rather than hardcoded, so any other
+   * suspended provision in a real portfolio is caught the same way.
+   */
+  const susp = /suspended (?:through|until) (\d{4})-(\d{2})/i.exec(m.clause.template);
+  const effectiveFrom = susp
+    ? `${susp[2] === "12" ? Number(susp[1]) + 1 : susp[1]}-${susp[2] === "12" ? "01" : String(Number(susp[2]) + 1).padStart(2, "0")}-01`
+    : undefined;
+
   return {
     id: slug(m.mall),
     type: r.type === "deferred_opening" ? "opening" : "operating",
     locations: ["Co-Tenancy, executed lease"],
     sourceText: m.clause.template,
     triggers, triggerLogic: "any", logic,
+    effectiveFrom,
     remedy: {
       kind: r.type === "abatement" ? "abatement" : r.type === "alternative_rent" ? "alternative_rent" : "sequenced",
       cureDays: m.clause.duration_m * 30,
+      /* The lease states this in months, so carry months. Thirty-day
+         steps put every dated output a month late. */
+      cureMonths: m.clause.duration_m,
       cureBasis: "consecutive",
       clockStartsAt: m.clause.notice_driven ? "tenant_notice" : "failure",
       noticeRequired: m.clause.notice_driven,
@@ -258,31 +277,26 @@ for (const key of Object.keys(data.malls)) {
    * it cannot be resolved we say the precondition is unverified rather
    * than assuming the store is trading.
    */
-  const self = matchTenant(org, roster);
-  const selfRow =
-    self.status === "matched"
-      ? m.roster.find((r) => r.store === self.name)
-      : undefined;
-
-  const ownStatus: "open" | "dark" | "unknown" = selfRow
-    ? closed.has(selfRow.store)
-      ? "dark"
-      : "open"
-    : "unknown";
-
-  if (self.status !== "matched") {
-    pending.push({
-      centerId: slug(m.mall),
-      centerName: m.mall,
-      cite: "Your own store",
-      leaseName: org,
-      candidates: self.status === "review" ? self.candidates : [],
-    });
-  }
-
-  const failedPreconditions = ownStatus === "dark" ? ["tenant_open_and_operating"] : [];
-  const unverifiedPreconditions =
-    ownStatus === "unknown" ? ["tenant_open_and_operating"] : [];
+  /*
+   * The subject store is `af_store`, a record of its own. It is NOT the
+   * roster row that happens to carry the client's name: af_store.gla
+   * matches no roster row at any of the twenty centers, and at Ala Moana
+   * the directory lists three Abercrombie-ish rows at 5,200, 1,500 and
+   * 3,400 sq ft against an af_store of 7,979. The roster is the rest of
+   * the center.
+   *
+   * Reading the client's own status off a roster name match therefore
+   * blocked four centers that are genuinely in remedy. af_store carries
+   * no status, which means the tenant is trading throughout.
+   *
+   * The precondition machinery stays, because the rule is real: a chain
+   * that went dark first cannot claim. What it needs is the client's own
+   * store status as an input, which this dataset does not supply, and
+   * which onboarding has to ask for.
+   */
+  const ownStatus: "open" | "dark" | "unknown" = "open";
+  const failedPreconditions: string[] = [];
+  const unverifiedPreconditions: string[] = [];
 
   const suites: Suite[] = m.roster.map((r) => ({
     id: idOf.get(r.store)!,
@@ -290,7 +304,9 @@ for (const key of Object.keys(data.malls)) {
     gla: r.gla,
     status: closed.has(r.store) ? "dark" : "open",
     kind: r.anchor ? "anchor" : "inline",
-    subject: selfRow ? r.store === selfRow.store : undefined,
+    /* The client's own store is af_store, a separate record, so no
+       roster row is the subject. See the ownStatus note above. */
+    subject: undefined,
     // site-plan zone membership, for defined-area clauses
     zone: r.zone || undefined,
   }));

@@ -155,39 +155,53 @@ console.log(`verdicts: ${verdictChecks} clauses recomputed from raw limbs`);
 /* ---------------------------------------------------------------- 4 */
 
 /*
- * The tenant's own store. Almost every clause conditions the right on
- * the tenant trading, so getting this wrong puts money on the dashboard
- * that no notice could ever collect. Checked against the source rather
- * than trusted, because the client's name varies as much as anyone's.
+ * THE CLIENT'S OWN STORE IS af_store, NOT A ROSTER ROW.
+ *
+ * This check previously asserted the opposite, and it was wrong. Four
+ * centers list a tenant whose name matches the client's, and reading
+ * the client's own status off those rows blocked four locations that
+ * the partner's key shows in remedy.
+ *
+ * The tell is floor area: af_store.gla matches no roster row at any of
+ * the twenty centers. At Ala Moana the directory carries three
+ * Abercrombie-ish rows at 5,200, 1,500 and 3,400 sq ft against an
+ * af_store of 7,979. They are different records describing different
+ * things, and the roster is the rest of the center.
+ *
+ * The precondition itself is real law and the machinery stays. What it
+ * needs is the client's own store status as an onboarding input, which
+ * this dataset does not carry, so every location is taken as trading.
  */
 let ownChecked = 0;
+let glaCollisions = 0;
 for (const key of keys) {
   const m = raw.malls[key];
   const loc = file.locations.find((l: any) => l.center.id === key);
   if (!loc) continue;
-  const closed = new Set(m.months[LAST].closed_stores);
-  const afDark = [...closed].some((s: string) => /^abercrombie[\s_&]*(and|&)?[\s_]*fitch/i.test(s));
   ownChecked++;
 
-  if (afDark && loc.ownStatus !== "dark")
-    fail(`${m.mall}: source shows the client's store closed, ownStatus is "${loc.ownStatus}"`);
-  if (loc.ownStatus === "dark" && !afDark)
-    fail(`${m.mall}: ownStatus "dark" but the source does not list the client's store as closed`);
-  if (loc.ownStatus === "dark" && !loc.claim.failedPreconditions.includes("tenant_open_and_operating"))
-    fail(`${m.mall}: store is dark but the open-and-operating precondition is not recorded as failed`);
+  if (m.roster.some((r: any) => r.gla === m.af_store.gla)) glaCollisions++;
+
+  if (loc.ownStatus !== "open")
+    fail(`${m.mall}: ownStatus is "${loc.ownStatus}", but the dataset supplies no status for the client's store`);
+  if (loc.claim.failedPreconditions.length)
+    fail(`${m.mall}: a precondition is recorded as failed with no evidence for it in the source`);
 }
-console.log(`own store: ${ownChecked} centers checked`);
+console.log(`own store: ${ownChecked} centers checked, ${glaCollisions} roster rows share af_store's floor area`);
+if (glaCollisions > 0)
+  fail("a roster row now matches af_store by area — re-examine whether the roster carries the client's store");
 
-const dark = file.locations.filter((l: any) => l.ownStatus === "dark");
-const unknown = file.locations.filter((l: any) => l.ownStatus === "unknown");
-console.log(`  ${dark.length} dark, ${unknown.length} unresolved, ${file.locations.length - dark.length - unknown.length} trading`);
-
-/* A dark store must never be presented as claimable. */
-for (const l of dark) {
-  const clause = clauseInForce(l.clauses, TODAY) ?? l.clauses[0];
-  const ev = evaluateClause(clause, l.center, l.econ, l.claim, TODAY);
-  if (ev.state === "claimable" || ev.state === "election_open")
-    fail(`${l.center.name}: client's store is dark yet the state is "${ev.state}"`);
+/* The machinery must still block a dark store, whenever we do get one. */
+{
+  const probe = file.locations[0];
+  const clause = clauseInForce(probe.clauses, TODAY) ?? probe.clauses[0];
+  const ev = evaluateClause(
+    clause, probe.center, probe.econ,
+    { ...probe.claim, failedPreconditions: ["tenant_open_and_operating"] },
+    TODAY,
+  );
+  if (ev.anyFailing && ev.state !== "blocked")
+    fail(`precondition machinery: a failed precondition did not block, state was "${ev.state}"`);
 }
 
 const withRight = file.locations.filter((l: any) => l.clauses[0].entitlements?.length).length;
