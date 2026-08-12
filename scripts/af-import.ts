@@ -86,7 +86,34 @@ const LAST = data.timeline.length - 1;
 /** Mid-month of the final period in the series. */
 export const TODAY = `${data.timeline[LAST]}-15`;
 
-/** OR/ANY describe failure, so the requirement inverts. See af-predict.ts. */
+/**
+ * COMBINE DESCRIBES THE FAILURE, SO THE REQUIREMENT INVERTS.
+ *
+ * Confirmed against the clause prose the dataset ships, not assumed:
+ *
+ *   AND       "Occupancy Level Conditions (conjunctive: <3 anchors AND
+ *             <75%)" and "T5v compound (80% AND <2 of anchors) — hard
+ *             to trip". Both limbs must FAIL before the clause fails,
+ *             so the requirement is a disjunction: three anchors OR
+ *             seventy-five percent. The "hard to trip" note only makes
+ *             sense on this reading, and it appears on the AND
+ *             templates alone.
+ *
+ *   OR / ANY  the ordinary case. Either test failing is enough, so
+ *             every limb must hold and the requirement is a
+ *             conjunction. The elided comparators in "3 anchors OR 70%
+ *             inline" are the same "<" the AND templates spell out.
+ *
+ *   AND_OPEN  an opening co-tenancy, already written as the condition
+ *             to satisfy: "2 of 3 named AND 85% inline before A&F must
+ *             open". Requirement is the conjunction as written.
+ *
+ * This matches how the provision is drafted in practice: the trigger is
+ * stated disjunctively ("fewer than three Anchors are open, or less
+ * than 70% of the Floor Area is occupied"), which makes a conjunctive
+ * requirement. A conjunctive TRIGGER is the landlord-favorable rarity,
+ * which is why this dataset labels those explicitly.
+ */
 const requirementOp = (c: Mall["clause"]["combine"]) => (c === "AND" ? "or" : "and");
 
 function buildClause(
