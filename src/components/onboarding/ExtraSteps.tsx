@@ -5,9 +5,9 @@ import { cn } from "@/lib/cn";
 import { Note, Panel } from "@/components/app/ui";
 
 /**
- * The three steps the intake checklist calls for and the wizard did not
- * have: where the data is coming from, what is already on the record
- * against a future claim, and which stores we start with.
+ * Two things the original intake checklist calls for and the first
+ * wizard had nowhere to put: what is already on the record against a
+ * future claim, and which stores we start with.
  *
  * Each exists because of something the pilot portfolio proved rather
  * than because a form felt incomplete.
@@ -119,82 +119,11 @@ function HeldRow({
 }
 
 /* ------------------------------------------------------------------
-   how the portfolio is coming
-   ------------------------------------------------------------------ */
-
-export type SourceMode = "lease_admin" | "spreadsheet" | "manual";
-
-export function SourceStep({
-  source,
-  system,
-  onSource,
-  onSystem,
-}: {
-  source: SourceMode | null;
-  system: string;
-  onSource: (v: SourceMode) => void;
-  onSystem: (v: string) => void;
-}) {
-  return (
-    <div>
-      <Note tone="petrol" title="Answer this one first">
-        A structured export from the system you already run replaces months
-        of reading documents. It is the single biggest difference between an
-        onboarding that takes a week and one that takes a quarter, so it is
-        worth a call to your lease administration team before anything else.
-      </Note>
-
-      <Choice
-        value={source}
-        onChange={onSource}
-        options={[
-          {
-            id: "lease_admin",
-            title: "Export from our lease administration system",
-            tag: "Fastest",
-            blurb:
-              "Tango, Visual Lease, MRI, Yardi, Lucernex, CoStar or similar. Critical dates, base rent, floor area and clause flags in one file. Usually an afternoon of your team's time.",
-          },
-          {
-            id: "spreadsheet",
-            title: "A spreadsheet we maintain",
-            blurb:
-              "A rent roll or store list kept outside a system. Perfectly workable. We will tell you what is missing rather than guess at it.",
-          },
-          {
-            id: "manual",
-            title: "We will enter them by hand",
-            blurb:
-              "Sensible under about twenty stores. Above that it is slower than an export and more prone to transcription errors.",
-          },
-        ]}
-      />
-
-      {source === "lease_admin" && (
-        <div className="mt-5">
-          <label className="label text-muted">Which system</label>
-          <input
-            value={system}
-            onChange={(e) => onSystem(e.target.value)}
-            placeholder="Tango, Visual Lease, MRI, Yardi, Lucernex…"
-            className="mt-2 w-full rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[0.875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
-          />
-          <p className="mt-2 text-[0.75rem] leading-relaxed text-muted">
-            Knowing the system tells us the export format and which fields it
-            names differently, so the mapping on the next step is mostly done
-            before you upload anything.
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------
    what is already on the record
    ------------------------------------------------------------------ */
 
 export type RecordState = {
+  occupancyStatements: Held | null;
   estoppels: Held | null;
   defaults: Held | null;
   noticeLog: Held | null;
@@ -211,17 +140,17 @@ export function RecordStep({
 }) {
   return (
     <div>
-      <Note tone="clay" title="This section is about losing, not winning">
-        Every item here can defeat an otherwise sound claim. We would rather
-        know now than discover it after a notice has been served, and none of
-        it blocks us from starting.
-      </Note>
-
-      <Panel flush className="mt-5">
+      <Panel flush>
         <ul className="divide-y divide-line">
           <HeldRow
+            title="Occupancy statements or certified leasing plans"
+            why="Anything a landlord has already issued to you. A certified statement is primary evidence and can verify a condition without us demanding one."
+            value={value.occupancyStatements}
+            onChange={(v) => onChange({ occupancyStatements: v })}
+          />
+          <HeldRow
             title="Estoppel certificates you have signed"
-            why="What you certified, and when. An estoppel saying no landlord defaults exist is routinely used to defeat a later claim on a condition that predates it."
+            why="What you certified, and when. An estoppel stating no landlord defaults exist can bar a later claim on a condition that predates it."
             value={value.estoppels}
             onChange={(v) => onChange({ estoppels: v })}
           />
@@ -233,19 +162,19 @@ export function RecordStep({
           />
           <HeldRow
             title="Landlord correspondence and notice log"
-            why="Several clauses run the cure clock from your notice rather than from the condition. In the pilot portfolio one right arose in December and notice followed in June, and the gap was worth about ninety-nine thousand dollars."
+            why="Several clauses run relief from the date you gave notice rather than from the date the condition arose, so a notice already served changes what a store is owed today."
             value={value.noticeLog}
             onChange={(v) => onChange({ noticeLog: v })}
           />
           <HeldRow
             title="Exhibits and site plans attached to your leases"
-            why="A clause measuring a defined co-tenancy zone cannot be computed without the exhibit that draws it. These are attached to your own lease."
+            why="A clause measuring a defined co-tenancy zone needs the exhibit that draws it. Attached to your own lease."
             value={value.exhibits}
             onChange={(v) => onChange({ exhibits: v })}
           />
           <HeldRow
             title="REAs or anchor operating covenants"
-            why="Anchor obligations often sit outside the lease file, and some run in reverse: the anchor may go dark if center occupancy falls below a floor."
+            why="Anchor obligations often sit outside the lease file. Some run in reverse, letting the anchor go dark if center occupancy falls below a floor."
             value={value.reas}
             onChange={(v) => onChange({ reas: v })}
           />
@@ -274,15 +203,8 @@ export function TriageStep({
   onMode: (v: TriageMode) => void;
   onNote: (v: string) => void;
 }) {
-  const big = total > 60;
   return (
     <div>
-      <Note tone={big ? "petrol" : "muted"}>
-        {big
-          ? `You are bringing ${total.toLocaleString("en-US")} stores. Across a recent twenty center sample, eleven never triggered in two years, so starting everywhere spends most of the effort where nothing will happen. Naming a first cohort gets answers in weeks instead of quarters.`
-          : "At this size we can take the whole portfolio at once. Naming a priority cohort is still useful if you already know where the trouble is."}
-      </Note>
-
       <Choice
         value={mode}
         onChange={onMode}
@@ -290,7 +212,6 @@ export function TriageStep({
           {
             id: "priority",
             title: "Start with the centers we are worried about",
-            tag: big ? "Recommended" : undefined,
             blurb:
               "Stores in centers where an anchor has gone dark, is rumored to, or where you have already had the conversation with the landlord. We abstract those leases first and the rest follow.",
           },
@@ -298,7 +219,7 @@ export function TriageStep({
             id: "all",
             title: "Take the whole portfolio",
             blurb:
-              "Everything abstracted in one pass. Slower to the first answer, and the right call when you have no particular suspicion.",
+              "Every lease abstracted in one pass, in the order received.",
           },
         ]}
       />

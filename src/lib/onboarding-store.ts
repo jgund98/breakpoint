@@ -66,6 +66,7 @@ export type OnboardingState = {
 
   /* the record */
   record: {
+    occupancyStatements: Held | null;
     estoppels: Held | null;
     defaults: Held | null;
     noticeLog: Held | null;
@@ -107,7 +108,14 @@ export const emptyOnboarding: OnboardingState = {
   salesRowCount: 0,
   noticeRaw: "",
   noticeFileName: "",
-  record: { estoppels: null, defaults: null, noticeLog: null, exhibits: null, reas: null },
+  record: {
+    occupancyStatements: null,
+    estoppels: null,
+    defaults: null,
+    noticeLog: null,
+    exhibits: null,
+    reas: null,
+  },
   triageMode: null,
   triageNote: "",
   signatory: "",
@@ -153,21 +161,21 @@ export const TASKS: TaskMeta[] = [
   {
     id: "record",
     title: "What is already on the record",
-    why: "Estoppels, open defaults and notice history. Each one can defeat a claim that would otherwise stand.",
+    why: "Estoppels, open defaults, notice history, and anything a landlord has already issued.",
     owner: "Legal",
     required: true,
   },
   {
     id: "sales",
     title: "Store sales",
-    why: "A percentage-of-sales remedy is computed on the month's own sales. Without them we can confirm a right exists but not what it is worth.",
+    why: "Monthly gross sales by store. Used to value a remedy, not to find one.",
     owner: "Finance",
     required: false,
   },
   {
     id: "priorities",
     title: "Where we start",
-    why: "The centers you are already worried about. This decides whether answers arrive in weeks or quarters.",
+    why: "The centers you are already worried about, so those leases are abstracted first.",
     owner: "Real estate",
     required: true,
   },
@@ -209,7 +217,7 @@ export function statusOf(s: OnboardingState, id: TaskId): TaskStatus {
       return chosen(s, "sales") ? "in_progress" : "not_started";
     case "record": {
       const answered = Object.values(s.record).filter((v) => v !== null).length;
-      if (answered === 5) return "complete";
+      if (answered === Object.keys(s.record).length) return "complete";
       return answered > 0 ? "in_progress" : "not_started";
     }
     case "priorities":

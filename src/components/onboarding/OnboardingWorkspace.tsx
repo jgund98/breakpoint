@@ -145,7 +145,9 @@ export function OnboardingWorkspace({
             : "Nothing received";
       case "record": {
         const n = Object.values(s.record).filter((v) => v !== null).length;
-        return n === 0 ? "Not started" : `${n} of 5 answered`;
+        return n === 0
+          ? "Not started"
+          : `${n} of ${Object.keys(s.record).length} answered`;
       }
       case "sales":
         return s.salesDeferred
@@ -271,6 +273,29 @@ export function OnboardingWorkspace({
               <RotateCcw className="h-3 w-3" />
               Clear
             </button>
+          </div>
+
+          {/*
+            Scope, stated where it is always visible. The original intake
+            checklist carried it and a client filling this in should not
+            have to ask which side of the line a job sits on.
+          */}
+          <div className="mt-6 border-t border-line px-3 pt-4">
+            <p className="label text-faint">We handle</p>
+            <ul className="mt-2 space-y-1.5">
+              {[
+                "Weekly sweep of every center, from published directories and the field",
+                "Lease abstraction into a clause record, reviewed by a person",
+                "Mapping which leases entitle you to demand an occupancy statement",
+                "Calendaring and serving those requests",
+                "Occupancy math, credit calculation, and the notice package",
+              ].map((x) => (
+                <li key={x} className="flex gap-2 text-[0.75rem] leading-snug text-muted">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-line" />
+                  {x}
+                </li>
+              ))}
+            </ul>
           </div>
         </aside>
 
@@ -410,9 +435,8 @@ export function OnboardingWorkspace({
                     <span className="font-medium text-ink">
                       Amendments are included.
                     </span>{" "}
-                    A lease without them reads as a right that may not exist. We
-                    begin abstracting on this and return only where a document
-                    is missing or a clause is ambiguous.
+                    We begin abstracting once this is ticked, and come back only
+                    where a document is missing or a clause is ambiguous.
                   </span>
                 </label>
               </>
@@ -430,9 +454,7 @@ export function OnboardingWorkspace({
                   <div>
                     <p className="text-[0.8125rem] font-medium text-ink">Notice log</p>
                     <p className="mt-1 mb-3 text-[0.8125rem] leading-relaxed text-muted">
-                      Store, date sent, date received, subject. Dates decide what
-                      a store is owed today, because several clauses run relief
-                      from the notice rather than from the condition.
+                      Store, date sent, date received, subject.
                     </p>
                     <FileDrop
                       onError={(m) => setNote({ kind: "bad", message: m })}
@@ -468,9 +490,7 @@ export function OnboardingWorkspace({
                     <span className="font-medium text-ink">
                       Send per store, only when a right arises.
                     </span>{" "}
-                    Sales price a claim rather than find one, and most stores
-                    never trigger. This keeps portfolio-wide figures out of a
-                    vendor&#8217;s hands.
+                    We request the months we need for the stores that trigger.
                   </span>
                 </label>
 
@@ -509,9 +529,9 @@ export function OnboardingWorkspace({
                 )}
 
                 <p className="text-[0.75rem] leading-relaxed text-muted">
-                  One row per store per month. A percentage-of-sales remedy is
-                  computed on the month&#8217;s own sales, so monthly figures
-                  matter more than a total.
+                  One row per store per month: store number, month, gross sales.
+                  Monthly figures, not a total, because the remedy is computed
+                  on each month&#8217;s own sales.
                 </p>
               </>
             )}
@@ -618,8 +638,7 @@ export function OnboardingWorkspace({
                     <span className="font-medium text-ink">
                       Send someone to the premises before a notice.
                     </span>{" "}
-                    A directory listing is a signal. A dated photograph is what a
-                    package rests on.
+                    A dated photograph of the premises, filed with the package.
                   </span>
                 </label>
               </div>

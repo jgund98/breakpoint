@@ -81,7 +81,7 @@ const progress = async () => {
   return m ? `${m[1]} of ${m[2]}` : "—";
 };
 
-await page.goto(`${BASE}/onboarding?client=Abercrombie%20%26%20Fitch&stores=830`, {
+await page.goto(`${BASE}/onboarding?client=Abercrombie%20%26%20Fitch&stores=20`, {
   waitUntil: "networkidle0",
 });
 
@@ -146,7 +146,7 @@ const answered = await page.evaluate(() => {
   return b.length;
 });
 await pause(500);
-console.log(`record rows answered: ${answered} (want 5)`);
+console.log(`record rows answered: ${answered} (want 6)`);
 console.log(`notice log upload appeared: ${/Notice log/.test(await body()) ? "yes" : "no"}`);
 
 /* ---- priorities ---- */

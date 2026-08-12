@@ -19,7 +19,7 @@ export default async function OnboardingPage({
 }) {
   const q = await searchParams;
   const clientName = q.client?.trim() || "Abercrombie & Fitch";
-  const stores = Number(q.stores) || 830;
+  const stores = Number(q.stores) || 20;
 
   return (
     <OnboardingWorkspace
