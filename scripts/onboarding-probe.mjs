@@ -38,6 +38,16 @@ await page.setCookie({
 });
 
 const pause = (ms = 450) => new Promise((r) => setTimeout(r, ms));
+
+/** Fixed pauses race hydration over a network. Wait for the thing. */
+const waitFor = async (selector, ms = 8000) => {
+  const until = Date.now() + ms;
+  while (Date.now() < until) {
+    if (await page.evaluate((s) => !!document.querySelector(s), selector)) return true;
+    await pause(150);
+  }
+  return false;
+};
 const body = () => page.evaluate(() => document.body.innerText);
 
 const clickText = (needle, exact = false) =>
@@ -92,7 +102,11 @@ console.log(`progress at start: ${await progress()}`);
 await openTask("Store portfolio");
 await pause();
 await clickText("Paste it");
-await pause();
+if (!(await waitFor("textarea"))) {
+  console.log("paste box never appeared");
+  await browser.close();
+  process.exit(1);
+}
 await page.evaluate((v) => {
   const t = document.querySelector("textarea");
   Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(t, v);
