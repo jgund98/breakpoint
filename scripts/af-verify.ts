@@ -154,6 +154,42 @@ console.log(`verdicts: ${verdictChecks} clauses recomputed from raw limbs`);
 
 /* ---------------------------------------------------------------- 4 */
 
+/*
+ * The tenant's own store. Almost every clause conditions the right on
+ * the tenant trading, so getting this wrong puts money on the dashboard
+ * that no notice could ever collect. Checked against the source rather
+ * than trusted, because the client's name varies as much as anyone's.
+ */
+let ownChecked = 0;
+for (const key of keys) {
+  const m = raw.malls[key];
+  const loc = file.locations.find((l: any) => l.center.id === key);
+  if (!loc) continue;
+  const closed = new Set(m.months[LAST].closed_stores);
+  const afDark = [...closed].some((s: string) => /^abercrombie[\s_&]*(and|&)?[\s_]*fitch/i.test(s));
+  ownChecked++;
+
+  if (afDark && loc.ownStatus !== "dark")
+    fail(`${m.mall}: source shows the client's store closed, ownStatus is "${loc.ownStatus}"`);
+  if (loc.ownStatus === "dark" && !afDark)
+    fail(`${m.mall}: ownStatus "dark" but the source does not list the client's store as closed`);
+  if (loc.ownStatus === "dark" && !loc.claim.failedPreconditions.includes("tenant_open_and_operating"))
+    fail(`${m.mall}: store is dark but the open-and-operating precondition is not recorded as failed`);
+}
+console.log(`own store: ${ownChecked} centers checked`);
+
+const dark = file.locations.filter((l: any) => l.ownStatus === "dark");
+const unknown = file.locations.filter((l: any) => l.ownStatus === "unknown");
+console.log(`  ${dark.length} dark, ${unknown.length} unresolved, ${file.locations.length - dark.length - unknown.length} trading`);
+
+/* A dark store must never be presented as claimable. */
+for (const l of dark) {
+  const clause = clauseInForce(l.clauses, TODAY) ?? l.clauses[0];
+  const ev = evaluateClause(clause, l.center, l.econ, l.claim, TODAY);
+  if (ev.state === "claimable" || ev.state === "election_open")
+    fail(`${l.center.name}: client's store is dark yet the state is "${ev.state}"`);
+}
+
 const withRight = file.locations.filter((l: any) => l.clauses[0].entitlements?.length).length;
 const srcRight = keys.filter((k) => raw.malls[k].clause.info_right).length;
 console.log(`reporting rights: ${withRight} carried, ${srcRight} in source`);

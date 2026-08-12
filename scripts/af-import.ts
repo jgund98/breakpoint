@@ -50,6 +50,9 @@ const data = JSON.parse(readFileSync(src, "utf8")) as {
   description: string; timeline: string[]; malls: Record<string, Mall>;
 };
 
+/** The client whose portfolio this is, as their leases name them. */
+const org = "Abercrombie & Fitch";
+
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 /**
@@ -211,13 +214,56 @@ for (const key of Object.keys(data.malls)) {
   const idOf = identityMap(m.roster);
   const roster = m.roster.map((r) => ({ id: idOf.get(r.store)!, name: r.store }));
 
+  /*
+   * THE TENANT'S OWN STORE.
+   *
+   * Nearly every co-tenancy clause conditions the right on the tenant
+   * itself being open and operating. A chain that went dark first has
+   * no claim, so this is not a detail: at four of these twenty centers
+   * Abercrombie's own store is closed, and two of them were sitting on
+   * the dashboard as claimable money.
+   *
+   * The client's own name is subject to exactly the same variation as
+   * anyone else's. Across this portfolio it appears as "Abercrombie &
+   * Fitch", "Abercrombie and Fitch", "abercrombie", "Abercrombie__fitch"
+   * and "Abercrombie & Fitch | Hollister | Gilly Hicks", and at two
+   * centers not at all. So it goes through the same matcher, and where
+   * it cannot be resolved we say the precondition is unverified rather
+   * than assuming the store is trading.
+   */
+  const self = matchTenant(org, roster);
+  const selfRow =
+    self.status === "matched"
+      ? m.roster.find((r) => r.store === self.name)
+      : undefined;
+
+  const ownStatus: "open" | "dark" | "unknown" = selfRow
+    ? closed.has(selfRow.store)
+      ? "dark"
+      : "open"
+    : "unknown";
+
+  if (self.status !== "matched") {
+    pending.push({
+      centerId: slug(m.mall),
+      centerName: m.mall,
+      cite: "Your own store",
+      leaseName: org,
+      candidates: self.status === "review" ? self.candidates : [],
+    });
+  }
+
+  const failedPreconditions = ownStatus === "dark" ? ["tenant_open_and_operating"] : [];
+  const unverifiedPreconditions =
+    ownStatus === "unknown" ? ["tenant_open_and_operating"] : [];
+
   const suites: Suite[] = m.roster.map((r) => ({
     id: idOf.get(r.store)!,
     name: r.store,
     gla: r.gla,
     status: closed.has(r.store) ? "dark" : "open",
     kind: r.anchor ? "anchor" : "inline",
-    subject: r.store === "Abercrombie & Fitch",
+    subject: selfRow ? r.store === selfRow.store : undefined,
     // site-plan zone membership, for defined-area clauses
     zone: r.zone || undefined,
   }));
@@ -277,9 +323,9 @@ for (const key of Object.keys(data.malls)) {
       expiration: "2031-01-31",
     },
     clauses: [buildClause(m, idOf, roster, pending)],
-    claim: { firstObservedAt: firstObserved, failedPreconditions: [] },
+    claim: { firstObservedAt: firstObserved, failedPreconditions, unverifiedPreconditions },
     evidence,
-    ownStatus: "open",
+    ownStatus,
     monthlySeries: m.months.map((x) => ({
       month: x.month,
       inline: x.inline_open_pct,

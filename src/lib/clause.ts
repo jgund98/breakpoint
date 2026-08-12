@@ -669,6 +669,7 @@ export type ClauseState =
   | "remedy_active"
   | "election_open"
   | "blocked"
+  | "precondition_unverified"
   | "lapsed";
 
 export const STATE_META: Record<
@@ -682,6 +683,16 @@ export const STATE_META: Record<
   remedy_active: { label: "Remedy active", tone: "brass", blurb: "Notice served, alternative rent running." },
   election_open: { label: "Election open", tone: "clay", blurb: "Cap reached. The right lapses if unexercised." },
   blocked: { label: "Precondition unmet", tone: "clay", blurb: "A test fails but the tenant cannot claim." },
+  /*
+   * Not the same as "unmet". Unmet is a finding; this is the absence of
+   * one. Presenting it as claimable would put money on the dashboard
+   * that a precondition might quietly erase.
+   */
+  precondition_unverified: {
+    label: "Confirm your store",
+    tone: "watch",
+    blurb: "A test fails, but we cannot yet confirm your own store is open and operating.",
+  },
   lapsed: { label: "Lapsed", tone: "muted", blurb: "Window closed without election." },
 };
 
@@ -692,6 +703,13 @@ export type ClaimStatus = {
   noticeServedAt?: string;
   /** Preconditions that are currently not met. */
   failedPreconditions: TenantPrecondition[];
+  /**
+   * Preconditions we hold no evidence either way on. Kept apart from
+   * the failed ones because "your store is dark, so you cannot claim"
+   * and "we could not find your store in this center's directory" are
+   * different statements, and only the first is a finding.
+   */
+  unverifiedPreconditions?: TenantPrecondition[];
 };
 
 export type Evaluation = {
@@ -931,6 +949,10 @@ export function evaluateClause(
     state = nearMiss ? "watch" : "compliant";
   } else if (failedPre.length > 0) {
     state = "blocked";
+  } else if ((claim.unverifiedPreconditions ?? []).length > 0) {
+    /* Sits ahead of the cure and notice branches on purpose. Until the
+       tenant's own standing is confirmed, no clock is worth counting. */
+    state = "precondition_unverified";
   } else if (!cureElapsed && clockStart) {
     state = "curing";
   } else if (!noticeServed) {

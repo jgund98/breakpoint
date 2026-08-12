@@ -62,7 +62,9 @@ export type Location = {
   clauses: Clause[];
   claim: ClaimStatus;
   evidence: Evidence[];
-  ownStatus: "open" | "dark" | "remodeling";
+  /** "unknown" when the client's own store could not be resolved in the
+      center directory. Not the same as trading. */
+  ownStatus: "open" | "dark" | "remodeling" | "unknown";
   monthlySeries: MonthPoint[];
 };
 

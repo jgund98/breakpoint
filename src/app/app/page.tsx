@@ -43,7 +43,19 @@ export default function OverviewPage() {
         (b.evaluation.monthlyDelta ?? 0) - (a.evaluation.monthlyDelta ?? 0),
     );
 
+  /*
+   * A cure clock only means something if the tenant could actually
+   * claim when it runs out. Where the client's own store is dark, or we
+   * have not confirmed it is trading, counting down to a right that
+   * cannot vest puts a deadline on the dashboard that nobody can act
+   * on, and it drove the headline until this filter was added.
+   */
+  const canClaim = (r: (typeof rows)[number]) =>
+    r.evaluation.state !== "blocked" &&
+    r.evaluation.state !== "precondition_unverified";
+
   const clocks = rows
+    .filter(canClaim)
     .filter(
       (r) =>
         (r.evaluation.daysUntilCureEnds != null &&
@@ -62,6 +74,9 @@ export default function OverviewPage() {
     .slice(0, 6);
 
   const blocked = rows.filter((r) => r.evaluation.state === "blocked");
+  const unverified = rows.filter(
+    (r) => r.evaluation.state === "precondition_unverified",
+  );
   const needsRentRoll = rows.filter(
     (r) => r.evaluation.anyFailing && r.evaluation.evidenceCeiling !== "observable",
   );
@@ -421,9 +436,9 @@ export default function OverviewPage() {
         <Panel>
           <PanelHead
             title="Failing, but not claimable"
-            hint="A test has failed but a precondition is not met."
+            hint="The test fails, but your side of the lease has to hold too."
           />
-          {blocked.length ? (
+          {blocked.length || unverified.length ? (
             <ul className="mt-4 space-y-3">
               {blocked.slice(0, 4).map((r) => (
                 <li
@@ -442,6 +457,31 @@ export default function OverviewPage() {
                       .join(", ")}{" "}
                     is not satisfied. The clause fails on the board, the right
                     does not arise.
+                  </p>
+                </li>
+              ))}
+
+              {/* Separate wording on purpose. These are not known to fail;
+                  they are the ones we cannot yet confirm either way. */}
+              {unverified.slice(0, 3).map((r) => (
+                <li
+                  key={r.id}
+                  className="rounded-xl border border-line bg-surface-sunk p-3.5"
+                >
+                  <Link
+                    href={`/app/locations/${r.id}`}
+                    className="text-[0.875rem] font-semibold text-ink hover:text-petrol-700"
+                  >
+                    {r.center.name}
+                  </Link>
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                    We could not find your store in this center&#8217;s
+                    directory, so we cannot confirm you are open and operating.
+                    Confirm it on{" "}
+                    <Link href="/app/coverage" className="text-petrol-700 underline underline-offset-2">
+                      Coverage
+                    </Link>{" "}
+                    and this location will be scored.
                   </p>
                 </li>
               ))}
