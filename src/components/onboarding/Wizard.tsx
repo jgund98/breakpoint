@@ -15,6 +15,16 @@ import {
   sampleCsv,
 } from "@/lib/ingest";
 import { IntakeReview, TemplateButton } from "./IntakeReview";
+import { FileDrop, type LoadedFile } from "./FileDrop";
+import {
+  RecordStep,
+  SourceStep,
+  TriageStep,
+  type Held,
+  type RecordState,
+  type SourceMode,
+  type TriageMode,
+} from "./ExtraSteps";
 import { ActionButton, Note, Panel, Pill } from "@/components/app/ui";
 import { useWorkspace } from "@/lib/workspace-store";
 
@@ -33,9 +43,11 @@ import { useWorkspace } from "@/lib/workspace-store";
 const STEPS = [
   { id: "scale", label: "Your footprint", blurb: "How much we are watching" },
   { id: "company", label: "Company", blurb: "Who we are working for" },
+  { id: "source", label: "Your data", blurb: "Where the portfolio comes from" },
   { id: "locations", label: "Locations", blurb: "The doors, mapped and resolved" },
   { id: "leases", label: "Leases", blurb: "Documents in, clauses out" },
-  { id: "sales", label: "Sales", blurb: "What makes the money real" },
+  { id: "record", label: "On the record", blurb: "What could defeat a claim" },
+  { id: "triage", label: "Where we start", blurb: "First answers, soonest" },
   { id: "watch", label: "Watch plan", blurb: "Cadence and evidence standard" },
   { id: "authority", label: "Authority", blurb: "Who can act on a finding" },
   { id: "launch", label: "Launch", blurb: "First answers inside 48 hours" },
@@ -56,6 +68,11 @@ type State = {
   leaseCount: number;
   leasesRead: boolean;
   salesMode: "monthly" | "annual" | "skip" | null;
+  source: SourceMode | null;
+  leaseAdminSystem: string;
+  record: RecordState;
+  triageMode: TriageMode | null;
+  triageNote: string;
   cadence: "weekly" | "biweekly" | "monthly";
   fieldVisits: boolean;
   priorityOnly: boolean;
@@ -78,6 +95,11 @@ const initial: State = {
   leaseCount: 0,
   leasesRead: false,
   salesMode: null,
+  source: null,
+  leaseAdminSystem: "",
+  record: { estoppels: null, defaults: null, noticeLog: null, exhibits: null, reas: null },
+  triageMode: null,
+  triageNote: "",
   cadence: "weekly",
   fieldVisits: true,
   priorityOnly: false,
@@ -118,8 +140,14 @@ export function Wizard() {
         return stats.total > 0 && stats.matched + stats.review > 0;
       case "leases":
         return s.leasesRead;
-      case "sales":
-        return s.salesMode !== null;
+      case "source":
+        return s.source !== null;
+      case "record":
+        /* Every line answered, including "not sure". Skipping this is how
+           an estoppel surfaces after a notice has gone out. */
+        return Object.values(s.record).every((v) => v !== null);
+      case "triage":
+        return s.triageMode !== null;
       case "watch":
         return true;
       case "authority":
@@ -238,7 +266,31 @@ export function Wizard() {
               {step.id === "leases" && (
                 <LeasesStep s={s} set={set} locationCount={stats.total} />
               )}
-              {step.id === "sales" && <SalesStep s={s} set={set} />}
+              {step.id === "source" && (
+                <SourceStep
+                  source={s.source}
+                  system={s.leaseAdminSystem}
+                  onSource={(v) => set("source", v)}
+                  onSystem={(v) => set("leaseAdminSystem", v)}
+                />
+              )}
+              {step.id === "record" && (
+                <RecordStep
+                  value={s.record}
+                  onChange={(patch) =>
+                    setS((prev) => ({ ...prev, record: { ...prev.record, ...patch } }))
+                  }
+                />
+              )}
+              {step.id === "triage" && (
+                <TriageStep
+                  mode={s.triageMode}
+                  note={s.triageNote}
+                  total={s.parsed.length}
+                  onMode={(v) => set("triageMode", v)}
+                  onNote={(v) => set("triageNote", v)}
+                />
+              )}
               {step.id === "watch" && <WatchStep s={s} set={set} />}
               {step.id === "authority" && <AuthorityStep s={s} set={set} />}
               {step.id === "launch" && (
@@ -286,8 +338,12 @@ function hintFor(id: StepId) {
       return "Load a portfolio to continue.";
     case "leases":
       return "Run the read, or skip the sample.";
-    case "sales":
-      return "Choose how sales reach us, or skip it.";
+    case "source":
+      return "Tell us where the portfolio is coming from.";
+    case "record":
+      return "Answer every line, including not sure.";
+    case "triage":
+      return "Say where we should start.";
     case "authority":
       return "Name someone who can authorize a notice.";
     default:
@@ -543,6 +599,9 @@ function LocationsStep({
   ingested: IngestRow[];
   stats: { matched: number; review: number; unmatched: number; problems: number; total: number };
 }) {
+  const [fileNote, setFileNote] = useState<
+    { kind: "ok" | "error"; message: string } | null
+  >(null);
   const [phase, setPhase] = useState<"input" | "map" | "resolve">(
     s.parsed.length ? "resolve" : "input",
   );
@@ -595,6 +654,39 @@ function LocationsStep({
                 </ActionButton>
               </div>
             </div>
+
+            {/* The file they actually have, before the box they would
+                otherwise have to paste a thousand lines into. */}
+            <FileDrop
+              className="mt-4"
+              onError={(m) => setFileNote({ kind: "error", message: m })}
+              onLoad={(f: LoadedFile) => {
+                setFileNote({
+                  kind: "ok",
+                  message: f.sheet
+                    ? `${f.name}: read ${f.rowCount.toLocaleString("en-US")} rows from sheet "${f.sheet}"${
+                        f.otherSheets?.length
+                          ? `. Also in this workbook: ${f.otherSheets.join(", ")}.`
+                          : "."
+                      }`
+                    : `${f.name}: read ${f.rowCount.toLocaleString("en-US")} rows.`,
+                });
+                set("raw", f.text);
+                load(f.text);
+              }}
+            />
+
+            {fileNote && (
+              <div className="mt-3">
+                <Note tone={fileNote.kind === "ok" ? "open" : "clay"}>
+                  {fileNote.message}
+                </Note>
+              </div>
+            )}
+
+            <p className="mt-4 text-[0.8125rem] text-muted">
+              Or paste it instead.
+            </p>
 
             <textarea
               value={s.raw}
