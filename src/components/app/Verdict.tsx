@@ -147,7 +147,11 @@ export function Verdict({
             />
             <Row k="Centers surveyed" v={String(centersSurveyed)} />
             <Row
-              k="Co-tenancy rent running"
+              /* This is what is AVAILABLE on qualifying locations, not
+                 what is already running under a served notice. Calling
+                 it "running" overstated it the moment real data arrived
+                 with nothing served yet. */
+              k="Available where sales on file"
               v={compactUsd(monthlyTotal)}
               muted={!live}
             />

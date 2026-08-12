@@ -182,6 +182,12 @@ export type Suite = {
   since?: string;
   /** True when this suite is the subject tenant's own store. */
   subject?: boolean;
+  /**
+   * Membership of the area a "defined_area" clause measures, once the
+   * site-plan exhibit has been mapped to suites. Absent means unmapped,
+   * and a defined-area test cannot be computed without it.
+   */
+  zone?: boolean;
 };
 
 export type CenterFacts = {
@@ -220,6 +226,13 @@ export type Trigger =
       cite: string;
       /** Suite ids in the center that satisfy this test. */
       names: string[];
+      /**
+       * The tenants as the lease names them, for display and for saying
+       * which one we failed to match. Center directories carry casing
+       * and suffix variants of the same brand, so the lease's wording
+       * is the thing to show a reader, not our internal id.
+       */
+      namesText?: string[];
       replacementStandard: ReplacementStandard;
       deemedOpen: DeemedOpenRule[];
     }
@@ -730,23 +743,39 @@ export function evaluateClause(
 
     if (t.kind === "named_tenant") {
       const suites = t.names.map((n) => byId.get(n)).filter(Boolean) as Suite[];
+      /*
+       * A tenant the lease names but the center's roster does not carry
+       * cannot be scored. Dropping it silently would shrink the test to
+       * the tenants we happen to hold and report the clause as met, so
+       * an unresolved name has to surface as its own condition.
+       */
+      const unresolved = t.names.filter((n) => !byId.has(n));
+
       suites.forEach((s) => noteDeemed(s, t.deemedOpen));
       const openOnes = suites.filter((s) =>
         countsAsSatisfying(s, "open_and_operating", t.deemedOpen, asOf),
       );
-      const failing = openOnes.length < suites.length;
+      const failing = unresolved.length === 0 && openOnes.length < suites.length;
+      const named = t.namesText ?? t.names;
       return {
         id: t.id,
         cite: t.cite,
         label: "Named tenant",
-        requirement: suites.map((s) => s.name).join(", ") + " open and operating",
-        observed: `${openOnes.length} of ${suites.length} open`,
+        requirement: named.join(", ") + " open and operating",
+        observed: unresolved.length
+          ? `${unresolved.length} named ${unresolved.length === 1 ? "tenant is" : "tenants are"} not in this center's directory`
+          : `${openOnes.length} of ${suites.length} open`,
         failing,
         ratio: suites.length ? openOnes.length / suites.length : 1,
-        headroom: failing ? "Failing now" : "No margin. Any closure trips it.",
-        computability: "observable",
-        computabilityNote:
-          "A named store is visible from the field. We can prove this one.",
+        headroom: unresolved.length
+          ? "Cannot be scored until matched"
+          : failing
+            ? "Failing now"
+            : "No margin. Any closure trips it.",
+        computability: unresolved.length ? "not_computable" : "observable",
+        computabilityNote: unresolved.length
+          ? `The lease names ${unresolved.join(", ")}, which does not appear in this center's directory under that name. Match it to a store or confirm by field visit before this test can carry a notice.`
+          : "A named store is visible from the field. We can prove this one.",
         culprits: suites.filter((s) => !openOnes.includes(s)).map((s) => s.name),
         deemedOpenApplied: deemedApplied,
       };
@@ -754,35 +783,67 @@ export function evaluateClause(
 
     if (t.kind === "tenant_count") {
       const suites = t.pool.map((n) => byId.get(n)).filter(Boolean) as Suite[];
+      const unresolved = t.pool.filter((n) => !byId.has(n));
+
       suites.forEach((s) => noteDeemed(s, t.deemedOpen));
       const openOnes = suites.filter((s) =>
         countsAsSatisfying(s, "open_and_operating", t.deemedOpen, asOf),
       );
-      const failing = openOnes.length < t.requiredCount;
+
+      /*
+       * Give every unmatched pool member the benefit of the doubt. If
+       * the count still falls short with all of them counted open, the
+       * failure is proven whatever they turn out to be. If it does not,
+       * the answer depends on stores we have not matched, and the test
+       * is not ours to score yet.
+       */
+      const bestCase = openOnes.length + unresolved.length;
+      const provenFailing = bestCase < t.requiredCount;
+      const blocked = unresolved.length > 0 && !provenFailing;
+
+      const failing = provenFailing;
       const margin = openOnes.length - t.requiredCount;
+      const poolSize = t.pool.length;
       return {
         id: t.id,
         cite: t.cite,
         label: `${t.poolLabel} count`,
-        requirement: `At least ${t.requiredCount} of ${suites.length} open and operating`,
-        observed: `${openOnes.length} of ${suites.length} open`,
+        requirement: `At least ${t.requiredCount} of ${poolSize} open and operating`,
+        observed: blocked
+          ? `${openOnes.length} of ${suites.length} matched open, ${unresolved.length} unmatched`
+          : `${openOnes.length} of ${poolSize} open`,
         failing,
         ratio: t.requiredCount ? openOnes.length / t.requiredCount : 1,
-        headroom: failing
-          ? `${Math.abs(margin)} below the floor`
-          : margin === 0
-            ? "At the floor. One closure trips it."
-            : `${margin} above the floor`,
-        computability: "observable",
-        computabilityNote:
-          "An enumerated pool of named stores. Each one is checkable in the field.",
+        headroom: blocked
+          ? "Depends on stores we have not matched"
+          : failing
+            ? `${Math.abs(margin)} below the floor`
+            : margin === 0
+              ? "At the floor. One closure trips it."
+              : `${margin} above the floor`,
+        computability: blocked ? "not_computable" : "observable",
+        computabilityNote: blocked
+          ? `${unresolved.join(", ")} named in the pool but not found in this center's directory. Match or field-check before relying on this count.`
+          : "An enumerated pool of named stores. Each one is checkable in the field.",
         culprits: suites.filter((s) => !openOnes.includes(s)).map((s) => s.name),
         deemedOpenApplied: deemedApplied,
       };
     }
 
     // occupancy percentage
-    const pool = center.suites.filter((s) => !t.exclusions.includes(s.kind));
+    /*
+     * A defined-area clause measures the area drawn on a site-plan
+     * exhibit, not the whole center. Where that exhibit has been mapped
+     * to suites we filter to it; where it has not, falling back to the
+     * whole center silently would produce a plausible wrong number, so
+     * computability drops instead.
+     */
+    const zoneMapped =
+      t.areaBasis === "defined_area" && center.suites.some((s) => s.zone);
+
+    const pool = center.suites
+      .filter((s) => !t.exclusions.includes(s.kind))
+      .filter((s) => (zoneMapped ? s.zone : true));
     pool.forEach((s) => noteDeemed(s, t.deemedOpen));
     const denominator = pool.reduce((sum, s) => sum + s.gla, 0);
     const numerator = pool
@@ -1009,6 +1070,24 @@ export const usd = (n: number, decimals = 0) =>
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });
+
+/**
+ * How to say what the clause is worth.
+ *
+ * Three distinct answers, and flattening them to "$0" loses the one
+ * that matters. A "lesser of minimum rent or X% of gross sales"
+ * formula only helps a store whose sales are weak: where the
+ * percentage exceeds fixed rent the tenant keeps paying fixed rent and
+ * the clause is worth nothing at present trading. That is not an
+ * error, it is the economics of co-tenancy working as drafted, and it
+ * is the sort of thing a real estate team needs told plainly rather
+ * than shown as a zero they will read as a bug.
+ */
+export function formatCoTenancyRent(delta: number | null): string {
+  if (delta == null) return "Sales needed";
+  if (delta <= 0) return "No saving at current sales";
+  return `${usd(Math.round(delta))}/mo`;
+}
 
 export const compactUsd = (n: number) =>
   n >= 1_000_000

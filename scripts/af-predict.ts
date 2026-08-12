@@ -364,9 +364,17 @@ for (const p of predictions) {
       p.tier.padEnd(10) +
       (p.firstFailMonth ?? "never").padEnd(12) +
       (p.cureElapsedMonth ?? "-").padEnd(12) +
-      (p.monthlyCoTenancyRent != null
-        ? "$" + p.monthlyCoTenancyRent.toLocaleString("en-US") + "/mo"
-        : "-"),
+      /*
+       * Zero is a real answer here, not a missing one. Under "lesser of
+       * minimum rent or X% of gross sales", a store selling well enough
+       * that the percentage exceeds its fixed rent gets no reduction, so
+       * this prints the outcome rather than a dollar sign on nothing.
+       */
+      (p.monthlyCoTenancyRent == null
+        ? "-"
+        : p.monthlyCoTenancyRent <= 0
+          ? "no saving"
+          : "$" + p.monthlyCoTenancyRent.toLocaleString("en-US") + "/mo"),
   );
 }
 

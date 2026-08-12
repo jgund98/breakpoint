@@ -3,6 +3,7 @@ import {
   SOURCE_META,
   STATE_META,
   TIER_META,
+  formatCoTenancyRent,
   prettyDate,
   usd,
   verificationOf,
@@ -53,10 +54,7 @@ export default function NoticesPage() {
       .filter((t) => t.failing)
       .map((t) => t.label)
       .join(", "),
-    monthly:
-      r.evaluation.monthlyDelta == null
-        ? "Sales needed"
-        : `${usd(Math.round(r.evaluation.monthlyDelta))}/mo`,
+    monthly: formatCoTenancyRent(r.evaluation.monthlyDelta),
     verified: verificationOf(r.evidence).tier === "verified",
   }));
 
@@ -196,10 +194,7 @@ export default function NoticesPage() {
                     },
                     {
                       k: "Estimated monthly",
-                      v:
-                        lead.evaluation.monthlyDelta == null
-                          ? "Sales needed"
-                          : usd(Math.round(lead.evaluation.monthlyDelta)),
+                      v: formatCoTenancyRent(lead.evaluation.monthlyDelta),
                     },
                     {
                       k: "Termination available",

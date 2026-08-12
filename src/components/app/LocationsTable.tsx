@@ -17,7 +17,7 @@ export type TableRow = {
   stateLabel: string;
   stateTone: Tone;
   failing: string;
-  monthly: number | null;
+  monthly: string | null;
   evidence: string;
   evidenceTone: Tone;
   clockDays: number | null;
@@ -68,7 +68,7 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
       if (sort === "center") return a.centerName.localeCompare(b.centerName);
       if (sort === "clock")
         return (a.clockDays ?? 99999) - (b.clockDays ?? 99999);
-      return (b.monthly ?? -1) - (a.monthly ?? -1);
+      return (a.monthly ?? "").localeCompare(b.monthly ?? "");
     });
   }, [rows, view, q, region, sort]);
 
@@ -225,15 +225,9 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
                   )}
                 </td>
                 <td className="tnum px-4 py-3 text-[0.875rem] font-semibold">
-                  {r.monthly == null ? (
-                    <span className="text-faint">Sales needed</span>
-                  ) : r.monthly > 0 ? (
-                    <span className="text-brass-600">
-                      {r.monthly.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        maximumFractionDigits: 0,
-                      })}
+                  {r.monthly ? (
+                    <span className={r.monthly.startsWith("$") ? "text-brass-600" : "text-muted"}>
+                      {r.monthly}
                     </span>
                   ) : (
                     <span className="text-faint">—</span>

@@ -11,6 +11,7 @@ import {
   type SuiteStatus,
   STATE_META,
   evaluateClause,
+  formatCoTenancyRent,
   usd,
 } from "@/lib/clause";
 import { cn } from "@/lib/cn";
@@ -23,18 +24,21 @@ import { ActionButton, Pill, type Tone } from "./ui";
  * estate team actually asks, and it is the one thing a lease
  * administration system cannot answer.
  *
- * This replaces an earlier center-plan view that drew the whole mall.
- * That looked impressive and was quietly dishonest: a full rent roll
- * with every inline suite and its square footage is the landlord's
- * information and we will not have it. What we do have, from the lease
- * itself, is the named tenants the clause depends on. So the
- * simulation is built on exactly those.
+ * This replaces an earlier center-plan view that drew the whole mall
+ * from an invented rent roll. The named tenants a clause depends on
+ * come from the lease itself, so the simulation is built on exactly
+ * those and stays honest whatever else we do or do not hold.
  *
  * Toggle any of them closed and the requirement re-evaluates: which
  * limb fails, whether the clause as a whole is met, what happens next
- * and when. Occupancy limbs are shown but not toggleable, because we
- * cannot compute them without the landlord's report, and pretending
- * otherwise would put us back where we started.
+ * and when.
+ *
+ * Occupancy limbs are shown but not toggleable. Where the center's
+ * published directory gives us the roster we compute the percentage
+ * and show it; where it does not, we say the landlord's report is
+ * needed rather than estimating. Either way it is not something a
+ * reader should be able to move with a click, because it is an
+ * aggregate over the whole center rather than one store's status.
  */
 
 type Props = {
@@ -270,11 +274,7 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
               />
               <Row
                 k="Co-tenancy rent"
-                v={
-                  live.monthlyDelta == null
-                    ? "Sales needed"
-                    : `${usd(Math.round(live.monthlyDelta))}/mo`
-                }
+                v={formatCoTenancyRent(live.monthlyDelta)}
               />
               {clause.remedy.capMonths && (
                 <Row

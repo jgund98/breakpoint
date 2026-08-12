@@ -1,4 +1,9 @@
-import { STATE_META, TIER_META, verificationOf } from "@/lib/clause";
+import {
+  STATE_META,
+  TIER_META,
+  formatCoTenancyRent,
+  verificationOf,
+} from "@/lib/clause";
 import { rows } from "@/lib/portfolio";
 import { PageHead, type Tone } from "@/components/app/ui";
 import {
@@ -31,7 +36,9 @@ export default function LocationsPage() {
       stateLabel: STATE_META[r.evaluation.state].label,
       stateTone: STATE_META[r.evaluation.state].tone as Tone,
       failing: failing.map((t) => t.label).join(", "),
-      monthly: r.evaluation.anyFailing ? r.evaluation.monthlyDelta : 0,
+      monthly: r.evaluation.anyFailing
+        ? formatCoTenancyRent(r.evaluation.monthlyDelta)
+        : null,
       evidence: TIER_META[v.tier].label,
       evidenceTone: (v.tier === "verified"
         ? "open"

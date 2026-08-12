@@ -5,6 +5,7 @@ import {
   STATE_META,
   TIER_META,
   compactUsd,
+  formatCoTenancyRent,
   prettyDate,
   shortDate,
   usd,
@@ -111,7 +112,7 @@ export default function OverviewPage() {
     );
   }, 0);
   /** Of the qualifying locations, how many have sales we can compute from. */
-  const withSales = decisions.filter((r) => r.econ.ttmGrossSales != null).length;
+  const withSales = decisions.filter((r) => (r.evaluation.monthlyDelta ?? 0) > 0).length;
 
   const decisionMonthly = decisions.reduce(
     (sum, r) => sum + (r.evaluation.monthlyDelta ?? 0),
@@ -177,7 +178,7 @@ export default function OverviewPage() {
             }
             sub={
               withSales > 0
-                ? `Annualized, across the ${withSales} of ${decisions.length} with sales on file.`
+                ? `Annualized. ${withSales} of ${decisions.length} produce a saving at current sales.`
                 : "No sales reported for the qualifying locations."
             }
           />
@@ -313,9 +314,7 @@ export default function OverviewPage() {
                       </Pill>
                     </td>
                     <td className="tnum px-4 py-3 text-[0.9375rem] font-semibold text-brass-600">
-                      {r.evaluation.monthlyDelta == null
-                        ? "Sales needed"
-                        : usd(Math.round(r.evaluation.monthlyDelta))}
+                      {formatCoTenancyRent(r.evaluation.monthlyDelta)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link

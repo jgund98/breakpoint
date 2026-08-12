@@ -126,7 +126,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {org.name}
           </p>
           <p className="text-[0.75rem] text-muted">
-            {org.watched} watched of {org.totalDoors} doors
+            {org.watched} locations monitored
           </p>
         </div>
 
@@ -161,9 +161,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="ml-auto flex items-center gap-2.5">
             <span className="hidden items-center gap-2 rounded-lg bg-brass-50 px-3 py-2 text-[0.75rem] font-semibold text-brass-700 ring-1 ring-inset ring-brass-200 sm:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-brass-500 anim-pulse-dot" />
+              {/* Say which decision. The product now has more than one
+                  queue asking for one, and "needs a decision" on its own
+                  no longer identifies this as the money. */}
               {(summary.byState.get("claimable") ?? 0) +
                 (summary.byState.get("election_open") ?? 0)}{" "}
-              need a decision
+              locations ready to claim
             </span>
 
             <Link

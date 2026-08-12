@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ENTITLEMENT_META, prettyDate, shortDate } from "@/lib/clause";
 import { SOURCE_INFO, type SourceId, coverage } from "@/lib/coverage";
+import { TODAY, pendingMatches, rows } from "@/lib/portfolio";
+import { MatchQueue } from "@/components/app/MatchQueue";
 import { PendingAction } from "@/components/app/PendingAction";
 import {
   EmptyState,
@@ -20,6 +22,14 @@ export default function CoveragePage() {
    * named store made the table read as a wall of unfamiliar retailer
    * names, and the useful unit is the center: which of your centers are
    * we watching, how many named tenants there, and is anything closed.
+   *
+   * Seeded from every center in the portfolio, not just the ones with a
+   * named tenant. A clause that turns on an occupancy threshold alone
+   * names nobody, so building this from watch targets dropped four of
+   * the twenty centers off the page entirely and reported a client with
+   * twenty leases as having sixteen watched. Those centers are watched;
+   * the directory gives us the occupancy every scan. What they have is
+   * no single named store to point at.
    */
   const byCenter = (() => {
     const m = new Map<
@@ -34,6 +44,20 @@ export default function CoveragePage() {
         locationIds: Set<string>;
       }
     >();
+
+    for (const r of rows) {
+      m.set(r.center.name, {
+        center: r.center.name,
+        city: `${r.center.city}, ${r.center.state}`,
+        watched: 0,
+        notOpen: 0,
+        /* However a clause is worded, the center's published directory
+           is read every scan. That is the floor of what we look at. */
+        sources: new Set<SourceId>(["center_directory"]),
+        lastChecked: TODAY,
+        locationIds: new Set<string>([r.id]),
+      });
+    }
 
     for (const t of c.targets) {
       const e = m.get(t.centerName) ?? {
@@ -69,6 +93,8 @@ export default function CoveragePage() {
         lede="Which centers we watch, and what your leases let you demand from the landlord."
         right={<LinkButton href="/app/activity">Activity</LinkButton>}
       />
+
+      <MatchQueue items={pendingMatches} />
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
@@ -196,7 +222,14 @@ export default function CoveragePage() {
                     {row.locationIds.size}
                   </td>
                   <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
-                    {row.watched}
+                    {/* A clause with no named tenant is watched on the
+                        occupancy percentage instead, so say that rather
+                        than print a zero that reads as unmonitored. */}
+                    {row.watched > 0 ? (
+                      row.watched
+                    ) : (
+                      <span className="text-muted">Occupancy only</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap gap-1">
@@ -219,10 +252,15 @@ export default function CoveragePage() {
                       <Pill tone={"clay" as Tone} dot>
                         {row.notOpen} closed
                       </Pill>
-                    ) : (
+                    ) : row.watched > 0 ? (
                       <Pill tone={"open" as Tone} dot>
                         All open
                       </Pill>
+                    ) : (
+                      /* No named tenant to be open or closed. Claiming
+                         "all open" here would assert something we never
+                         tested. */
+                      <Pill tone={"muted" as Tone}>Tracked by percentage</Pill>
                     )}
                   </td>
                 </tr>
