@@ -112,6 +112,20 @@ const held = /Held\s*\n\s*([\d,]+)/.exec(afterRoster);
 const mapped = /(\d+) of (\d+) matched/.exec(afterRoster);
 console.log(`\nroster: ${mapped ? mapped[0] : "no mapping shown"}, held ${held ? held[1] : "—"} (want 2)`);
 console.log(`against expectation: ${/we expected/.test(afterRoster) ? "compared" : "not compared"}`);
+const grab = (label) => {
+  /* innerText upper-cases these labels via CSS, so match loosely and
+     take the first number that follows. */
+  const i = afterRoster.toLowerCase().indexOf(label.toLowerCase());
+  if (i < 0) return "-";
+  const m = /(\d[\d,]*)/.exec(afterRoster.slice(i + label.length, i + label.length + 40));
+  return m ? m[1] : "-";
+};
+const ci = afterRoster.indexOf("Centers");
+console.log("--- centers panel text ---");
+console.log(ci>=0 ? afterRoster.slice(ci, ci+340) : "PANEL NOT RENDERED");
+console.log(
+  `centers: resolved ${grab("Resolved")}, review ${grab("Need a person")}, new ${grab("New to us")}`,
+);
 
 /* ---- the record ---- */
 await openTask("already on the record");

@@ -20,6 +20,8 @@ import { ActionButton, Note, Panel, Pill, type Tone } from "@/components/app/ui"
 import { FileDrop, type LoadedFile } from "./FileDrop";
 import { IntakeReview, TemplateButton } from "./IntakeReview";
 import { RecordStep, SourceStep, TriageStep, Choice } from "./ExtraSteps";
+import { buildCenterIndex, resolveAll } from "@/lib/centers";
+import { portfolio } from "@/lib/portfolio";
 
 /**
  * THE ONBOARDING WORKSPACE
@@ -104,6 +106,22 @@ export function OnboardingWorkspace({
     () => (s.parsed.length ? applyMapping(s.parsed, s.mapping) : []),
     [s.parsed, s.mapping],
   );
+
+  /*
+   * Which mall each row actually refers to. Separate from column
+   * mapping on purpose: a perfectly mapped roster still has to be tied
+   * to real centers, and that is where a confident wrong answer comes
+   * from. Matching a store to the wrong mall evaluates its clause
+   * against another center's occupancy and nobody notices for months.
+   */
+  const centers = useMemo(() => {
+    if (!s.parsed.length) return null;
+    const index = buildCenterIndex(portfolio);
+    return resolveAll(
+      resolved.map((r) => ({ name: r.centerName, city: r.city, state: r.state })),
+      index,
+    );
+  }, [resolved, s.parsed.length]);
 
   if (!ready) return null;
 
@@ -312,6 +330,88 @@ export function OnboardingWorkspace({
                         headers={s.headers}
                         mapping={s.mapping}
                       />
+                      {centers && (
+                        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
+                          <div className="border-b border-line px-5 py-4">
+                            <h3 className="text-[0.9375rem] font-semibold text-ink">
+                              Centers
+                            </h3>
+                            <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
+                              Each store tied to the mall it actually sits in.
+                              We never match on the name alone: two of the
+                              centers we already watch are called The
+                              Galleria, and two more are one letter apart in
+                              different states.
+                            </p>
+                          </div>
+                          <div className="grid gap-px bg-line sm:grid-cols-3">
+                            {(
+                              [
+                                ["Resolved", centers.matched, "open"],
+                                ["Need a person", centers.review, "watch"],
+                                ["New to us", centers.fresh, "muted"],
+                              ] as const
+                            ).map(([label, n, tone]) => (
+                              <div key={label} className="bg-surface px-5 py-4">
+                                <p className="label text-muted">{label}</p>
+                                <p
+                                  className={cn(
+                                    "tnum font-display mt-1.5 text-[1.5rem] leading-none",
+                                    tone === "open"
+                                      ? "text-open-700"
+                                      : tone === "watch"
+                                        ? "text-brass-700"
+                                        : "text-ink",
+                                  )}
+                                >
+                                  {n.toLocaleString("en-US")}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {centers.review > 0 && (
+                            <ul className="divide-y divide-line border-t border-line">
+                              {centers.rows
+                                .filter((r) => r.result.status === "review")
+                                .slice(0, 8)
+                                .map((r) => (
+                                  <li key={r.row} className="px-5 py-3">
+                                    <p className="text-[0.875rem] font-medium text-ink">
+                                      Row {r.row}: &#8220;{r.supplied}&#8221;
+                                    </p>
+                                    <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
+                                      {r.result.why}
+                                    </p>
+                                    {r.result.status === "review" && (
+                                      <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {r.result.candidates.map((c) => (
+                                          <span
+                                            key={c.id}
+                                            className="rounded-md bg-surface-sunk px-2 py-1 text-[0.6875rem] font-medium text-ink-soft"
+                                          >
+                                            {c.name} · {c.city}, {c.state}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </li>
+                                ))}
+                            </ul>
+                          )}
+
+                          {centers.fresh > 0 && (
+                            <p className="border-t border-line px-5 py-3 text-[0.8125rem] leading-relaxed text-muted">
+                              {centers.fresh.toLocaleString("en-US")} center
+                              {centers.fresh === 1 ? " is" : "s are"} not in our
+                              index yet. That is normal on a first load and it
+                              is our job, not yours: we add them and begin
+                              watching before abstraction finishes.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
                       <Note tone="open">
                         {resolved.length.toLocaleString("en-US")} locations read
                         {storeEstimate > 0 && (
