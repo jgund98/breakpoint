@@ -1,53 +1,47 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "motion/react";
-import { Check, CircleDashed, Clock, RotateCcw } from "lucide-react";
+import { Check, RotateCcw } from "lucide-react";
 import {
   TASKS,
-  type OnboardingState,
-  type TaskId,
   clearOnboarding,
   completion,
   emptyOnboarding,
   loadOnboarding,
   saveOnboarding,
   statusOf,
+  type OnboardingState,
+  type TaskId,
 } from "@/lib/onboarding-store";
-import { FIELDS, applyMapping, autoMap, parseDelimited, type FieldKey } from "@/lib/ingest";
-import { cn } from "@/lib/cn";
-import { ActionButton, Note, Panel, Pill, type Tone } from "@/components/app/ui";
-import { FileDrop, type LoadedFile } from "./FileDrop";
-import { IntakeReview, TemplateButton } from "./IntakeReview";
-import { RecordStep, SourceStep, TriageStep, Choice } from "./ExtraSteps";
+import {
+  FIELDS,
+  applyMapping,
+  autoMap,
+  parseDelimited,
+  type FieldKey,
+} from "@/lib/ingest";
 import { buildCenterIndex, resolveAll } from "@/lib/centers";
 import { portfolio } from "@/lib/portfolio";
+import { cn } from "@/lib/cn";
+import { FileDrop, type LoadedFile } from "./FileDrop";
+import { IntakeReview } from "./IntakeReview";
+import { RecordStep, TriageStep } from "./ExtraSteps";
+import { ChannelDetail, DeliveryPicker, type ChannelId } from "./Delivery";
 
 /**
- * THE ONBOARDING WORKSPACE
+ * THE ONBOARDING CONSOLE
  *
- * This is not a funnel and the client is not a prospect. They have paid,
- * we already know who they are and how many stores they run, and the
- * only job left is to move a large amount of information out of their
- * systems and into ours without wasting their time.
+ * A record of what a client has sent, what is outstanding, and how each
+ * remaining piece is arriving. Worked by several people over days, so it
+ * is a register rather than a sequence, and every panel leads with what
+ * we hold rather than with what we would like.
  *
- * Three things follow from that, and each is the opposite of how a
- * signup flow is built:
- *
- *   NOT LINEAR   lease administration owns the roster, legal owns the
- *                estoppels, real estate owns which centers matter. They
- *                work at the same time, so the tasks are a board and any
- *                of them can be opened in any order.
- *
- *   SAVED        it runs over days. Everything is written as it is typed
- *                and picked up where it was left, because losing a
- *                morning's work is how an expensive customer starts to
- *                feel like staff.
- *
- *   NO SELLING   no qualifying questions, no promises about how fast we
- *                are. Every screen either takes data or explains what a
- *                missing piece costs.
+ * The list down the left is the document, not decoration. An account
+ * manager reads it to answer "where are we" and the client reads the
+ * same thing. One state, one view of it.
  */
+
+type Note = { kind: "ok" | "bad"; message: string } | null;
 
 export function OnboardingWorkspace({
   clientName,
@@ -62,14 +56,9 @@ export function OnboardingWorkspace({
   const [open, setOpen] = useState<TaskId>("portfolio");
   const [ready, setReady] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
-  const [fileNote, setFileNote] = useState<
-    { kind: "ok" | "clay"; message: string } | null
-  >(null);
+  const [note, setNote] = useState<Note>(null);
   const first = useRef(true);
 
-  /* Load once on mount. Two effects rather than one, because Strict Mode
-     double-invokes and a combined version consumed the saved state on
-     the first pass and rendered empty on the second. */
   useEffect(() => {
     setS(loadOnboarding(clientSlug));
     setReady(true);
@@ -82,11 +71,32 @@ export function OnboardingWorkspace({
       return;
     }
     saveOnboarding(clientSlug, s);
-    setSavedAt(new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }));
+    setSavedAt(
+      new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+    );
   }, [s, ready, clientSlug]);
 
   const set = <K extends keyof OnboardingState>(k: K, v: OnboardingState[K]) =>
     setS((p) => ({ ...p, [k]: v }));
+
+  const chan = (id: TaskId) => s.channels[id]?.channel ?? null;
+  const chanNote = (id: TaskId) => s.channels[id]?.note ?? "";
+  const setChan = (id: TaskId, channel: ChannelId) =>
+    setS((p) => ({
+      ...p,
+      channels: {
+        ...p.channels,
+        [id]: { channel, note: p.channels[id]?.note ?? "" },
+      },
+    }));
+  const setChanNote = (id: TaskId, v: string) =>
+    setS((p) => ({
+      ...p,
+      channels: {
+        ...p.channels,
+        [id]: { channel: p.channels[id]?.channel ?? null, note: v },
+      },
+    }));
 
   const progress = useMemo(() => completion(s), [s]);
 
@@ -107,108 +117,134 @@ export function OnboardingWorkspace({
     [s.parsed, s.mapping],
   );
 
-  /*
-   * Which mall each row actually refers to. Separate from column
-   * mapping on purpose: a perfectly mapped roster still has to be tied
-   * to real centers, and that is where a confident wrong answer comes
-   * from. Matching a store to the wrong mall evaluates its clause
-   * against another center's occupancy and nobody notices for months.
-   */
   const centers = useMemo(() => {
-    if (!s.parsed.length) return null;
-    const index = buildCenterIndex(portfolio);
+    if (!resolved.length) return null;
     return resolveAll(
       resolved.map((r) => ({ name: r.centerName, city: r.city, state: r.state })),
-      index,
+      buildCenterIndex(portfolio),
     );
-  }, [resolved, s.parsed.length]);
+  }, [resolved]);
 
   if (!ready) return null;
+  const task = TASKS.find((t) => t.id === open)!;
+
+  /** One line per task, stating what we hold rather than what it is for. */
+  const held = (id: TaskId): string => {
+    switch (id) {
+      case "portfolio":
+        return s.parsed.length
+          ? `${s.parsed.length.toLocaleString("en-US")} rows${centers ? `, ${centers.matched} centers matched` : ""}`
+          : chan("portfolio")
+            ? "Route agreed, nothing received"
+            : "Nothing received";
+      case "leases":
+        return s.leasesConfirmed
+          ? "Access confirmed"
+          : chan("leases")
+            ? "Route agreed"
+            : "Nothing received";
+      case "record": {
+        const n = Object.values(s.record).filter((v) => v !== null).length;
+        return n === 0 ? "Not started" : `${n} of 5 answered`;
+      }
+      case "sales":
+        return s.salesDeferred
+          ? "On request, per store"
+          : s.salesRowCount
+            ? `${s.salesRowCount.toLocaleString("en-US")} rows`
+            : "Nothing received";
+      case "priorities":
+        return s.triageMode === "all"
+          ? "Whole portfolio"
+          : s.triageMode === "priority"
+            ? s.triageNote.trim()
+              ? "Cohort named"
+              : "Cohort not yet named"
+            : "Not set";
+      case "people":
+        return s.signatory.trim() ? s.signatory : "No signatory named";
+      case "watch":
+        return `${s.cadence[0].toUpperCase()}${s.cadence.slice(1)}${s.fieldVisits ? ", field visits on" : ""}`;
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-surface-sunk/40">
-      {/* ---- header ---- */}
-      <header className="sticky top-0 z-20 border-b border-line bg-canvas">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-5 py-4 sm:px-8">
-          <div className="min-w-0 flex-1">
+    <div className="min-h-screen bg-canvas">
+      <header className="border-b border-line">
+        <div className="mx-auto flex max-w-[74rem] flex-wrap items-end justify-between gap-x-8 gap-y-4 px-6 py-5">
+          <div className="min-w-0">
             <p className="label text-faint">Onboarding</p>
-            <h1 className="mt-0.5 truncate text-[1.125rem] font-semibold text-ink">
+            <h1 className="mt-1 truncate text-[1.25rem] font-semibold text-ink">
               {clientName}
             </h1>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:block">
-              <p className="tnum text-right text-[0.8125rem] font-semibold text-ink">
-                {progress.done} of {progress.total} complete
-              </p>
-              <div className="mt-1.5 h-1.5 w-40 overflow-hidden rounded-full bg-surface-sunk">
-                <motion.div
-                  className="h-full rounded-full bg-brass-500"
-                  animate={{ width: `${progress.pct}%` }}
-                  transition={{ duration: 0.5 }}
-                />
-              </div>
-            </div>
-            <span className="flex items-center gap-1.5 text-[0.75rem] text-muted">
-              <Clock className="h-3.5 w-3.5" />
-              {savedAt ? `Saved ${savedAt}` : "Saves as you go"}
-            </span>
-          </div>
+          <dl className="flex flex-wrap items-end gap-x-8 gap-y-3">
+            <Figure k="Stores expected" v={storeEstimate.toLocaleString("en-US")} />
+            <Figure
+              k="Received"
+              v={s.parsed.length ? s.parsed.length.toLocaleString("en-US") : "—"}
+              tone={
+                s.parsed.length &&
+                Math.abs(s.parsed.length - storeEstimate) <= storeEstimate * 0.02
+                  ? "open"
+                  : s.parsed.length
+                    ? "watch"
+                    : undefined
+              }
+            />
+            <Figure k="Centers matched" v={centers ? String(centers.matched) : "—"} />
+            <Figure
+              k="Complete"
+              v={`${progress.done} of ${progress.total}`}
+              tone={progress.done === progress.total ? "open" : undefined}
+            />
+          </dl>
+        </div>
+        <div className="h-0.5 w-full bg-surface-sunk">
+          <div
+            className="h-full bg-brass-500 transition-[width] duration-500"
+            style={{ width: `${progress.pct}%` }}
+          />
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-6xl gap-6 px-5 py-8 sm:px-8 lg:grid-cols-[19rem_1fr]">
-        {/* ---- the board ---- */}
-        <aside className="space-y-3">
-          <ul className="overflow-hidden rounded-2xl border border-line bg-surface">
+      <div className="mx-auto grid max-w-[74rem] gap-6 px-6 py-6 lg:grid-cols-[17.5rem_1fr]">
+        <aside>
+          <ul>
             {TASKS.map((t) => {
               const st = statusOf(s, t.id);
               const on = open === t.id;
               return (
-                <li key={t.id} className="border-b border-line last:border-0">
+                <li key={t.id}>
                   <button
                     type="button"
                     onClick={() => setOpen(t.id)}
                     className={cn(
-                      "flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors duration-200",
+                      "flex w-full items-start gap-2.5 border-b border-line px-3 py-2.5 text-left transition-colors duration-150",
                       on ? "bg-petrol-50" : "hover:bg-surface-sunk",
                     )}
                   >
                     <span
                       className={cn(
-                        "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full",
+                        "mt-1 h-2 w-2 shrink-0 rounded-full",
                         st === "complete"
-                          ? "bg-open-600 text-cream"
+                          ? "bg-open-600"
                           : st === "in_progress"
-                            ? "bg-brass-500 text-petrol-950"
-                            : "bg-surface-sunk text-faint ring-1 ring-line",
+                            ? "bg-brass-500"
+                            : "bg-line",
                       )}
-                    >
-                      {st === "complete" ? (
-                        <Check className="h-3 w-3" />
-                      ) : st === "in_progress" ? (
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                      ) : (
-                        <CircleDashed className="h-3 w-3" />
-                      )}
-                    </span>
+                    />
                     <span className="min-w-0 flex-1">
                       <span
                         className={cn(
-                          "block text-[0.875rem]",
+                          "block truncate text-[0.8125rem]",
                           on ? "font-semibold text-petrol-800" : "font-medium text-ink",
                         )}
                       >
                         {t.title}
-                        {!t.required && (
-                          <span className="ml-1.5 text-[0.6875rem] font-normal text-faint">
-                            optional
-                          </span>
-                        )}
                       </span>
-                      <span className="mt-0.5 block text-[0.75rem] text-muted">
-                        {t.owner}
+                      <span className="mt-0.5 block truncate text-[0.75rem] text-muted">
+                        {held(t.id)}
                       </span>
                     </span>
                   </button>
@@ -217,408 +253,270 @@ export function OnboardingWorkspace({
             })}
           </ul>
 
-          <div className="rounded-2xl border border-line bg-surface p-4">
+          <div className="mt-4 px-3">
             <p className="text-[0.75rem] leading-relaxed text-muted">
-              Work these in any order and hand any of them to the team that
-              owns it. Everything is saved in this browser as you type.
+              Any order. Saved in this browser as you type
+              {savedAt ? `, last at ${savedAt}` : ""}.
             </p>
             <button
               type="button"
               onClick={() => {
                 clearOnboarding(clientSlug);
                 setS(emptyOnboarding);
-                setFileNote(null);
+                setNote(null);
                 setSavedAt(null);
               }}
-              className="mt-3 inline-flex items-center gap-1.5 text-[0.75rem] font-medium text-muted transition-colors hover:text-clay-700"
+              className="mt-2 inline-flex items-center gap-1.5 text-[0.75rem] text-faint transition-colors hover:text-clay-700"
             >
               <RotateCcw className="h-3 w-3" />
-              Clear everything and start again
+              Clear
             </button>
           </div>
         </aside>
 
-        {/* ---- the open task ---- */}
-        <main className="min-w-0 space-y-5">
-          {open === "portfolio" && (
-            <TaskShell
-              title="Store portfolio"
-              lede="Every location with a co-tenancy clause. An export from the system you already run is faster than anything else here."
-            >
-              <SourceStep
-                source={s.source}
-                system={s.leaseAdminSystem}
-                onSource={(v) => set("source", v)}
-                onSystem={(v) => set("leaseAdminSystem", v)}
-              />
+        <main className="min-w-0">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line pb-3">
+            <h2 className="text-[1.0625rem] font-semibold text-ink">{task.title}</h2>
+            <p className="text-[0.75rem] text-muted">
+              {task.owner}
+              {!task.required && " · optional"}
+            </p>
+          </div>
+          <p className="mt-2 max-w-3xl text-[0.8125rem] leading-relaxed text-muted">
+            {task.why}
+          </p>
 
-              {s.source && (
-                <div className="mt-6 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-[0.9375rem] font-semibold text-ink">
-                        Send whatever your system exports
-                      </h3>
-                      <p className="mt-1 max-w-xl text-[0.8125rem] leading-relaxed text-muted">
-                        Any columns, any order, any format. We map it, repair
-                        what we can, and take everything else off the leases
-                        rather than asking you to retype it.
-                      </p>
-                    </div>
-                    <TemplateButton />
-                  </div>
-
-                  <FileDrop
-                    onError={(m) => setFileNote({ kind: "clay", message: m })}
-                    onLoad={(f: LoadedFile) => {
-                      setFileNote({
-                        kind: "ok",
-                        message: f.sheet
-                          ? `${f.name}: ${f.rowCount.toLocaleString("en-US")} rows from sheet "${f.sheet}"${
-                              f.otherSheets?.length
-                                ? `. Other sheets in this workbook: ${f.otherSheets.join(", ")}.`
-                                : "."
-                            }`
-                          : `${f.name}: ${f.rowCount.toLocaleString("en-US")} rows.`,
-                      });
-                      loadRoster(f.text, f.name);
-                    }}
-                  />
-
-                  {fileNote && (
-                    <Note tone={fileNote.kind === "ok" ? "open" : "clay"}>
-                      {fileNote.message}
-                    </Note>
-                  )}
-
-                  <details className="rounded-xl border border-line bg-surface-sunk p-4">
-                    <summary className="cursor-pointer text-[0.8125rem] font-medium text-ink">
-                      Or paste it instead
-                    </summary>
-                    <textarea
-                      value={s.raw}
-                      onChange={(e) => set("raw", e.target.value)}
-                      onBlur={() => s.raw.trim() && loadRoster(s.raw)}
-                      rows={7}
-                      spellCheck={false}
-                      placeholder={"Store #,Address,City,ST,Center,Rentable SF\n4417,7007 Friars Road,San Diego,CA,Fashion Valley,8302"}
-                      className="mt-3 w-full rounded-lg border border-line bg-surface p-3 font-mono text-[0.75rem] leading-relaxed text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
-                    />
-                    {/* Explicit, because loading on blur alone means a
-                        client pastes and watches nothing happen. */}
-                    <ActionButton
-                      className="mt-3"
-                      onClick={() => s.raw.trim() && loadRoster(s.raw)}
-                      disabled={!s.raw.trim()}
-                    >
-                      Read the roster
-                    </ActionButton>
-                  </details>
-
-                  {s.parsed.length > 0 && (
-                    <>
-                      <Mapping
-                        headers={s.headers}
-                        mapping={s.mapping}
-                        sample={s.parsed[0]}
-                        onChange={(h, v) =>
-                          setS((p) => ({ ...p, mapping: { ...p.mapping, [h]: v } }))
-                        }
-                      />
-                      <IntakeReview
-                        rows={s.parsed}
-                        headers={s.headers}
-                        mapping={s.mapping}
-                      />
-                      {centers && (
-                        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-                          <div className="border-b border-line px-5 py-4">
-                            <h3 className="text-[0.9375rem] font-semibold text-ink">
-                              Centers
-                            </h3>
-                            <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
-                              Each store tied to the mall it actually sits in.
-                              We never match on the name alone: two of the
-                              centers we already watch are called The
-                              Galleria, and two more are one letter apart in
-                              different states.
-                            </p>
-                          </div>
-                          <div className="grid gap-px bg-line sm:grid-cols-3">
-                            {(
-                              [
-                                ["Resolved", centers.matched, "open"],
-                                ["Need a person", centers.review, "watch"],
-                                ["New to us", centers.fresh, "muted"],
-                              ] as const
-                            ).map(([label, n, tone]) => (
-                              <div key={label} className="bg-surface px-5 py-4">
-                                <p className="label text-muted">{label}</p>
-                                <p
-                                  className={cn(
-                                    "tnum font-display mt-1.5 text-[1.5rem] leading-none",
-                                    tone === "open"
-                                      ? "text-open-700"
-                                      : tone === "watch"
-                                        ? "text-brass-700"
-                                        : "text-ink",
-                                  )}
-                                >
-                                  {n.toLocaleString("en-US")}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-
-                          {centers.review > 0 && (
-                            <ul className="divide-y divide-line border-t border-line">
-                              {centers.rows
-                                .filter((r) => r.result.status === "review")
-                                .slice(0, 8)
-                                .map((r) => (
-                                  <li key={r.row} className="px-5 py-3">
-                                    <p className="text-[0.875rem] font-medium text-ink">
-                                      Row {r.row}: &#8220;{r.supplied}&#8221;
-                                    </p>
-                                    <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">
-                                      {r.result.why}
-                                    </p>
-                                    {r.result.status === "review" && (
-                                      <div className="mt-2 flex flex-wrap gap-1.5">
-                                        {r.result.candidates.map((c) => (
-                                          <span
-                                            key={c.id}
-                                            className="rounded-md bg-surface-sunk px-2 py-1 text-[0.6875rem] font-medium text-ink-soft"
-                                          >
-                                            {c.name} · {c.city}, {c.state}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </li>
-                                ))}
-                            </ul>
+          <div className="mt-5 space-y-5">
+            {open === "portfolio" && (
+              <>
+                <DeliveryPicker
+                  only={["system", "share", "sftp", "upload", "email", "paste"]}
+                  value={chan("portfolio")}
+                  onChange={(c) => setChan("portfolio", c)}
+                >
+                  {chan("portfolio") && (
+                    <ChannelDetail
+                      channel={chan("portfolio")!}
+                      account={clientSlug}
+                      note={chanNote("portfolio")}
+                      onNote={(v) => setChanNote("portfolio", v)}
+                      upload={
+                        <div className="space-y-3">
+                          <p className="text-[0.8125rem] leading-relaxed text-muted">
+                            Any columns, in any order. We map them and take
+                            whatever is missing off the leases.
+                          </p>
+                          {chan("portfolio") === "upload" ? (
+                            <FileDrop
+                              onError={(m) => setNote({ kind: "bad", message: m })}
+                              onLoad={(f: LoadedFile) => {
+                                setNote({
+                                  kind: "ok",
+                                  message: `${f.name}: ${f.rowCount.toLocaleString("en-US")} rows${f.sheet ? ` from sheet "${f.sheet}"` : ""}.`,
+                                });
+                                loadRoster(f.text, f.name);
+                              }}
+                            />
+                          ) : (
+                            <>
+                              <textarea
+                                value={s.raw}
+                                onChange={(e) => set("raw", e.target.value)}
+                                rows={6}
+                                spellCheck={false}
+                                placeholder={"Store #,Address,City,ST,Center,Rentable SF\n4417,7007 Friars Road,San Diego,CA,Fashion Valley,8302"}
+                                className="w-full rounded-lg border border-line bg-surface-sunk p-3 font-mono text-[0.75rem] leading-relaxed text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => s.raw.trim() && loadRoster(s.raw)}
+                                disabled={!s.raw.trim()}
+                                className="rounded-lg bg-petrol-800 px-4 py-2 text-[0.8125rem] font-semibold text-cream transition-colors hover:bg-petrol-700 disabled:opacity-40"
+                              >
+                                Read the roster
+                              </button>
+                            </>
                           )}
-
-                          {centers.fresh > 0 && (
-                            <p className="border-t border-line px-5 py-3 text-[0.8125rem] leading-relaxed text-muted">
-                              {centers.fresh.toLocaleString("en-US")} center
-                              {centers.fresh === 1 ? " is" : "s are"} not in our
-                              index yet. That is normal on a first load and it
-                              is our job, not yours: we add them and begin
-                              watching before abstraction finishes.
+                          {note && (
+                            <p
+                              className={cn(
+                                "text-[0.8125rem]",
+                                note.kind === "ok" ? "text-open-700" : "text-clay-700",
+                              )}
+                            >
+                              {note.message}
                             </p>
                           )}
                         </div>
-                      )}
-
-                      <Note tone="open">
-                        {resolved.length.toLocaleString("en-US")} locations read
-                        {storeEstimate > 0 && (
-                          <>
-                            {" "}
-                            against the {storeEstimate.toLocaleString("en-US")} we
-                            expected.{" "}
-                            {Math.abs(resolved.length - storeEstimate) > storeEstimate * 0.1
-                              ? "That is a wider gap than usual, so it is worth checking the export covered every region."
-                              : "That lines up."}
-                          </>
-                        )}
-                      </Note>
-                    </>
+                      }
+                    />
                   )}
-                </div>
-              )}
-            </TaskShell>
-          )}
+                </DeliveryPicker>
 
-          {open === "leases" && (
-            <TaskShell
-              title="Lease documents"
-              lede="The executed lease and every amendment, for the stores above. Amendments routinely delete, suspend or rewrite co-tenancy, so a lease without them reads as a right that may not exist."
-            >
-              <Choice
-                value={s.leaseDelivery}
-                onChange={(v) => set("leaseDelivery", v)}
-                options={[
-                  {
-                    id: "share",
-                    title: "Share a folder we can pull from",
-                    tag: "Fastest at scale",
-                    blurb:
-                      "SharePoint, Box, Google Drive or an S3 bucket. Read access is enough. For several hundred stores this is the only approach that does not involve someone uploading files for a week.",
-                  },
-                  {
-                    id: "upload",
-                    title: "Upload them here",
-                    blurb:
-                      "Sensible up to a few dozen leases. Drag them in and we match each to a store by store number or center.",
-                  },
-                  {
-                    id: "mail",
-                    title: "Our lease abstractor already has them",
-                    blurb:
-                      "If a third party holds your abstracts, name them and we will request the file directly rather than putting you in the middle.",
-                  },
-                ]}
-              />
+                {s.parsed.length > 0 && (
+                  <>
+                    <Mapping
+                      headers={s.headers}
+                      mapping={s.mapping}
+                      sample={s.parsed[0]}
+                      onChange={(h, v) =>
+                        setS((p) => ({ ...p, mapping: { ...p.mapping, [h]: v } }))
+                      }
+                    />
+                    <IntakeReview
+                      rows={s.parsed}
+                      headers={s.headers}
+                      mapping={s.mapping}
+                    />
+                    {centers && <Centers centers={centers} />}
+                  </>
+                )}
+              </>
+            )}
 
-              <div className="mt-5">
-                <label className="label text-muted">
-                  Where they are, or who holds them
+            {open === "leases" && (
+              <>
+                <DeliveryPicker
+                  only={["share", "system", "sftp", "upload", "email", "courier", "session"]}
+                  value={chan("leases")}
+                  onChange={(c) => setChan("leases", c)}
+                >
+                  {chan("leases") && (
+                    <ChannelDetail
+                      channel={chan("leases")!}
+                      account={clientSlug}
+                      note={chanNote("leases")}
+                      onNote={(v) => setChanNote("leases", v)}
+                      upload={
+                        <FileDrop
+                          onError={(m) => setNote({ kind: "bad", message: m })}
+                          onLoad={(f) =>
+                            setNote({ kind: "ok", message: `${f.name} received.` })
+                          }
+                        />
+                      }
+                    />
+                  )}
+                </DeliveryPicker>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
+                  <input
+                    type="checkbox"
+                    checked={s.leasesConfirmed}
+                    onChange={(e) => set("leasesConfirmed", e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-petrol-600"
+                  />
+                  <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
+                    <span className="font-medium text-ink">
+                      Amendments are included.
+                    </span>{" "}
+                    A lease without them reads as a right that may not exist. We
+                    begin abstracting on this and return only where a document
+                    is missing or a clause is ambiguous.
+                  </span>
                 </label>
-                <textarea
-                  value={s.leaseNote}
-                  onChange={(e) => set("leaseNote", e.target.value)}
-                  rows={3}
-                  placeholder="A folder link, a system name, or the contact who can grant access."
-                  className="mt-2 w-full rounded-xl border border-line bg-surface-sunk p-3.5 text-[0.8125rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+              </>
+            )}
+
+            {open === "record" && (
+              <>
+                <RecordStep
+                  value={s.record}
+                  onChange={(patch) =>
+                    setS((p) => ({ ...p, record: { ...p.record, ...patch } }))
+                  }
                 />
-              </div>
-
-              <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
-                <input
-                  type="checkbox"
-                  checked={s.leasesConfirmed}
-                  onChange={(e) => set("leasesConfirmed", e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-petrol-600"
-                />
-                <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
-                  <span className="font-medium text-ink">
-                    Access is arranged, including amendments.
-                  </span>{" "}
-                  We start abstracting as soon as this is ticked, and we come
-                  back to you only where a document is missing or a clause is
-                  ambiguous.
-                </span>
-              </label>
-            </TaskShell>
-          )}
-
-          {open === "record" && (
-            <TaskShell
-              title="What is already on the record"
-              lede="Answer every line, including not sure. Each of these can defeat a claim that would otherwise stand, and finding out afterward is considerably worse."
-            >
-              <RecordStep
-                value={s.record}
-                onChange={(patch) =>
-                  setS((p) => ({ ...p, record: { ...p.record, ...patch } }))
-                }
-              />
-
-              {s.record.noticeLog === "yes" && (
-                <div className="mt-5">
-                  <h3 className="text-[0.9375rem] font-semibold text-ink">
-                    Send the notice log
-                  </h3>
-                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-muted">
-                    Store, date sent, date received, and what it concerned.
-                    Dates are what matter: several clauses run relief from your
-                    notice rather than from the condition, so a served notice
-                    already on file changes what a store is owed today.
-                  </p>
-                  <FileDrop
-                    className="mt-4"
-                    onError={(m) => setFileNote({ kind: "clay", message: m })}
-                    onLoad={(f: LoadedFile) => {
-                      setS((prev) => ({
-                        ...prev,
-                        noticeRaw: f.text,
-                        noticeFileName: f.name,
-                      }));
-                      setFileNote({
-                        kind: "ok",
-                        message: `${f.name}: ${f.rowCount.toLocaleString("en-US")} notice rows read.`,
-                      });
-                    }}
-                  />
-                  {s.noticeFileName && (
-                    <p className="mt-2 text-[0.75rem] text-open-700">
-                      {s.noticeFileName} received.
+                {s.record.noticeLog === "yes" && (
+                  <div>
+                    <p className="text-[0.8125rem] font-medium text-ink">Notice log</p>
+                    <p className="mt-1 mb-3 text-[0.8125rem] leading-relaxed text-muted">
+                      Store, date sent, date received, subject. Dates decide what
+                      a store is owed today, because several clauses run relief
+                      from the notice rather than from the condition.
                     </p>
-                  )}
-                </div>
-              )}
-            </TaskShell>
-          )}
+                    <FileDrop
+                      onError={(m) => setNote({ kind: "bad", message: m })}
+                      onLoad={(f) => {
+                        setS((p) => ({
+                          ...p,
+                          noticeRaw: f.text,
+                          noticeFileName: f.name,
+                        }));
+                        setNote({ kind: "ok", message: `${f.name} received.` });
+                      }}
+                    />
+                    {s.noticeFileName && (
+                      <p className="mt-2 text-[0.75rem] text-open-700">
+                        {s.noticeFileName} on file.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
 
-          {open === "sales" && (
-            <TaskShell
-              title="Store sales"
-              lede="Sales price a claim; they do not find one. We can watch every store and tell you a right has arisen without them, and we can only tell you what it is worth with them."
-            >
-              <Note tone="petrol">
-                A percentage-of-sales remedy is computed on the month's own
-                sales, not an annual average. In the pilot portfolio a strong
-                December wiped out a saving that the February either side of it
-                paid in full, so monthly figures matter more than a total.
-              </Note>
-
-              <Choice
-                value={s.salesDelivery}
-                onChange={(v) => set("salesDelivery", v)}
-                options={[
-                  {
-                    id: "on_request",
-                    title: "Send them per store, when something triggers",
-                    tag: "Least exposure",
-                    blurb:
-                      "We ask only for the stores where a right has actually arisen. Most stores never trigger, so this keeps portfolio-wide sales out of a vendor's hands entirely.",
-                  },
-                  {
-                    id: "upload",
-                    title: "Upload monthly sales now",
-                    blurb:
-                      "One row per store per month. Pricing is immediate and nothing waits on a request when a clock is already running.",
-                  },
-                  {
-                    id: "feed",
-                    title: "Connect a feed",
-                    blurb:
-                      "A scheduled export from your reporting system. Best where remedies are already running and the figures move every month.",
-                  },
-                ]}
-              />
-
-              {s.salesDelivery === "upload" && (
-                <div className="mt-5 space-y-4">
-                  <FileDrop
-                    onError={(m) => setFileNote({ kind: "clay", message: m })}
-                    onLoad={(f: LoadedFile) => {
-                      setS((prev) => ({
-                        ...prev,
-                        salesRaw: f.text,
-                        salesFileName: f.name,
-                        salesRowCount: f.rowCount,
-                      }));
-                      setFileNote({
-                        kind: "ok",
-                        message: `${f.name}: ${f.rowCount.toLocaleString("en-US")} sales rows read.`,
-                      });
-                    }}
+            {open === "sales" && (
+              <>
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
+                  <input
+                    type="checkbox"
+                    checked={s.salesDeferred}
+                    onChange={(e) => set("salesDeferred", e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-petrol-600"
                   />
-                  <p className="text-[0.75rem] leading-relaxed text-muted">
-                    Store number, month, gross sales. Any column order, any date
-                    format we can read.
-                  </p>
-                </div>
-              )}
+                  <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
+                    <span className="font-medium text-ink">
+                      Send per store, only when a right arises.
+                    </span>{" "}
+                    Sales price a claim rather than find one, and most stores
+                    never trigger. This keeps portfolio-wide figures out of a
+                    vendor&#8217;s hands.
+                  </span>
+                </label>
 
-              {s.salesRowCount > 0 && (
-                <Note tone="open">
-                  {s.salesFileName}: {s.salesRowCount.toLocaleString("en-US")}{" "}
-                  rows held for pricing.
-                </Note>
-              )}
-            </TaskShell>
-          )}
+                {!s.salesDeferred && (
+                  <DeliveryPicker
+                    only={["system", "sftp", "upload", "email"]}
+                    value={chan("sales")}
+                    onChange={(c) => setChan("sales", c)}
+                  >
+                    {chan("sales") && (
+                      <ChannelDetail
+                        channel={chan("sales")!}
+                        account={clientSlug}
+                        note={chanNote("sales")}
+                        onNote={(v) => setChanNote("sales", v)}
+                        upload={
+                          <FileDrop
+                            onError={(m) => setNote({ kind: "bad", message: m })}
+                            onLoad={(f) => {
+                              setS((p) => ({
+                                ...p,
+                                salesRaw: f.text,
+                                salesFileName: f.name,
+                                salesRowCount: f.rowCount,
+                              }));
+                              setNote({
+                                kind: "ok",
+                                message: `${f.name}: ${f.rowCount.toLocaleString("en-US")} rows.`,
+                              });
+                            }}
+                          />
+                        }
+                      />
+                    )}
+                  </DeliveryPicker>
+                )}
 
-          {open === "priorities" && (
-            <TaskShell
-              title="Where we start"
-              lede="Abstracting a large portfolio takes time. Telling us where the trouble already is means the first answers land in weeks rather than at the end."
-            >
+                <p className="text-[0.75rem] leading-relaxed text-muted">
+                  One row per store per month. A percentage-of-sales remedy is
+                  computed on the month&#8217;s own sales, so monthly figures
+                  matter more than a total.
+                </p>
+              </>
+            )}
+
+            {open === "priorities" && (
               <TriageStep
                 mode={s.triageMode}
                 note={s.triageNote}
@@ -626,34 +524,29 @@ export function OnboardingWorkspace({
                 onMode={(v) => set("triageMode", v)}
                 onNote={(v) => set("triageNote", v)}
               />
-            </TaskShell>
-          )}
+            )}
 
-          {open === "people" && (
-            <TaskShell
-              title="People and authority"
-              lede="We assemble a notice package. Your authorized signatory serves it. Deciding who that is now rather than against a cure deadline is worth more than it sounds."
-            >
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            {open === "people" && (
+              <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   label="Authorized signatory"
-                  hint="Who signs a co-tenancy notice."
                   value={s.signatory}
                   onChange={(v) => set("signatory", v)}
                   placeholder="Name"
+                  hint="We assemble a notice; they serve it."
                 />
                 <Field
-                  label="Their title"
+                  label="Title"
                   value={s.signatoryTitle}
                   onChange={(v) => set("signatoryTitle", v)}
                   placeholder="VP, Real Estate"
                 />
                 <Field
                   label="Counsel of record"
-                  hint="Who reviews before anything is served."
                   value={s.counselName}
                   onChange={(v) => set("counselName", v)}
                   placeholder="Name or firm"
+                  hint="Reviews before anything is served."
                 />
                 <Field
                   label="Counsel email"
@@ -661,97 +554,77 @@ export function OnboardingWorkspace({
                   onChange={(v) => set("counselEmail", v)}
                   placeholder="name@firm.com"
                 />
+                <div className="sm:col-span-2">
+                  <Field
+                    label="Notify on a finding"
+                    value={s.notifyEmails}
+                    onChange={(v) => set("notifyEmails", v)}
+                    placeholder="realestate@company.com, leaseadmin@company.com"
+                    hint="Comma separated."
+                  />
+                </div>
               </div>
+            )}
 
-              <div className="mt-4">
-                <Field
-                  label="Who else hears about a finding"
-                  hint="Comma separated. These are the people a trigger notification reaches."
-                  value={s.notifyEmails}
-                  onChange={(v) => set("notifyEmails", v)}
-                  placeholder="realestate@company.com, leaseadmin@company.com"
-                />
-              </div>
-            </TaskShell>
-          )}
-
-          {open === "watch" && (
-            <TaskShell
-              title="Watch preferences"
-              lede="Defaults are set. Change them if your leases or your appetite call for something else."
-            >
-              <Choice
-                value={s.cadence}
-                onChange={(v) => set("cadence", v)}
-                options={[
-                  {
-                    id: "weekly",
-                    title: "Weekly",
-                    tag: "Default",
-                    blurb:
-                      "A sweep every week. Cure periods are usually measured in months, so a week keeps the clock honest without noise.",
-                  },
-                  {
-                    id: "biweekly",
-                    title: "Every two weeks",
-                    blurb: "Lower volume of updates, and a slower first signal.",
-                  },
-                  {
-                    id: "monthly",
-                    title: "Monthly",
-                    blurb:
-                      "Only sensible where every clause in your portfolio runs a long qualifying period.",
-                  },
-                ]}
-              />
-
-              <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
-                <input
-                  type="checkbox"
-                  checked={s.fieldVisits}
-                  onChange={(e) => set("fieldVisits", e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-petrol-600"
-                />
-                <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
-                  <span className="font-medium text-ink">
-                    Send someone to the premises before a notice.
-                  </span>{" "}
-                  A directory listing is a signal. A dated photograph is
-                  evidence, and it is what a package rests on.
-                </span>
-              </label>
-            </TaskShell>
-          )}
-
-          {/* ---- what is outstanding ---- */}
-          <Panel>
-            <h3 className="text-[0.9375rem] font-semibold text-ink">
-              Outstanding
-            </h3>
-            <ul className="mt-3 space-y-2">
-              {TASKS.filter((t) => statusOf(s, t.id) !== "complete").map((t) => (
-                <li key={t.id} className="flex items-start gap-2.5">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brass-500" />
-                  <p className="text-[0.8125rem] text-ink-soft">
+            {open === "watch" && (
+              <div className="space-y-4">
+                <div className="overflow-hidden rounded-xl border border-line">
+                  {(
+                    [
+                      ["weekly", "Weekly", "Cure periods run in months. A week keeps the clock honest."],
+                      ["biweekly", "Every two weeks", "Fewer updates, slower first signal."],
+                      ["monthly", "Monthly", "Only where every clause runs a long qualifying period."],
+                    ] as const
+                  ).map(([id, label, why]) => (
                     <button
+                      key={id}
                       type="button"
-                      onClick={() => setOpen(t.id)}
-                      className="font-medium text-ink underline underline-offset-2 hover:text-petrol-700"
+                      onClick={() => set("cadence", id)}
+                      className={cn(
+                        "flex w-full items-start gap-3 border-b border-line px-4 py-3 text-left transition-colors last:border-0",
+                        s.cadence === id ? "bg-petrol-50" : "hover:bg-surface-sunk",
+                      )}
                     >
-                      {t.title}
-                    </button>{" "}
-                    {t.why}
-                  </p>
-                </li>
-              ))}
-              {TASKS.every((t) => statusOf(s, t.id) === "complete") && (
-                <li className="text-[0.8125rem] text-muted">
-                  Nothing outstanding. Your account manager has been notified
-                  and abstraction begins on the priority cohort.
-                </li>
-              )}
-            </ul>
-          </Panel>
+                      <span
+                        className={cn(
+                          "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border",
+                          s.cadence === id
+                            ? "border-petrol-600 bg-petrol-600 text-cream"
+                            : "border-line",
+                        )}
+                      >
+                        {s.cadence === id && <Check className="h-2.5 w-2.5" />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[0.8125rem] font-medium text-ink">
+                          {label}
+                        </span>
+                        <span className="mt-0.5 block text-[0.75rem] text-muted">
+                          {why}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
+                  <input
+                    type="checkbox"
+                    checked={s.fieldVisits}
+                    onChange={(e) => set("fieldVisits", e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-petrol-600"
+                  />
+                  <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
+                    <span className="font-medium text-ink">
+                      Send someone to the premises before a notice.
+                    </span>{" "}
+                    A directory listing is a signal. A dated photograph is what a
+                    package rests on.
+                  </span>
+                </label>
+              </div>
+            )}
+          </div>
         </main>
       </div>
     </div>
@@ -762,23 +635,23 @@ export function OnboardingWorkspace({
    pieces
    ------------------------------------------------------------------ */
 
-function TaskShell({
-  title,
-  lede,
-  children,
-}: {
-  title: string;
-  lede: string;
-  children: React.ReactNode;
-}) {
+function Figure({ k, v, tone }: { k: string; v: string; tone?: "open" | "watch" }) {
   return (
-    <Panel>
-      <h2 className="text-[1.125rem] font-semibold text-ink">{title}</h2>
-      <p className="mt-1.5 max-w-2xl text-[0.875rem] leading-relaxed text-muted">
-        {lede}
-      </p>
-      {children}
-    </Panel>
+    <div>
+      <dt className="label text-faint">{k}</dt>
+      <dd
+        className={cn(
+          "tnum mt-0.5 text-[1.0625rem] font-semibold",
+          tone === "open"
+            ? "text-open-700"
+            : tone === "watch"
+              ? "text-brass-700"
+              : "text-ink",
+        )}
+      >
+        {v}
+      </dd>
+    </div>
   );
 }
 
@@ -802,9 +675,50 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-2 w-full rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[0.875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+        className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2 text-[0.875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
       />
-      {hint && <p className="mt-1.5 text-[0.75rem] text-muted">{hint}</p>}
+      {hint && <p className="mt-1 text-[0.75rem] text-muted">{hint}</p>}
+    </div>
+  );
+}
+
+function Centers({ centers }: { centers: ReturnType<typeof resolveAll> }) {
+  const review = centers.rows.filter((r) => r.result.status === "review");
+  return (
+    <div className="overflow-hidden rounded-xl border border-line">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3">
+        <h3 className="text-[0.875rem] font-semibold text-ink">Centers</h3>
+        <p className="tnum text-[0.75rem] text-muted">
+          {centers.matched} matched · {centers.review} to confirm · {centers.fresh} new
+        </p>
+      </div>
+      {review.length > 0 && (
+        <ul className="divide-y divide-line">
+          {review.slice(0, 6).map((r) => (
+            <li key={r.row} className="px-4 py-2.5">
+              <p className="text-[0.8125rem] text-ink">
+                <span className="font-medium">Row {r.row}</span> &#8220;{r.supplied}&#8221;
+              </p>
+              <p className="mt-0.5 text-[0.75rem] leading-snug text-muted">
+                {r.result.why}
+              </p>
+              {r.result.status === "review" && (
+                <p className="mt-1 text-[0.75rem] text-ink-soft">
+                  {r.result.candidates
+                    .map((c) => `${c.name} (${c.city}, ${c.state})`)
+                    .join(" · ")}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {centers.fresh > 0 && (
+        <p className="border-t border-line px-4 py-2.5 text-[0.75rem] leading-relaxed text-muted">
+          {centers.fresh} not in our index. We add them and begin watching.
+          Nothing for you to do.
+        </p>
+      )}
     </div>
   );
 }
@@ -822,56 +736,53 @@ function Mapping({
 }) {
   const matched = Object.values(mapping).filter((v) => v !== "ignore").length;
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-      <div className="border-b border-line px-5 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-[0.9375rem] font-semibold text-ink">
-            Column mapping
-          </h3>
-          <Pill tone={(matched === headers.length ? "open" : "watch") as Tone}>
-            {matched} of {headers.length} matched
-          </Pill>
-        </div>
-        <p className="mt-1 text-[0.8125rem] text-muted">
-          Your header on the left, ours on the right. Change anything we read
-          wrong and ignore what you do not need.
+    <div className="overflow-hidden rounded-xl border border-line">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3">
+        <h3 className="text-[0.875rem] font-semibold text-ink">Columns</h3>
+        <p className="tnum text-[0.75rem] text-muted">
+          {matched} of {headers.length} mapped
         </p>
       </div>
-      <ul className="max-h-[22rem] divide-y divide-line overflow-y-auto">
-        {headers.map((h) => {
-          const value = mapping[h] ?? "ignore";
-          return (
-            <li key={h} className="flex flex-wrap items-center gap-3 px-5 py-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-mono text-[0.8125rem] font-medium text-ink">
-                  {h}
-                </p>
-                <p className="truncate text-[0.75rem] text-muted">
-                  {sample?.[h] || "empty"}
-                </p>
-              </div>
-              <select
-                value={value}
-                onChange={(e) => onChange(h, e.target.value as FieldKey)}
-                className={cn(
-                  "min-w-[190px] rounded-lg border px-3 py-2 text-[0.8125rem] font-medium focus:outline-none",
-                  value === "ignore"
-                    ? "border-line bg-surface-sunk text-muted"
-                    : "border-petrol-300 bg-petrol-50 text-petrol-800",
-                )}
-              >
-                <option value="ignore">Ignore this column</option>
-                {FIELDS.map((f) => (
-                  <option key={f.key} value={f.key}>
-                    {f.label}
-                    {f.required ? " (required)" : ""}
-                  </option>
-                ))}
-              </select>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="max-h-72 overflow-y-auto">
+        <table className="w-full border-collapse text-left">
+          <tbody className="divide-y divide-line">
+            {headers.map((h) => {
+              const value = mapping[h] ?? "ignore";
+              return (
+                <tr key={h}>
+                  <td className="px-4 py-2 align-middle">
+                    <p className="font-mono text-[0.75rem] font-medium text-ink">
+                      {h}
+                    </p>
+                    <p className="truncate text-[0.6875rem] text-muted">
+                      {sample?.[h] || "empty"}
+                    </p>
+                  </td>
+                  <td className="px-4 py-2 text-right align-middle">
+                    <select
+                      value={value}
+                      onChange={(e) => onChange(h, e.target.value as FieldKey)}
+                      className={cn(
+                        "min-w-[11rem] rounded-md border px-2 py-1.5 text-[0.75rem] font-medium focus:outline-none",
+                        value === "ignore"
+                          ? "border-line bg-surface-sunk text-muted"
+                          : "border-petrol-200 bg-petrol-50 text-petrol-800",
+                      )}
+                    >
+                      <option value="ignore">Ignore</option>
+                      {FIELDS.map((f) => (
+                        <option key={f.key} value={f.key}>
+                          {f.label}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

@@ -1,15 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import { AlertTriangle, CheckCircle2, Download, XCircle } from "lucide-react";
+import { Download } from "lucide-react";
 import type { FieldKey, ParsedRow } from "@/lib/ingest";
 import { FIELDS } from "@/lib/ingest";
-import {
-  type Issue,
-  intakeTemplateCsv,
-  issuesCsv,
-  validateIntake,
-} from "@/lib/intake";
+import { type Issue, issuesCsv, validateIntake } from "@/lib/intake";
 import { cn } from "@/lib/cn";
 
 /**
@@ -38,24 +33,6 @@ function download(name: string, body: string, type = "text/csv") {
   a.download = name;
   a.click();
   URL.revokeObjectURL(url);
-}
-
-export function TemplateButton({ className }: { className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={() => download("breakpoint-store-roster-template.csv", intakeTemplateCsv())}
-      className={cn(
-        "inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-4 py-2.5",
-        "text-[0.8125rem] font-semibold whitespace-nowrap text-ink transition-colors duration-250",
-        "hover:border-petrol-300 hover:bg-petrol-50",
-        className,
-      )}
-    >
-      <Download className="h-3.5 w-3.5" />
-      Download the template
-    </button>
-  );
 }
 
 export function IntakeReview({
@@ -96,72 +73,35 @@ export function IntakeReview({
   if (rows.length === 0) return null;
 
   return (
-    <div className="space-y-4">
-      {/* ---- the three counts ---- */}
-      <div className="grid gap-3 sm:grid-cols-3">
+    <div className="space-y-3">
+      {/* ---- the three counts, as one line ---- */}
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 rounded-xl border border-line px-4 py-3">
         {(
           [
-            ["Ready", report.ready, CheckCircle2, "open"],
-            ["Loaded with notes", report.withWarnings, AlertTriangle, "watch"],
-            ["Held", report.held, XCircle, "clay"],
+            ["Ready", report.ready, "text-open-700"],
+            ["Noted", report.withWarnings, "text-brass-700"],
+            ["Held", report.held, report.held > 0 ? "text-clay-700" : "text-faint"],
           ] as const
-        ).map(([label, n, Icon, tone]) => (
-          <div
-            key={label}
-            className={cn(
-              "rounded-2xl border p-4",
-              tone === "open"
-                ? "border-open-100 bg-open-50"
-                : tone === "watch"
-                  ? "border-brass-200 bg-brass-50"
-                  : n > 0
-                    ? "border-clay-100 bg-clay-50"
-                    : "border-line bg-surface",
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <Icon
-                className={cn(
-                  "h-4 w-4",
-                  tone === "open"
-                    ? "text-open-700"
-                    : tone === "watch"
-                      ? "text-brass-700"
-                      : n > 0
-                        ? "text-clay-700"
-                        : "text-faint",
-                )}
-              />
-              <span className="label text-muted">{label}</span>
-            </div>
-            <p className="tnum font-display mt-2 text-[1.75rem] leading-none text-ink">
+        ).map(([label, n, tone]) => (
+          <div key={label} className="flex items-baseline gap-2">
+            <span className="label text-faint">{label}</span>
+            <span className={cn("tnum text-[0.9375rem] font-semibold", tone)}>
               {n.toLocaleString("en-US")}
-            </p>
-            <p className="mt-1 text-[0.75rem] text-muted">
-              {label === "Ready"
-                ? "Nothing outstanding"
-                : label === "Loaded with notes"
-                  ? "In, with gaps recorded"
-                  : n > 0
-                    ? "Cannot be placed yet"
-                    : "Nothing held"}
-            </p>
+            </span>
           </div>
         ))}
+        <span className="text-[0.75rem] text-muted">
+          of {report.totalRows.toLocaleString("en-US")} rows
+        </span>
       </div>
 
       {/* ---- what to fix ---- */}
       {grouped.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
-            <div>
-              <p className="text-[0.9375rem] font-semibold text-ink">
-                {grouped.length} thing{grouped.length === 1 ? "" : "s"} to look at
-              </p>
-              <p className="mt-1 text-[0.8125rem] text-muted">
-                Grouped, so a column missing on six hundred rows reads as one fix.
-              </p>
-            </div>
+        <div className="overflow-hidden rounded-xl border border-line">
+          <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3">
+            <h3 className="text-[0.875rem] font-semibold text-ink">
+              {grouped.length} to look at
+            </h3>
             {report.held > 0 && (
               <button
                 type="button"
@@ -171,11 +111,15 @@ export function IntakeReview({
                     issuesCsv(rows, headers, report),
                   )
                 }
-                className="inline-flex items-center gap-2 rounded-lg bg-petrol-800 px-4 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap text-cream transition-colors duration-250 hover:bg-petrol-700"
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.75rem] font-semibold whitespace-nowrap transition-colors duration-250",
+                  report.held > 20
+                    ? "bg-petrol-800 text-cream hover:bg-petrol-700"
+                    : "border border-line text-ink hover:border-petrol-300 hover:bg-petrol-50",
+                )}
               >
-                <Download className="h-3.5 w-3.5" />
-                Download the {report.held} held row
-                {report.held === 1 ? "" : "s"}
+                <Download className="h-3 w-3" />
+                Return {report.held} row{report.held === 1 ? "" : "s"}
               </button>
             )}
           </div>
@@ -184,7 +128,7 @@ export function IntakeReview({
             {grouped.map(({ issue, count, rows: where }) => (
               <li
                 key={`${issue.field}-${issue.message}`}
-                className="flex flex-wrap items-start gap-3 px-5 py-3.5"
+                className="flex flex-wrap items-start gap-3 px-4 py-2.5"
               >
                 <span
                   className={cn(
@@ -193,11 +137,11 @@ export function IntakeReview({
                   )}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.875rem] text-ink">
+                  <p className="text-[0.8125rem] leading-snug text-ink">
                     <span className="font-medium">{labelOf(issue.field)}.</span>{" "}
                     {issue.message}
                   </p>
-                  <p className="mt-0.5 text-[0.75rem] text-muted">
+                  <p className="mt-0.5 text-[0.6875rem] text-muted">
                     {count === 1
                       ? `Row ${where[0]}`
                       : `${count.toLocaleString("en-US")} rows, including ${where.slice(0, 4).join(", ")}`}
@@ -205,7 +149,7 @@ export function IntakeReview({
                 </div>
                 <span
                   className={cn(
-                    "shrink-0 rounded-md px-2 py-1 text-[0.6875rem] font-semibold ring-1 ring-inset",
+                    "shrink-0 rounded px-1.5 py-0.5 text-[0.625rem] font-semibold ring-1 ring-inset",
                     issue.severity === "error"
                       ? "bg-clay-50 text-clay-700 ring-clay-100"
                       : "bg-brass-50 text-brass-700 ring-brass-200",
@@ -221,7 +165,7 @@ export function IntakeReview({
 
       {/* ---- what we fixed ourselves ---- */}
       {report.repairs.length > 0 && (
-        <div className="rounded-xl border border-open-100 bg-open-50 p-4">
+        <div className="rounded-xl border border-line px-4 py-3">
           <p className="text-[0.8125rem] font-semibold text-open-700">
             {report.repairs.length} corrected on the way in
           </p>
@@ -238,7 +182,7 @@ export function IntakeReview({
 
       {/* ---- columns we never saw, and who solves each ---- */}
       {report.missingFields.length > 0 && (
-        <div className="rounded-xl border border-line bg-surface-sunk p-4">
+        <div className="rounded-xl border border-line px-4 py-3">
           <p className="text-[0.8125rem] font-semibold text-ink">
             Not in this file
           </p>

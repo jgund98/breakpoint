@@ -65,7 +65,9 @@ const openTask = (title) =>
 
 const progress = async () => {
   const t = await body();
-  const m = /(\d+) of (\d+) complete/.exec(t);
+  const i = t.toLowerCase().indexOf("complete");
+  if (i < 0) return "—";
+  const m = /(\d+) of (\d+)/.exec(t.slice(i, i + 60));
   return m ? `${m[1]} of ${m[2]}` : "—";
 };
 
@@ -74,13 +76,13 @@ await page.goto(`${BASE}/onboarding?client=Abercrombie%20%26%20Fitch&stores=830`
 });
 
 /* Start from a known state. */
-await clickText("Clear everything");
+await clickText("Clear", true);
 await pause(400);
 
 const tasks = await page.evaluate(() =>
   [...document.querySelectorAll("aside button")]
     .map((b) => (b.textContent || "").replace(/\s+/g, " ").trim())
-    .filter((t) => t && !/clear everything/i.test(t)),
+    .filter((t) => t && !/^clear$/i.test(t)),
 );
 console.log(`tasks on the board: ${tasks.length}`);
 tasks.forEach((t) => console.log(`  - ${t}`));
@@ -89,17 +91,10 @@ console.log(`progress at start: ${await progress()}`);
 /* ---- portfolio ---- */
 await openTask("Store portfolio");
 await pause();
-await clickText("A spreadsheet we maintain");
+await clickText("Paste it");
 await pause();
-await page.evaluate(() => {
-  const d = [...document.querySelectorAll("details")].find((x) =>
-    /paste it instead/i.test(x.textContent || ""),
-  );
-  if (d) d.open = true;
-});
-await pause(250);
 await page.evaluate((v) => {
-  const t = document.querySelector("details textarea");
+  const t = document.querySelector("textarea");
   Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(t, v);
   t.dispatchEvent(new Event("input", { bubbles: true }));
 }, ROSTER);
@@ -108,24 +103,23 @@ await clickText("Read the roster");
 await pause(900);
 
 const afterRoster = await body();
-const held = /Held\s*\n\s*([\d,]+)/.exec(afterRoster);
-const mapped = /(\d+) of (\d+) matched/.exec(afterRoster);
-console.log(`\nroster: ${mapped ? mapped[0] : "no mapping shown"}, held ${held ? held[1] : "—"} (want 2)`);
-console.log(`against expectation: ${/we expected/.test(afterRoster) ? "compared" : "not compared"}`);
-const grab = (label) => {
-  /* innerText upper-cases these labels via CSS, so match loosely and
-     take the first number that follows. */
-  const i = afterRoster.toLowerCase().indexOf(label.toLowerCase());
-  if (i < 0) return "-";
-  const m = /(\d[\d,]*)/.exec(afterRoster.slice(i + label.length, i + label.length + 40));
-  return m ? m[1] : "-";
-};
-const ci = afterRoster.indexOf("Centers");
-console.log("--- centers panel text ---");
-console.log(ci>=0 ? afterRoster.slice(ci, ci+340) : "PANEL NOT RENDERED");
-console.log(
-  `centers: resolved ${grab("Resolved")}, review ${grab("Need a person")}, new ${grab("New to us")}`,
-);
+const held = /Held\s*\n\s*([\d,]+)/i.exec(afterRoster);
+const mapped = /(\d+) of (\d+) mapped/.exec(afterRoster);
+const cm = /(\d+) matched . (\d+) to confirm . (\d+) new/.exec(afterRoster);
+const received = (() => {
+  const i = afterRoster.toLowerCase().indexOf("received");
+  if (i < 0) return "—";
+  const m = /(\d[\d,]*)/.exec(afterRoster.slice(i + 8, i + 40));
+  return m ? m[1] : "—";
+})();
+
+console.log(`\ncolumns: ${mapped ? mapped[0] : "NOT SHOWN"}`);
+/* One: the duplicate store number, which is the only fault left that we
+   cannot resolve ourselves. The unreadable state code is a warning now,
+   because an address gives us the state without asking. */
+console.log(`held rows: ${held ? held[1] : "—"} (want 1)`);
+console.log(`header received: ${received}`);
+console.log(`centers: ${cm ? cm[0] : "NOT SHOWN"}`);
 
 /* ---- the record ---- */
 await openTask("already on the record");
@@ -139,7 +133,7 @@ const answered = await page.evaluate(() => {
 });
 await pause(500);
 console.log(`record rows answered: ${answered} (want 5)`);
-console.log(`notice log upload appeared: ${/Send the notice log/.test(await body()) ? "yes" : "no"}`);
+console.log(`notice log upload appeared: ${/Notice log/.test(await body()) ? "yes" : "no"}`);
 
 /* ---- priorities ---- */
 await openTask("Where we start");
@@ -193,11 +187,11 @@ await pause(800);
 const after = await progress();
 const t2 = await body();
 console.log(`progress after reload:  ${after}`);
-console.log(`saved indicator: ${/Saved \d/.test(t2) || /Saves as you go/.test(t2) ? "shown" : "missing"}`);
+console.log(`saved indicator: ${/last at \d/.test(t2) || /Saved in this browser/.test(t2) ? "shown" : "missing"}`);
 
 await openTask("Store portfolio");
 await pause(600);
-const keptRoster = /matched/.test(await body());
+const keptRoster = /of \d+ mapped/.test(await body());
 console.log(`roster survived reload: ${keptRoster ? "yes" : "NO"}`);
 
 console.log(`\nconsole errors: ${errors.length}`);

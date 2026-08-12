@@ -18,7 +18,8 @@
  */
 
 import type { FieldKey, ParsedRow } from "./ingest";
-import type { Held, SourceMode, TriageMode } from "@/components/onboarding/ExtraSteps";
+import type { Held, TriageMode } from "@/components/onboarding/ExtraSteps";
+import type { ChannelId } from "@/components/onboarding/Delivery";
 
 export type TaskId =
   | "portfolio"
@@ -34,8 +35,14 @@ export type OnboardingState = {
   version: 1;
   updatedAt: string;
 
+  /**
+   * How each body of data is reaching us, and any detail that route
+   * needs. One shape for all of them, because a client who sends the
+   * roster on SFTP will usually send the leases the same way.
+   */
+  channels: Partial<Record<TaskId, { channel: ChannelId | null; note: string }>>;
+
   /* portfolio */
-  source: SourceMode | null;
   leaseAdminSystem: string;
   raw: string;
   fileName: string;
@@ -44,12 +51,11 @@ export type OnboardingState = {
   mapping: Record<string, FieldKey>;
 
   /* leases */
-  leaseDelivery: "upload" | "share" | "mail" | null;
-  leaseNote: string;
+  leaseCount: number;
   leasesConfirmed: boolean;
 
   /* sales, which price a claim rather than find one */
-  salesDelivery: "upload" | "feed" | "on_request" | null;
+  salesDeferred: boolean;
   salesRaw: string;
   salesFileName: string;
   salesRowCount: number;
@@ -86,17 +92,16 @@ export type OnboardingState = {
 export const emptyOnboarding: OnboardingState = {
   version: 1,
   updatedAt: "",
-  source: null,
+  channels: {},
   leaseAdminSystem: "",
   raw: "",
   fileName: "",
   headers: [],
   parsed: [],
   mapping: {},
-  leaseDelivery: null,
-  leaseNote: "",
+  leaseCount: 0,
   leasesConfirmed: false,
-  salesDelivery: null,
+  salesDeferred: false,
   salesRaw: "",
   salesFileName: "",
   salesRowCount: 0,
@@ -182,6 +187,12 @@ export const TASKS: TaskMeta[] = [
   },
 ];
 
+/** Has a route in been picked for this task? */
+export function chosen(s: OnboardingState, id: TaskId) {
+  const c = s.channels[id];
+  return Boolean(c?.channel);
+}
+
 export function statusOf(s: OnboardingState, id: TaskId): TaskStatus {
   const some = (...vals: unknown[]) =>
     vals.some((v) => v !== null && v !== "" && v !== false);
@@ -189,14 +200,13 @@ export function statusOf(s: OnboardingState, id: TaskId): TaskStatus {
   switch (id) {
     case "portfolio":
       if (s.parsed.length > 0) return "complete";
-      return some(s.source, s.raw) ? "in_progress" : "not_started";
+      return chosen(s, "portfolio") ? "in_progress" : "not_started";
     case "leases":
       if (s.leasesConfirmed) return "complete";
-      return some(s.leaseDelivery, s.leaseNote) ? "in_progress" : "not_started";
+      return chosen(s, "leases") ? "in_progress" : "not_started";
     case "sales":
-      if (s.salesDelivery === "on_request") return "complete";
-      if (s.salesRowCount > 0) return "complete";
-      return s.salesDelivery ? "in_progress" : "not_started";
+      if (s.salesDeferred || s.salesRowCount > 0) return "complete";
+      return chosen(s, "sales") ? "in_progress" : "not_started";
     case "record": {
       const answered = Object.values(s.record).filter((v) => v !== null).length;
       if (answered === 5) return "complete";
