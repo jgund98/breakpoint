@@ -156,15 +156,45 @@ const sub = await page.evaluate(async (mark) => {
 }, MARK);
 check(`onboarding submission accepted (${sub})`, sub === 200);
 
-/* ================= 3a. HQ: the level above the clients ================= */
+/* ================= 3a. HQ: the whole company ================= */
 console.log("--- HQ (/admin) ---");
 await page.goto(`${BASE}/admin`, { waitUntil: "networkidle0" });
 await pause(1000);
 const hq = await body();
-check("HQ shows the client roster", /Open the board/.test(hq) && /Abercrombie/.test(hq));
+check(
+  "HQ shows the registry with company stats",
+  /Locations under watch/i.test(hq) && /Abercrombie/.test(hq),
+);
 check("submission visible as a work order", new RegExp(MARK + " Client").test(hq));
 check("system canon present at HQ", /Never fuzzy-match a tenant name/.test(hq));
-check("client-only rules NOT at HQ", !/only this client/i.test(hq));
+
+/* the registry is searchable */
+const setSearch = (value) =>
+  page.evaluate((v) => {
+    const input = [...document.querySelectorAll("input")].find((i) =>
+      (i.placeholder || "").includes("Find a client"),
+    );
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+    set.call(input, v);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }, value);
+await setSearch("zzz-no-such-client");
+await pause(300);
+check("roster search filters", /No clients match/.test(await body()));
+await setSearch("");
+await pause(300);
+
+/* a submission is promoted into a client account */
+await clickText("Create the account");
+await pause(1200);
+const { rows: newOrg } = await sql.query(
+  `select status from org where slug = 'probe-client'`,
+);
+check(
+  "submission promoted to an org (status onboarding)",
+  newOrg.length === 1 && newOrg[0].status === "onboarding",
+);
+check("new client appears on the roster", new RegExp(MARK + " Client").test(await body()));
 
 /* the global directive editor writes from HQ */
 await page.evaluate((mark) => {
@@ -187,7 +217,17 @@ check(
   dir.length === 1 && dir[0].scope === "global",
 );
 
-/* ================= 3b. the client board ================= */
+/* ================= 3b. the new client's setup-state board ================= */
+console.log("--- setup board (/admin/clients/probe-client) ---");
+await page.goto(`${BASE}/admin/clients/probe-client`, { waitUntil: "networkidle0" });
+await pause(1000);
+const setup = await body();
+check(
+  "setup board renders before any portfolio exists",
+  /Open requests/i.test(setup) && /awaiting portfolio import/i.test(setup),
+);
+
+/* ================= 3c. the pilot client's board ================= */
 console.log("--- client board (/admin/clients/abercrombie-fitch) ---");
 await page.goto(`${BASE}/admin/clients/abercrombie-fitch`, {
   waitUntil: "networkidle0",
@@ -256,12 +296,14 @@ const doc = await page.evaluate(async (mark) => {
     }),
     mark + "-lease.pdf",
   );
+  fd.append("org", "abercrombie-fitch");
   fd.append("locationRef", "AF-1126");
   fd.append("kind", "lease");
   const up = await fetch("/admin/api/documents", { method: "POST", body: fd });
-  const listRes = await fetch("/admin/api/documents?location=AF-1126", {
-    cache: "no-store",
-  });
+  const listRes = await fetch(
+    "/admin/api/documents?org=abercrombie-fitch&location=AF-1126",
+    { cache: "no-store" },
+  );
   const list = listRes.ok ? await listRes.json() : { documents: [] };
   const mine = list.documents.find((d) => d.filename === mark + "-lease.pdf");
   let viewOk = false;
@@ -293,6 +335,7 @@ for (const [label, q, args] of [
   ["center_source", `delete from center_source where url = 'https://probe.example/directory'`, []],
   ["agent_directive", `delete from agent_directive where body like $1`, [MARK + "%"]],
   ["lease_document", `delete from lease_document where filename like $1`, [MARK + "%"]],
+  ["org", `delete from org where slug = 'probe-client'`, []],
 ]) {
   const r = await sql.query(q, args);
   cleaned.push(`${label}:${r.rowCount}`);

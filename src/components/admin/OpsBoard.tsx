@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Check, ChevronDown, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ActionButton, Pill, type Tone } from "@/components/app/ui";
+import { Section, StatStrip, StatTile, SearchInput } from "@/components/admin/ui";
 import { scanSheetHtml } from "@/lib/scan-sheet";
-import { DirectiveEditor, type Directive } from "@/components/admin/Directives";
 
 /**
  * ONE CLIENT'S OPERATIONS BOARD
@@ -14,14 +14,14 @@ import { DirectiveEditor, type Directive } from "@/components/admin/Directives";
  * the scan schedule the org inherits, the exceptions per location, the
  * Places id for each storefront, the directory links a scan reads for
  * each center, and the lease papers each location's record is extracted
- * from. It is also the queue of everything this client has asked for
- * from inside the workspace. System-wide concerns — the roster, new
- * onboarding submissions, the global agent canon — live at /admin.
+ * from. It is also the queue of everything this client has asked for.
+ * Company-wide concerns — the registry, submissions, the agent canon —
+ * live at /admin.
  *
- * The design rule is exceptions-only. At a thousand stores nobody edits
- * a thousand rows: the org schedule covers everyone, sources attach to
- * centers rather than stores, and the board leads with the gaps —
- * what is missing, what is due, what a client is waiting on.
+ * The design rule is exceptions-only, because clients arrive with
+ * hundreds or thousands of stores: the org schedule covers everyone,
+ * sources attach to centers rather than stores, the table is searchable
+ * and filterable to exceptions, and the board leads with the gaps.
  */
 
 export type LocationSnapshot = {
@@ -85,6 +85,10 @@ const KIND_LABEL: Record<string, string> = {
   closure_report: "Closure report",
   estoppel_review: "Estoppel review",
 };
+
+/* Show this many rows before asking for a narrower search: a
+   thousand-store client must not render a thousand expandable rows. */
+const MAX_ROWS = 200;
 
 const fmtSize = (n: number) =>
   n >= 1024 * 1024
@@ -189,23 +193,31 @@ function ScheduleEditor({
    ------------------------------------------------------------------ */
 
 export function OpsBoard({
+  orgSlug,
   orgName,
+  hasPortfolio,
   locations,
 }: {
+  orgSlug: string;
   orgName: string;
+  /** False while the client's roster is not yet imported into the engine. */
+  hasPortfolio: boolean;
   locations: LocationSnapshot[];
 }) {
   const [orgSchedule, setOrgSchedule] = useState<Schedule | null>(null);
   const [configs, setConfigs] = useState<Map<string, LocationConfig>>(new Map());
   const [sources, setSources] = useState<Source[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
-  const [directives, setDirectives] = useState<Directive[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [exceptionsOnly, setExceptionsOnly] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await fetch("/admin/api", { cache: "no-store" });
+    const res = await fetch(`/admin/api?org=${encodeURIComponent(orgSlug)}`, {
+      cache: "no-store",
+    });
     if (!res.ok) return;
     const data = await res.json();
     setOrgSchedule(data.orgSchedule ?? { cadence: "monthly_days", days: [15, "last"] });
@@ -216,12 +228,8 @@ export function OpsBoard({
     );
     setSources(data.sources);
     setRequests(data.requests);
-    /* This board owns only the client's scope; the global canon is HQ's. */
-    setDirectives(
-      ((data.directives ?? []) as Directive[]).filter((d) => d.scope !== "global"),
-    );
     setLoaded(true);
-  }, []);
+  }, [orgSlug]);
 
   useEffect(() => {
     void load();
@@ -232,7 +240,7 @@ export function OpsBoard({
       const res = await fetch("/admin/api", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ org: orgSlug, ...payload }),
       });
       if (res.ok) {
         await load();
@@ -240,7 +248,7 @@ export function OpsBoard({
       }
       return res.ok;
     },
-    [load],
+    [load, orgSlug],
   );
 
   /* ---- derived gaps ---- */
@@ -276,97 +284,99 @@ export function OpsBoard({
     return { missingPlace, missingDirectory, openRequests, due };
   }, [locations, configs, centers, directoryByCenter, requests, orgSchedule]);
 
+  const isException = useCallback(
+    (l: LocationSnapshot) => {
+      const cfg = configs.get(l.id);
+      return (
+        (cfg?.status && cfg.status !== "active") ||
+        Boolean(cfg?.scan_schedule) ||
+        !cfg?.place_id ||
+        !directoryByCenter.has(l.centerRef)
+      );
+    },
+    [configs, directoryByCenter],
+  );
+
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = locations;
+    if (q)
+      list = list.filter((l) =>
+        [l.id, l.centerName, l.city, l.state]
+          .join(" ")
+          .toLowerCase()
+          .includes(q),
+      );
+    if (exceptionsOnly) list = list.filter(isException);
+    return list;
+  }, [locations, query, exceptionsOnly, isException]);
+
   if (!loaded) {
     return <p className="px-6 py-10 text-[0.8125rem] text-muted">Loading the board.</p>;
   }
 
-  return (
-    <div className="mx-auto max-w-[80rem] space-y-6 px-6 py-6">
-      {/* ---- the numbers that are the to-do list ---- */}
-      <div className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
-        {(
-          [
-            ["Open requests", gaps.openRequests, gaps.openRequests > 0],
-            ["Scans due today", gaps.due, gaps.due > 0],
-            ["Locations without a Places id", gaps.missingPlace, gaps.missingPlace > 0],
-            ["Centers without a directory link", gaps.missingDirectory, gaps.missingDirectory > 0],
-          ] as const
-        ).map(([k, n, hot]) => (
-          <div key={k} className="bg-surface px-4 py-3">
-            <p className="label text-faint">{k}</p>
-            <p
-              className={cn(
-                "tnum font-display mt-1 text-[1.375rem] leading-none",
-                hot ? "text-brass-700" : "text-open-700",
-              )}
-            >
-              {n}
-            </p>
-          </div>
-        ))}
-      </div>
+  const printSheet = () => {
+    const due = locations.filter((l) => {
+      const cfg = configs.get(l.id);
+      if (cfg?.status === "paused" || cfg?.status === "removed") return false;
+      return dueToday(cfg?.scan_schedule ?? orgSchedule);
+    });
+    const html = scanSheetHtml(
+      due.map((l) => ({
+        id: l.id,
+        centerName: l.centerName,
+        city: l.city,
+        state: l.state,
+        sources: sources
+          .filter((s) => s.center_ref === l.centerRef)
+          .map((s) => ({ kind: s.kind, url: s.url, placeId: s.place_id })),
+        watched: l.watched,
+        tightest: l.tightest,
+      })),
+      {
+        orgName,
+        date: new Date().toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }),
+      },
+    );
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+  };
 
-      {/* ---- today's sheet: the manual sweep as a work packet ---- */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-[0.8125rem] text-muted">
-          {gaps.due > 0
-            ? `${gaps.due} location${gaps.due === 1 ? " is" : "s are"} due a scan today.`
-            : "Nothing is due today on the current schedules."}
-        </p>
-        <ActionButton
-          variant="secondary"
-          disabled={gaps.due === 0}
-          onClick={() => {
-            const due = locations.filter((l) => {
-              const cfg = configs.get(l.id);
-              if (cfg?.status === "paused" || cfg?.status === "removed") return false;
-              return dueToday(cfg?.scan_schedule ?? orgSchedule);
-            });
-            const html = scanSheetHtml(
-              due.map((l) => ({
-                id: l.id,
-                centerName: l.centerName,
-                city: l.city,
-                state: l.state,
-                sources: sources
-                  .filter((s) => s.center_ref === l.centerRef)
-                  .map((s) => ({ kind: s.kind, url: s.url, placeId: s.place_id })),
-                watched: l.watched,
-                tightest: l.tightest,
-              })),
-              {
-                orgName,
-                date: new Date().toLocaleDateString("en-US", {
-                  weekday: "long",
-                  month: "long",
-                  day: "numeric",
-                }),
-              },
-            );
-            const w = window.open("", "_blank");
-            if (!w) return;
-            w.document.write(html);
-            w.document.close();
-          }}
-        >
-          Print the scan sheet
-        </ActionButton>
-      </div>
+  return (
+    <div className="mx-auto max-w-[80rem] space-y-5 px-6 py-6">
+      {/* ---- the numbers that are the to-do list ---- */}
+      <StatStrip>
+        <StatTile
+          label="Open requests"
+          value={gaps.openRequests}
+          hot={gaps.openRequests > 0}
+        />
+        <StatTile label="Scans due today" value={gaps.due} hot={gaps.due > 0} />
+        <StatTile
+          label="Missing Places ids"
+          value={gaps.missingPlace}
+          hot={gaps.missingPlace > 0}
+        />
+        <StatTile
+          label="Missing directory links"
+          value={gaps.missingDirectory}
+          hot={gaps.missingDirectory > 0}
+        />
+      </StatStrip>
 
       {/* ---- org schedule ---- */}
-      <section className="rounded-xl border border-line">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3">
-          <div>
-            <h2 className="text-[0.875rem] font-semibold text-ink">
-              Scan schedule · {orgName}
-            </h2>
-            <p className="mt-0.5 text-[0.75rem] text-muted">
-              Every location inherits this unless it carries an override below.
-            </p>
-          </div>
-          <p className="text-[0.75rem] text-muted">{describeSchedule(orgSchedule)}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3">
+      <Section
+        title={`Scan schedule · ${orgName}`}
+        blurb="Every location inherits this unless it carries an override below."
+        aside={<p className="text-[0.75rem] text-muted">{describeSchedule(orgSchedule)}</p>}
+      >
+        <div className="flex flex-wrap items-center gap-3">
           <ScheduleEditor value={orgSchedule} onChange={setOrgSchedule} />
           <ActionButton
             variant="secondary"
@@ -376,21 +386,32 @@ export function OpsBoard({
           </ActionButton>
           {flash && <span className="text-[0.75rem] text-open-700">Saved {flash}</span>}
         </div>
-      </section>
+      </Section>
 
       {/* ---- requests queue ---- */}
-      <section className="overflow-hidden rounded-xl border border-line">
-        <div className="border-b border-line px-4 py-3">
-          <h2 className="text-[0.875rem] font-semibold text-ink">Client requests</h2>
-        </div>
+      <Section
+        title="Client requests"
+        flush
+        aside={
+          gaps.openRequests > 0 ? (
+            <Pill tone={"watch" as Tone} dot>
+              {gaps.openRequests} open
+            </Pill>
+          ) : (
+            <Pill tone={"open" as Tone} dot>
+              Clear
+            </Pill>
+          )
+        }
+      >
         {requests.length === 0 ? (
-          <p className="px-4 py-4 text-[0.8125rem] text-muted">Nothing filed yet.</p>
+          <p className="px-5 py-4 text-[0.8125rem] text-muted">Nothing filed yet.</p>
         ) : (
           <ul className="divide-y divide-line">
             {requests.map((r) => (
               <li
                 key={r.id}
-                className="flex flex-wrap items-start justify-between gap-3 px-4 py-2.5"
+                className="flex flex-wrap items-start justify-between gap-3 px-5 py-3"
               >
                 <div className="min-w-0 flex-1">
                   <p className="text-[0.8125rem] text-ink">
@@ -432,59 +453,107 @@ export function OpsBoard({
             ))}
           </ul>
         )}
-      </section>
+      </Section>
 
       {/* ---- locations ---- */}
-      <section className="overflow-hidden rounded-xl border border-line">
-        <div className="border-b border-line px-4 py-3">
-          <h2 className="text-[0.875rem] font-semibold text-ink">Locations</h2>
-          <p className="mt-0.5 text-[0.75rem] text-muted">
-            Exceptions only: a row needs touching when it is paused, scheduled
-            apart from the org, or missing its Places id or directory link.
-          </p>
-        </div>
-        <table className="w-full border-collapse text-left">
-          <thead>
-            <tr className="border-b border-line bg-surface-sunk/50">
-              {["Location", "Position", "Status", "Schedule", "Places id", "Directory", ""].map(
-                (h) => (
-                  <th key={h} className="label px-3 py-2 font-semibold text-faint">
-                    {h}
-                  </th>
-                ),
+      <Section
+        title="Locations"
+        blurb="Exceptions only: a row needs touching when it is paused, scheduled apart from the org, or missing its Places id or directory link."
+        flush
+        aside={
+          hasPortfolio ? (
+            <>
+              <SearchInput
+                value={query}
+                onChange={setQuery}
+                placeholder="Find a location…"
+              />
+              <button
+                type="button"
+                onClick={() => setExceptionsOnly((v) => !v)}
+                className={cn(
+                  "rounded-md border px-2.5 py-1.5 text-[0.75rem] font-medium transition-colors",
+                  exceptionsOnly
+                    ? "border-petrol-500 bg-petrol-50 text-petrol-800"
+                    : "border-line bg-surface text-muted hover:text-ink",
+                )}
+              >
+                Exceptions only
+              </button>
+              <ActionButton
+                variant="secondary"
+                disabled={gaps.due === 0}
+                onClick={printSheet}
+              >
+                Print the scan sheet
+              </ActionButton>
+            </>
+          ) : undefined
+        }
+      >
+        {!hasPortfolio ? (
+          <div className="px-5 py-5">
+            <p className="text-[0.8125rem] font-medium text-ink">
+              No locations yet — awaiting portfolio import.
+            </p>
+            <p className="mt-1 max-w-[44rem] text-[0.75rem] leading-snug text-muted">
+              The roster from this client&#8217;s onboarding submission becomes
+              locations when it is imported into the monitoring engine. Their
+              schedule above and anything they file meanwhile are already
+              live.
+            </p>
+          </div>
+        ) : (
+          <table className="w-full border-collapse text-left">
+            <thead>
+              <tr className="border-b border-line bg-surface-sunk/50">
+                {["Location", "Position", "Status", "Schedule", "Places id", "Directory", ""].map(
+                  (h) => (
+                    <th key={h} className="label px-5 py-2 font-semibold text-faint">
+                      {h}
+                    </th>
+                  ),
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {shown.slice(0, MAX_ROWS).map((l) => {
+                const cfg = configs.get(l.id);
+                const open = openRow === l.id;
+                const dirCount = directoryByCenter.get(l.centerRef) ?? 0;
+                return (
+                  <RowEditor
+                    key={l.id}
+                    orgSlug={orgSlug}
+                    location={l}
+                    cfg={cfg}
+                    dirCount={dirCount}
+                    sources={sources.filter((s) => s.center_ref === l.centerRef)}
+                    open={open}
+                    onToggle={() => setOpenRow(open ? null : l.id)}
+                    onSave={post}
+                  />
+                );
+              })}
+              {shown.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-5 py-5 text-[0.8125rem] text-muted">
+                    No locations match.
+                  </td>
+                </tr>
               )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {locations.map((l) => {
-              const cfg = configs.get(l.id);
-              const open = openRow === l.id;
-              const dirCount = directoryByCenter.get(l.centerRef) ?? 0;
-              return (
-                <RowEditor
-                  key={l.id}
-                  location={l}
-                  cfg={cfg}
-                  dirCount={dirCount}
-                  sources={sources.filter((s) => s.center_ref === l.centerRef)}
-                  open={open}
-                  onToggle={() => setOpenRow(open ? null : l.id)}
-                  onSave={post}
-                />
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
-
-      {/* ---- this client's agent programming ---- */}
-      <DirectiveEditor
-        title={`Agent programming · ${orgName} only`}
-        blurb="Rules that reach only this client's extraction and scan runs, layered on top of the Breakpoint-wide canon, which is edited at HQ."
-        scope="org"
-        directives={directives}
-        onPost={post}
-      />
+              {shown.length > MAX_ROWS && (
+                <tr>
+                  <td colSpan={7} className="px-5 py-3 text-[0.75rem] text-muted">
+                    Showing the first {MAX_ROWS} of {shown.length}. Narrow the
+                    search to reach the rest.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
+      </Section>
 
       <p className="text-[0.6875rem] text-faint">
         Internal. Changes persist to the account database and drive the scan
@@ -499,6 +568,7 @@ export function OpsBoard({
    ------------------------------------------------------------------ */
 
 function RowEditor({
+  orgSlug,
   location,
   cfg,
   dirCount,
@@ -507,6 +577,7 @@ function RowEditor({
   onToggle,
   onSave,
 }: {
+  orgSlug: string;
   location: LocationSnapshot;
   cfg: LocationConfig | undefined;
   dirCount: number;
@@ -531,11 +602,11 @@ function RowEditor({
 
   const loadDocs = useCallback(async () => {
     const res = await fetch(
-      `/admin/api/documents?location=${encodeURIComponent(location.id)}`,
+      `/admin/api/documents?org=${encodeURIComponent(orgSlug)}&location=${encodeURIComponent(location.id)}`,
       { cache: "no-store" },
     );
     if (res.ok) setDocs((await res.json()).documents ?? []);
-  }, [location.id]);
+  }, [orgSlug, location.id]);
 
   useEffect(() => {
     if (open && docs === null) void loadDocs();
@@ -550,6 +621,7 @@ function RowEditor({
     setDocBusy(true);
     const fd = new FormData();
     fd.append("file", file);
+    fd.append("org", orgSlug);
     fd.append("locationRef", location.id);
     fd.append("kind", docKind);
     const res = await fetch("/admin/api/documents", { method: "POST", body: fd });
@@ -588,42 +660,42 @@ function RowEditor({
         onClick={onToggle}
         className={cn("cursor-pointer", open ? "bg-petrol-50" : "hover:bg-surface-sunk")}
       >
-        <td className="px-3 py-2">
+        <td className="px-5 py-2.5">
           <p className="text-[0.8125rem] font-medium text-ink">{location.centerName}</p>
           <p className="text-[0.6875rem] text-muted">
             {location.id} · {location.city}, {location.state}
           </p>
         </td>
-        <td className="px-3 py-2">
+        <td className="px-5 py-2.5">
           <Pill tone={location.evalTone as Tone} dot>
             {location.evalLabel}
           </Pill>
         </td>
-        <td className="px-3 py-2 text-[0.75rem] text-ink-soft">
+        <td className="px-5 py-2.5 text-[0.75rem] text-ink-soft">
           {cfg?.status && cfg.status !== "active" ? (
             <Pill tone={"clay" as Tone}>{cfg.status}</Pill>
           ) : (
             "active"
           )}
         </td>
-        <td className="px-3 py-2 text-[0.75rem] text-ink-soft">
+        <td className="px-5 py-2.5 text-[0.75rem] text-ink-soft">
           {cfg?.scan_schedule ? describeSchedule(cfg.scan_schedule) : "inherits"}
         </td>
-        <td className="px-3 py-2">
+        <td className="px-5 py-2.5">
           {cfg?.place_id ? (
             <Check className="h-3.5 w-3.5 text-open-600" />
           ) : (
             <span className="text-[0.75rem] text-brass-700">missing</span>
           )}
         </td>
-        <td className="px-3 py-2">
+        <td className="px-5 py-2.5">
           {dirCount > 0 ? (
             <span className="tnum text-[0.75rem] text-ink-soft">{dirCount}</span>
           ) : (
             <span className="text-[0.75rem] text-brass-700">missing</span>
           )}
         </td>
-        <td className="px-3 py-2 text-right">
+        <td className="px-5 py-2.5 text-right">
           <ChevronDown
             className={cn("h-3.5 w-3.5 text-faint transition-transform", open && "rotate-180")}
           />
@@ -632,7 +704,7 @@ function RowEditor({
 
       {open && (
         <tr className="bg-surface-sunk/40">
-          <td colSpan={7} className="px-4 py-4">
+          <td colSpan={7} className="px-5 py-4">
             <div
               className="grid gap-4 lg:grid-cols-2"
               onClick={(e) => e.stopPropagation()}
@@ -803,9 +875,10 @@ function RowEditor({
                       <button
                         type="button"
                         onClick={async () => {
-                          await fetch(`/admin/api/documents?id=${d.id}`, {
-                            method: "DELETE",
-                          });
+                          await fetch(
+                            `/admin/api/documents?id=${d.id}&org=${encodeURIComponent(orgSlug)}`,
+                            { method: "DELETE" },
+                          );
                           void loadDocs();
                         }}
                         className="text-faint hover:text-clay-700"

@@ -4,15 +4,15 @@ import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ActionButton } from "@/components/app/ui";
+import { Section } from "@/components/admin/ui";
 
 /**
- * Agent programming, one scope at a time.
+ * Agent programming.
  *
- * The system-wide canon is edited at HQ and reaches every client; a
- * client's own rules are edited on that client's board and reach only
- * their runs. The same editor renders both, but a board only ever
- * writes the scope it owns — system logic is not editable from inside
- * a client profile.
+ * Edited at HQ only for now: the system-wide canon that reaches every
+ * client's runs. Per-client programming was deliberately pulled from
+ * the client boards until that workflow is designed; the scope prop
+ * stays so it can return without another refactor.
  */
 
 export type Directive = {
@@ -43,13 +43,8 @@ export function DirectiveEditor({
   const [body, setBody] = useState("");
 
   return (
-    <section className="overflow-hidden rounded-xl border border-line">
-      <div className="border-b border-line px-4 py-3">
-        <h2 className="text-[0.875rem] font-semibold text-ink">{title}</h2>
-        <p className="mt-0.5 text-[0.75rem] text-muted">{blurb}</p>
-      </div>
-
-      <ul className="space-y-1.5 px-4 py-3">
+    <Section title={title} blurb={blurb} flush>
+      <ul className="space-y-1.5 px-5 py-4">
         {directives.map((d) => (
           <li
             key={d.id}
@@ -90,7 +85,7 @@ export function DirectiveEditor({
         )}
       </ul>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
         <select
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
@@ -119,6 +114,6 @@ export function DirectiveEditor({
           Add
         </ActionButton>
       </div>
-    </section>
+    </Section>
   );
 }

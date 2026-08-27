@@ -1,27 +1,31 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import { cn } from "@/lib/cn";
 import { ActionButton, Pill, type Tone } from "@/components/app/ui";
+import { Section, StatStrip, StatTile, SearchInput } from "@/components/admin/ui";
 import { DirectiveEditor, type Directive } from "@/components/admin/Directives";
 
 /**
- * BREAKPOINT HQ
+ * BREAKPOINT HQ — the whole company on one screen.
  *
- * The level above the clients. Three things live here and only here:
- * the client roster, onboarding submissions (a submission exists before
- * its client's board does), and the system-wide agent canon. Anything
- * scoped to one client — schedules, locations, sources, requests, the
- * client's own directives — lives on that client's board, one level
- * down.
+ * The client registry (searchable, sortable — ten clients or a
+ * hundred), the onboarding pipeline (a submission is promoted into a
+ * client account from here), and the system-wide agent canon. Anything
+ * scoped to one client lives on that client's board, one level down.
  */
 
-export type ClientCard = {
+type OrgRow = {
   slug: string;
   name: string;
-  locations: number;
-  centers: number;
+  status: "onboarding" | "live" | "paused";
+  descriptor: string | null;
+  created_at: string;
+  open_requests: number;
+  locations: number | null;
+  centers: number | null;
 };
 
 type Submission = {
@@ -32,27 +36,35 @@ type Submission = {
   row_count: number | null;
   submitted_at: string;
   processed_at: string | null;
+  org_exists: boolean;
 };
 
-type RequestRow = { org_slug?: string; handled_at: string | null };
+const STATUS_TONE: Record<OrgRow["status"], Tone> = {
+  live: "open",
+  onboarding: "watch",
+  paused: "muted",
+};
 
-export function HQBoard({ clients }: { clients: ClientCard[] }) {
+type SortKey = "name" | "status" | "locations" | "open_requests" | "created_at";
+
+export function HQBoard() {
+  const [orgs, setOrgs] = useState<OrgRow[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [directives, setDirectives] = useState<Directive[]>([]);
-  const [openRequests, setOpenRequests] = useState(0);
   const [loaded, setLoaded] = useState(false);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({
+    key: "name",
+    dir: 1,
+  });
 
   const load = useCallback(async () => {
     const res = await fetch("/admin/api", { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
+    setOrgs(data.orgs ?? []);
     setSubmissions(data.submissions ?? []);
-    setDirectives(
-      ((data.directives ?? []) as Directive[]).filter((d) => d.scope === "global"),
-    );
-    setOpenRequests(
-      ((data.requests ?? []) as RequestRow[]).filter((r) => !r.handled_at).length,
-    );
+    setDirectives(data.directives ?? []);
     setLoaded(true);
   }, []);
 
@@ -73,56 +85,182 @@ export function HQBoard({ clients }: { clients: ClientCard[] }) {
     [load],
   );
 
+  const shown = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? orgs.filter(
+          (o) =>
+            o.name.toLowerCase().includes(q) || o.slug.toLowerCase().includes(q),
+        )
+      : orgs;
+    const val = (o: OrgRow) =>
+      sort.key === "locations"
+        ? (o.locations ?? -1)
+        : sort.key === "open_requests"
+          ? o.open_requests
+          : o[sort.key];
+    return [...filtered].sort((a, b) => {
+      const av = val(a);
+      const bv = val(b);
+      return (av < bv ? -1 : av > bv ? 1 : 0) * sort.dir;
+    });
+  }, [orgs, query, sort]);
+
+  const totals = useMemo(
+    () => ({
+      clients: orgs.length,
+      locations: orgs.reduce((n, o) => n + (o.locations ?? 0), 0),
+      openRequests: orgs.reduce((n, o) => n + o.open_requests, 0),
+      waiting: submissions.filter((s) => !s.processed_at).length,
+    }),
+    [orgs, submissions],
+  );
+
+  const sortBy = (key: SortKey) =>
+    setSort((s) => ({ key, dir: s.key === key ? ((s.dir * -1) as 1 | -1) : 1 }));
+
   if (!loaded) {
     return <p className="px-6 py-10 text-[0.8125rem] text-muted">Loading.</p>;
   }
 
-  return (
-    <div className="mx-auto max-w-[80rem] space-y-6 px-6 py-6">
-      {/* ---- the roster ---- */}
-      <section className="overflow-hidden rounded-xl border border-line">
-        <div className="border-b border-line px-4 py-3">
-          <h2 className="text-[0.875rem] font-semibold text-ink">Clients</h2>
-          <p className="mt-0.5 text-[0.75rem] text-muted">
-            Each client has its own board: schedules, locations, sources,
-            requests, and the rules that apply to them alone.
-          </p>
-        </div>
-        <ul className="divide-y divide-line">
-          {clients.map((c) => (
-            <li key={c.slug}>
-              <Link
-                href={`/admin/clients/${c.slug}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-sunk"
-              >
-                <div>
-                  <p className="text-[0.875rem] font-semibold text-ink">{c.name}</p>
-                  <p className="mt-0.5 text-[0.75rem] text-muted">
-                    {c.locations} monitored locations across {c.centers} centers
-                    {openRequests > 0 ? ` · ${openRequests} open request${openRequests === 1 ? "" : "s"}` : ""}
-                  </p>
-                </div>
-                <span className="flex items-center gap-1.5 text-[0.75rem] font-medium text-petrol-700">
-                  Open the board <ArrowRight className="h-3.5 w-3.5" />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+  const HEADERS: { key: SortKey | null; label: string; right?: boolean }[] = [
+    { key: "name", label: "Client" },
+    { key: "status", label: "Status" },
+    { key: "locations", label: "Locations", right: true },
+    { key: "open_requests", label: "Open requests", right: true },
+    { key: "created_at", label: "Since" },
+    { key: null, label: "" },
+  ];
 
-      {/* ---- onboarding submissions: clients arriving ---- */}
-      <section className="overflow-hidden rounded-xl border border-line">
-        <div className="border-b border-line px-4 py-3">
-          <h2 className="text-[0.875rem] font-semibold text-ink">
-            Onboarding submissions
-          </h2>
-          <p className="mt-0.5 text-[0.75rem] text-muted">
-            A submission is the work order a new account is set up from.
-          </p>
-        </div>
+  return (
+    <div className="mx-auto max-w-[80rem] space-y-5 px-6 py-6">
+      <StatStrip>
+        <StatTile label="Clients" value={totals.clients} />
+        <StatTile label="Locations under watch" value={totals.locations} />
+        <StatTile
+          label="Open requests"
+          value={totals.openRequests}
+          hot={totals.openRequests > 0}
+        />
+        <StatTile
+          label="Submissions waiting"
+          value={totals.waiting}
+          hot={totals.waiting > 0}
+        />
+      </StatStrip>
+
+      {/* ---- the registry ---- */}
+      <Section
+        title="Clients"
+        blurb="Each client has its own board: schedule, locations, sources, requests."
+        flush
+        aside={
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            placeholder="Find a client…"
+          />
+        }
+      >
+        <table className="w-full border-collapse text-left">
+          <thead>
+            <tr className="border-b border-line bg-surface-sunk/50">
+              {HEADERS.map((h) => (
+                <th
+                  key={h.label || "arrow"}
+                  className={cn(
+                    "label px-5 py-2 font-semibold text-faint",
+                    h.right && "text-right",
+                  )}
+                >
+                  {h.key ? (
+                    <button
+                      type="button"
+                      onClick={() => sortBy(h.key as SortKey)}
+                      className="inline-flex items-center gap-1 hover:text-ink"
+                    >
+                      {h.label}
+                      {sort.key === h.key &&
+                        (sort.dir === 1 ? (
+                          <ChevronUp className="h-3 w-3" />
+                        ) : (
+                          <ChevronDown className="h-3 w-3" />
+                        ))}
+                    </button>
+                  ) : (
+                    h.label
+                  )}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {shown.map((o) => (
+              <tr key={o.slug} className="group relative hover:bg-surface-sunk/60">
+                <td className="px-5 py-3">
+                  <Link
+                    href={`/admin/clients/${o.slug}`}
+                    className="text-[0.8125rem] font-semibold text-ink after:absolute after:inset-0"
+                  >
+                    {o.name}
+                  </Link>
+                  <p className="text-[0.6875rem] text-muted">
+                    {o.descriptor ?? o.slug}
+                  </p>
+                </td>
+                <td className="px-5 py-3">
+                  <Pill tone={STATUS_TONE[o.status]} dot>
+                    {o.status}
+                  </Pill>
+                </td>
+                <td className="tnum px-5 py-3 text-right text-[0.8125rem] text-ink-soft">
+                  {o.locations !== null
+                    ? o.locations
+                    : "awaiting import"}
+                </td>
+                <td
+                  className={cn(
+                    "tnum px-5 py-3 text-right text-[0.8125rem]",
+                    o.open_requests > 0
+                      ? "font-semibold text-brass-700"
+                      : "text-ink-soft",
+                  )}
+                >
+                  {o.open_requests}
+                </td>
+                <td className="px-5 py-3 text-[0.75rem] text-muted">
+                  {new Date(o.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
+                </td>
+                <td className="px-5 py-3 text-right">
+                  <ArrowRight className="ml-auto h-3.5 w-3.5 text-faint transition-colors group-hover:text-petrol-700" />
+                </td>
+              </tr>
+            ))}
+            {shown.length === 0 && (
+              <tr>
+                <td
+                  colSpan={HEADERS.length}
+                  className="px-5 py-5 text-[0.8125rem] text-muted"
+                >
+                  No clients match.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Section>
+
+      {/* ---- the onboarding pipeline ---- */}
+      <Section
+        title="Onboarding submissions"
+        blurb="A submission is the work order a new account is set up from. Creating the account gives the client a board."
+        flush
+      >
         {submissions.length === 0 ? (
-          <p className="px-4 py-4 text-[0.8125rem] text-muted">
+          <p className="px-5 py-4 text-[0.8125rem] text-muted">
             Nothing waiting. New submissions land here when a client sends
             their onboarding console to us.
           </p>
@@ -131,7 +269,7 @@ export function HQBoard({ clients }: { clients: ClientCard[] }) {
             {submissions.map((s) => (
               <li
                 key={s.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5"
+                className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
               >
                 <div className="min-w-0">
                   <p className="text-[0.8125rem] font-medium text-ink">
@@ -149,28 +287,41 @@ export function HQBoard({ clients }: { clients: ClientCard[] }) {
                     })}
                   </p>
                 </div>
-                {s.processed_at ? (
-                  <Pill tone={"open" as Tone} dot>
-                    Set up
-                  </Pill>
-                ) : (
-                  <ActionButton
-                    variant="secondary"
-                    onClick={() => void post({ action: "submission_processed", id: s.id })}
-                  >
-                    Mark set up
-                  </ActionButton>
-                )}
+                <span className="flex items-center gap-2">
+                  {!s.org_exists ? (
+                    <ActionButton
+                      variant="secondary"
+                      onClick={() =>
+                        void post({ action: "org_create", submissionId: s.id })
+                      }
+                    >
+                      Create the account
+                    </ActionButton>
+                  ) : s.processed_at ? (
+                    <Pill tone={"open" as Tone} dot>
+                      Set up
+                    </Pill>
+                  ) : (
+                    <ActionButton
+                      variant="secondary"
+                      onClick={() =>
+                        void post({ action: "submission_processed", id: s.id })
+                      }
+                    >
+                      Mark set up
+                    </ActionButton>
+                  )}
+                </span>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </Section>
 
       {/* ---- the system-wide canon ---- */}
       <DirectiveEditor
         title="Agent programming · Breakpoint-wide"
-        blurb="The system canon. These rules reach every extraction and scan run for every client. Per-client rules are edited on the client's own board."
+        blurb="The system canon. These rules reach every extraction and scan run for every client."
         scope="global"
         directives={directives}
         onPost={post}

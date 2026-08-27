@@ -1,24 +1,15 @@
-import { org, rows } from "@/lib/portfolio";
-import { HQBoard, type ClientCard } from "@/components/admin/HQBoard";
+import { HQBoard } from "@/components/admin/HQBoard";
 
 /**
- * Breakpoint HQ: the level above the clients.
+ * Breakpoint HQ: the whole company on one screen.
  *
- * System-wide agent programming, incoming onboarding submissions, and
- * the roster. Everything scoped to one client lives on that client's
- * board at /admin/clients/[slug]. Rides the workspace session behind
- * the site lock until staff auth exists.
+ * The client registry, the onboarding pipeline, and the system-wide
+ * agent canon — all database-backed, nothing hardcoded to a client.
+ * Everything scoped to one client lives on that client's board at
+ * /admin/clients/[slug]. Rides the workspace session behind the site
+ * lock until staff auth exists.
  */
 export default function AdminHome() {
-  const clients: ClientCard[] = [
-    {
-      slug: org.slug,
-      name: org.name,
-      locations: rows.length,
-      centers: new Set(rows.map((r) => r.center.id)).size,
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-canvas">
       <header className="border-b border-line bg-petrol-950">
@@ -29,7 +20,7 @@ export default function AdminHome() {
           <p className="text-[0.75rem] text-cream/60">Internal · HQ</p>
         </div>
       </header>
-      <HQBoard clients={clients} />
+      <HQBoard />
     </div>
   );
 }

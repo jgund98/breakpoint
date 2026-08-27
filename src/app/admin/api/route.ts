@@ -1,9 +1,15 @@
 /**
- * The operations API: everything the team programs about how a
- * portfolio is watched, plus the client-request queue.
+ * The operations API, multi-client.
  *
- * One route, action-switched, because the admin board loads and saves
- * as a unit and a dozen tiny endpoints would each re-implement the same
+ * GET without ?org= is the HQ payload: the client registry with
+ * per-client stats, the onboarding submissions, and the global agent
+ * canon. GET ?org=slug is one client's board: schedule, location
+ * config, sources, requests. Every org-scoped write names its org and
+ * is validated against the registry — nothing here assumes which
+ * client exists.
+ *
+ * One route, action-switched, because the boards load and save as a
+ * unit and a dozen tiny endpoints would each re-implement the same
  * auth and error shape.
  *
  * Auth is the workspace session for now, behind the site lock and the
@@ -13,8 +19,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
 import { db } from "@/lib/db";
+import { orgBySlug, sanitizeSlug, PORTFOLIOS } from "@/lib/orgs";
 
 export const runtime = "nodejs";
 
@@ -48,45 +54,86 @@ export async function GET(request: NextRequest) {
   if (!authorized(request))
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const org = currentOrg();
-  const [settings, configs, sources, requests, submissions, directives] = await Promise.all([
-    db().query(`select scan_schedule from org_settings where org_slug = $1`, [org.slug]),
+  const slug = (request.nextUrl.searchParams.get("org") ?? "").slice(0, 64);
+
+  /* ---- one client's board ---- */
+  if (slug) {
+    const org = await orgBySlug(slug);
+    if (!org)
+      return NextResponse.json({ error: "Unknown client." }, { status: 404 });
+
+    const [settings, configs, sources, requests] = await Promise.all([
+      db().query(`select scan_schedule from org_settings where org_slug = $1`, [
+        org.slug,
+      ]),
+      db().query(
+        `select location_ref, status, scan_schedule, place_id, lease_updated_on, notes
+           from location_config where org_slug = $1`,
+        [org.slug],
+      ),
+      db().query(
+        `select id, center_ref, kind, url, place_id, label from center_source
+          order by created_at`,
+      ),
+      db().query(
+        `select id, location_ref, center_name, kind, store_name, observed_on, body,
+                created_at, handled_at, handled_by
+           from client_request where org_slug = $1
+          order by (handled_at is null) desc, created_at desc
+          limit 100`,
+        [org.slug],
+      ),
+    ]);
+
+    return NextResponse.json({
+      org: {
+        slug: org.slug,
+        name: org.name,
+        status: org.status,
+        hasPortfolio: Boolean(PORTFOLIOS[org.slug]),
+      },
+      orgSchedule: settings.rows[0]?.scan_schedule ?? null,
+      locations: configs.rows,
+      sources: sources.rows,
+      requests: requests.rows,
+    });
+  }
+
+  /* ---- HQ: the whole company ---- */
+  const [orgs, submissions, directives] = await Promise.all([
     db().query(
-      `select location_ref, status, scan_schedule, place_id, lease_updated_on, notes
-         from location_config where org_slug = $1`,
-      [org.slug],
+      `select o.slug, o.name, o.status, o.descriptor, o.created_at,
+              coalesce(r.open_requests, 0)::int as open_requests
+         from org o
+         left join (
+           select org_slug, count(*) as open_requests
+             from client_request
+            where handled_at is null
+            group by org_slug
+         ) r on r.org_slug = o.slug
+        order by o.name`,
     ),
     db().query(
-      `select id, center_ref, kind, url, place_id, label from center_source
-        order by created_at`,
-    ),
-    db().query(
-      `select id, location_ref, center_name, kind, store_name, observed_on, body,
-              created_at, handled_at, handled_by
-         from client_request where org_slug = $1
-        order by (handled_at is null) desc, created_at desc
-        limit 100`,
-      [org.slug],
-    ),
-    db().query(
-      `select id, org_slug, client_name, store_estimate, row_count,
-              submitted_at, processed_at
-         from onboarding_submission
-        order by submitted_at desc limit 25`,
+      `select s.id, s.org_slug, s.client_name, s.store_estimate, s.row_count,
+              s.submitted_at, s.processed_at,
+              (o.slug is not null) as org_exists
+         from onboarding_submission s
+         left join org o on o.slug = s.org_slug
+        order by s.submitted_at desc limit 25`,
     ),
     db().query(
       `select id, scope, topic, body, active, sort from agent_directive
-        where scope in ('global', $1)
-        order by scope, sort, created_at`,
-      [org.slug],
+        where scope = 'global'
+        order by sort, created_at`,
     ),
   ]);
 
   return NextResponse.json({
-    orgSchedule: settings.rows[0]?.scan_schedule ?? null,
-    locations: configs.rows,
-    sources: sources.rows,
-    requests: requests.rows,
+    orgs: orgs.rows.map((o) => ({
+      ...o,
+      locations: PORTFOLIOS[o.slug]?.locations ?? null,
+      centers: PORTFOLIOS[o.slug]?.centers ?? null,
+    })),
     submissions: submissions.rows,
     directives: directives.rows,
   });
@@ -103,10 +150,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Malformed request." }, { status: 400 });
   }
 
-  const org = currentOrg();
   const action = clip(payload.action, 32);
 
-  if (action === "org_schedule") {
+  /* ---- org-scoped actions name their org, always ---- */
+  const ORG_SCOPED = ["org_schedule", "location", "request_handled"];
+  let org: Awaited<ReturnType<typeof orgBySlug>> = null;
+  if (ORG_SCOPED.includes(action)) {
+    org = await orgBySlug(clip(payload.org, 64));
+    if (!org)
+      return NextResponse.json({ error: "Unknown client." }, { status: 400 });
+  }
+
+  if (action === "org_schedule" && org) {
     const schedule = normalizeSchedule(payload.schedule);
     if (!schedule)
       return NextResponse.json({ error: "Unreadable schedule." }, { status: 400 });
@@ -120,7 +175,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  if (action === "location") {
+  if (action === "location" && org) {
     const ref = clip(payload.locationRef, 64);
     if (!ref)
       return NextResponse.json({ error: "No location." }, { status: 400 });
@@ -161,6 +216,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  if (action === "request_handled" && org) {
+    const id = clip(payload.id, 64);
+    if (!id) return NextResponse.json({ error: "No request." }, { status: 400 });
+    await db().query(
+      `update client_request
+          set handled_at = now(), handled_by = $2
+        where id = $1 and org_slug = $3`,
+      [id, clip(payload.by, 80) || "ops", org.slug],
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  /* ---- center sources are shared plumbing, keyed to centers ---- */
   if (action === "source_add") {
     const centerRef = clip(payload.centerRef, 120);
     const kind = clip(payload.kind, 16) || "directory";
@@ -188,15 +256,47 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
-  if (action === "request_handled") {
-    const id = clip(payload.id, 64);
-    if (!id) return NextResponse.json({ error: "No request." }, { status: 400 });
-    await db().query(
-      `update client_request
-          set handled_at = now(), handled_by = $2
-        where id = $1 and org_slug = $3`,
-      [id, clip(payload.by, 80) || "ops", org.slug],
+  /* ---- HQ actions ---- */
+  if (action === "org_create") {
+    const id = clip(payload.submissionId, 64);
+    if (!id)
+      return NextResponse.json({ error: "No submission." }, { status: 400 });
+    const { rows } = await db().query(
+      `select org_slug, client_name from onboarding_submission where id = $1`,
+      [id],
     );
+    if (!rows.length)
+      return NextResponse.json({ error: "No such submission." }, { status: 404 });
+    const slug = sanitizeSlug(rows[0].org_slug);
+    if (!slug)
+      return NextResponse.json(
+        { error: "The submission carries no usable client slug." },
+        { status: 400 },
+      );
+    const name = clip(rows[0].client_name, 120) || slug;
+    await db().query(
+      `insert into org (name, slug, status) values ($1, $2, 'onboarding')
+       on conflict (slug) do nothing`,
+      [name, slug],
+    );
+    await db().query(
+      `update onboarding_submission
+          set processed_at = now(), processed_by = 'account-created'
+        where id = $1 and processed_at is null`,
+      [id],
+    );
+    return NextResponse.json({ ok: true, slug });
+  }
+
+  if (action === "org_status") {
+    const target = await orgBySlug(clip(payload.org, 64));
+    const status = clip(payload.status, 16);
+    if (!target || !["onboarding", "live", "paused"].includes(status))
+      return NextResponse.json({ error: "Unreadable status." }, { status: 400 });
+    await db().query(`update org set status = $2 where slug = $1`, [
+      target.slug,
+      status,
+    ]);
     return NextResponse.json({ ok: true });
   }
 
@@ -212,17 +312,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  /* Directive editing is HQ-only for now: the global canon. Per-client
+     programming was deliberately pulled from the boards until the
+     agent-tuning workflow is designed. */
   if (action === "directive_add") {
     const body = clip(payload.body, 4000);
     if (!body) return NextResponse.json({ error: "Empty directive." }, { status: 400 });
-    const scope = payload.scope === "org" ? org.slug : "global";
     const topic = clip(payload.topic, 16) || "general";
     if (!["general", "extraction", "scanning", "matching", "notices"].includes(topic))
       return NextResponse.json({ error: "Unknown topic." }, { status: 400 });
     const { rows } = await db().query(
-      `insert into agent_directive (scope, topic, body) values ($1, $2, $3)
+      `insert into agent_directive (scope, topic, body) values ('global', $1, $2)
        returning id`,
-      [scope, topic, body],
+      [topic, body],
     );
     return NextResponse.json({ ok: true, id: rows[0].id });
   }

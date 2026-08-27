@@ -13,7 +13,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { orgBySlug } from "@/lib/orgs";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -50,12 +50,15 @@ export async function GET(request: NextRequest) {
   const location = (request.nextUrl.searchParams.get("location") ?? "").slice(0, 64);
   if (!location)
     return NextResponse.json({ error: "No location." }, { status: 400 });
+  const org = await orgBySlug(request.nextUrl.searchParams.get("org") ?? "");
+  if (!org)
+    return NextResponse.json({ error: "Unknown client." }, { status: 400 });
   const { rows } = await db().query(
     `select id, kind, filename, content_type, byte_size, note, created_at
        from lease_document
       where org_slug = $1 and location_ref = $2
       order by created_at desc`,
-    [currentOrg().slug, location],
+    [org.slug, location],
   );
   return NextResponse.json({ documents: rows });
 }
@@ -80,6 +83,9 @@ export async function POST(request: NextRequest) {
   const locationRef = String(form.get("locationRef") ?? "").trim().slice(0, 64);
   if (!locationRef)
     return NextResponse.json({ error: "No location." }, { status: 400 });
+  const org = await orgBySlug(String(form.get("org") ?? ""));
+  if (!org)
+    return NextResponse.json({ error: "Unknown client." }, { status: 400 });
   const kind = String(form.get("kind") ?? "lease");
   if (!KINDS.includes(kind))
     return NextResponse.json({ error: "Unknown document kind." }, { status: 400 });
@@ -91,7 +97,7 @@ export async function POST(request: NextRequest) {
      values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
      returning id`,
     [
-      currentOrg().slug,
+      org.slug,
       locationRef,
       kind,
       (file.name || "document").slice(0, 200),
@@ -110,9 +116,12 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "No document." }, { status: 400 });
+  const org = await orgBySlug(request.nextUrl.searchParams.get("org") ?? "");
+  if (!org)
+    return NextResponse.json({ error: "Unknown client." }, { status: 400 });
   await db().query(
     `delete from lease_document where id = $1 and org_slug = $2`,
-    [id.slice(0, 64), currentOrg().slug],
+    [id.slice(0, 64), org.slug],
   );
   return NextResponse.json({ ok: true });
 }
