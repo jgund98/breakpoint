@@ -5,15 +5,18 @@ import { Check, ChevronDown, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { ActionButton, Pill, type Tone } from "@/components/app/ui";
 import { scanSheetHtml } from "@/lib/scan-sheet";
+import { DirectiveEditor, type Directive } from "@/components/admin/Directives";
 
 /**
- * THE OPERATIONS BOARD
+ * ONE CLIENT'S OPERATIONS BOARD
  *
  * Internal. This is where the team programs how a portfolio is watched:
  * the scan schedule the org inherits, the exceptions per location, the
- * Places id for each storefront, and the directory links a scan reads
- * for each center. It is also the queue of everything clients have
- * asked for from inside the workspace.
+ * Places id for each storefront, the directory links a scan reads for
+ * each center, and the lease papers each location's record is extracted
+ * from. It is also the queue of everything this client has asked for
+ * from inside the workspace. System-wide concerns — the roster, new
+ * onboarding submissions, the global agent canon — live at /admin.
  *
  * The design rule is exceptions-only. At a thousand stores nobody edits
  * a thousand rows: the org schedule covers everyone, sources attach to
@@ -55,22 +58,12 @@ type Source = {
   label: string | null;
 };
 
-type Submission = {
+type LeaseDoc = {
   id: string;
-  org_slug: string;
-  client_name: string;
-  store_estimate: number | null;
-  row_count: number | null;
-  submitted_at: string;
-  processed_at: string | null;
-};
-
-type Directive = {
-  id: string;
-  scope: string;
-  topic: string;
-  body: string;
-  active: boolean;
+  kind: string;
+  filename: string;
+  byte_size: number;
+  created_at: string;
 };
 
 type RequestRow = {
@@ -92,6 +85,11 @@ const KIND_LABEL: Record<string, string> = {
   closure_report: "Closure report",
   estoppel_review: "Estoppel review",
 };
+
+const fmtSize = (n: number) =>
+  n >= 1024 * 1024
+    ? `${(n / 1048576).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(n / 1024))} KB`;
 
 function describeSchedule(s: Schedule | null | undefined): string {
   if (!s) return "—";
@@ -201,7 +199,6 @@ export function OpsBoard({
   const [configs, setConfigs] = useState<Map<string, LocationConfig>>(new Map());
   const [sources, setSources] = useState<Source[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [directives, setDirectives] = useState<Directive[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [openRow, setOpenRow] = useState<string | null>(null);
@@ -219,8 +216,10 @@ export function OpsBoard({
     );
     setSources(data.sources);
     setRequests(data.requests);
-    setSubmissions(data.submissions ?? []);
-    setDirectives(data.directives ?? []);
+    /* This board owns only the client's scope; the global canon is HQ's. */
+    setDirectives(
+      ((data.directives ?? []) as Directive[]).filter((d) => d.scope !== "global"),
+    );
     setLoaded(true);
   }, []);
 
@@ -379,59 +378,6 @@ export function OpsBoard({
         </div>
       </section>
 
-      {/* ---- onboarding submissions: the work orders ---- */}
-      {submissions.length > 0 && (
-        <section className="overflow-hidden rounded-xl border border-line">
-          <div className="border-b border-line px-4 py-3">
-            <h2 className="text-[0.875rem] font-semibold text-ink">
-              Onboarding submissions
-            </h2>
-            <p className="mt-0.5 text-[0.75rem] text-muted">
-              A submission is the work order an account is set up from.
-            </p>
-          </div>
-          <ul className="divide-y divide-line">
-            {submissions.map((s) => (
-              <li
-                key={s.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5"
-              >
-                <div className="min-w-0">
-                  <p className="text-[0.8125rem] font-medium text-ink">
-                    {s.client_name}
-                  </p>
-                  <p className="text-[0.6875rem] text-muted">
-                    {s.row_count ?? 0} roster rows
-                    {s.store_estimate ? ` of ${s.store_estimate} expected` : ""}
-                    {" · "}
-                    {new Date(s.submitted_at).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-                {s.processed_at ? (
-                  <Pill tone={"open" as Tone} dot>
-                    Set up
-                  </Pill>
-                ) : (
-                  <ActionButton
-                    variant="secondary"
-                    onClick={() =>
-                      void post({ action: "submission_processed", id: s.id })
-                    }
-                  >
-                    Mark set up
-                  </ActionButton>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {/* ---- requests queue ---- */}
       <section className="overflow-hidden rounded-xl border border-line">
         <div className="border-b border-line px-4 py-3">
@@ -531,8 +477,14 @@ export function OpsBoard({
         </table>
       </section>
 
-      {/* ---- agent programming ---- */}
-      <DirectiveEditor directives={directives} orgName={orgName} onPost={post} />
+      {/* ---- this client's agent programming ---- */}
+      <DirectiveEditor
+        title={`Agent programming · ${orgName} only`}
+        blurb="Rules that reach only this client's extraction and scan runs, layered on top of the Breakpoint-wide canon, which is edited at HQ."
+        scope="org"
+        directives={directives}
+        onPost={post}
+      />
 
       <p className="text-[0.6875rem] text-faint">
         Internal. Changes persist to the account database and drive the scan
@@ -570,6 +522,44 @@ function RowEditor({
   const [notes, setNotes] = useState(cfg?.notes ?? "");
   const [newUrl, setNewUrl] = useState("");
   const [saved, setSaved] = useState(false);
+
+  /* The papers on file for this location, fetched when the row opens. */
+  const [docs, setDocs] = useState<LeaseDoc[] | null>(null);
+  const [docKind, setDocKind] = useState("lease");
+  const [docBusy, setDocBusy] = useState(false);
+  const [docError, setDocError] = useState<string | null>(null);
+
+  const loadDocs = useCallback(async () => {
+    const res = await fetch(
+      `/admin/api/documents?location=${encodeURIComponent(location.id)}`,
+      { cache: "no-store" },
+    );
+    if (res.ok) setDocs((await res.json()).documents ?? []);
+  }, [location.id]);
+
+  useEffect(() => {
+    if (open && docs === null) void loadDocs();
+  }, [open, docs, loadDocs]);
+
+  const upload = async (file: File) => {
+    setDocError(null);
+    if (file.size > 4 * 1024 * 1024) {
+      setDocError("Files up to 4 MB. Compress the scan and try again.");
+      return;
+    }
+    setDocBusy(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("locationRef", location.id);
+    fd.append("kind", docKind);
+    const res = await fetch("/admin/api/documents", { method: "POST", body: fd });
+    setDocBusy(false);
+    if (res.ok) void loadDocs();
+    else {
+      const data = await res.json().catch(() => null);
+      setDocError(data?.error ?? "The upload did not go through.");
+    }
+  };
 
   useEffect(() => {
     setStatus(cfg?.status ?? "active");
@@ -769,132 +759,104 @@ function RowEditor({
                 </div>
               </div>
             </div>
+
+            {/* ---- the papers behind this location ---- */}
+            <div
+              className="mt-4 border-t border-line pt-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="label text-muted">Lease papers on file</p>
+              <p className="mt-0.5 text-[0.6875rem] leading-snug text-muted">
+                The lease, its amendments, and any estoppels. This location&#8217;s
+                clause record is extracted from these, so an amendment landing
+                here is what triggers re-extraction.
+              </p>
+              <ul className="mt-2 space-y-1.5">
+                {(docs ?? []).map((d) => (
+                  <li
+                    key={d.id}
+                    className="flex items-center justify-between gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5"
+                  >
+                    <p className="min-w-0 truncate text-[0.75rem] text-ink-soft">
+                      <span className="mr-1.5 rounded bg-surface-sunk px-1 py-0.5 text-[0.625rem] font-semibold text-muted">
+                        {d.kind}
+                      </span>
+                      {d.filename}
+                      <span className="ml-1.5 text-[0.6875rem] text-faint">
+                        {fmtSize(d.byte_size)} ·{" "}
+                        {new Date(d.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </p>
+                    <span className="flex shrink-0 items-center gap-2.5">
+                      <a
+                        href={`/admin/api/documents?id=${d.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[0.6875rem] font-medium text-petrol-700 hover:text-petrol-900"
+                      >
+                        View
+                      </a>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await fetch(`/admin/api/documents?id=${d.id}`, {
+                            method: "DELETE",
+                          });
+                          void loadDocs();
+                        }}
+                        className="text-faint hover:text-clay-700"
+                        aria-label="Remove document"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </span>
+                  </li>
+                ))}
+                {docs !== null && docs.length === 0 && (
+                  <li className="rounded-md border border-dashed border-line px-2.5 py-2 text-[0.75rem] text-muted">
+                    Nothing on file yet. Until the papers are here, the clause
+                    record rests on the client&#8217;s abstract alone.
+                  </li>
+                )}
+              </ul>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <select
+                  value={docKind}
+                  onChange={(e) => setDocKind(e.target.value)}
+                  className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+                >
+                  {["lease", "amendment", "estoppel", "other"].map((k) => (
+                    <option key={k} value={k}>
+                      {k}
+                    </option>
+                  ))}
+                </select>
+                <label className="inline-flex cursor-pointer items-center rounded-md border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-ink transition-colors hover:bg-surface-sunk">
+                  {docBusy ? "Uploading…" : "Upload a document"}
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                    className="hidden"
+                    disabled={docBusy}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void upload(f);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+                {docError && (
+                  <span className="text-[0.6875rem] text-clay-700">{docError}</span>
+                )}
+              </div>
+            </div>
           </td>
         </tr>
       )}
     </>
-  );
-}
-
-
-/* ------------------------------------------------------------------
-   agent programming
-   ------------------------------------------------------------------ */
-
-function DirectiveEditor({
-  directives,
-  orgName,
-  onPost,
-}: {
-  directives: Directive[];
-  orgName: string;
-  onPost: (payload: Record<string, unknown>) => Promise<boolean>;
-}) {
-  const [scope, setScope] = useState<"global" | "org">("global");
-  const [topic, setTopic] = useState("general");
-  const [body, setBody] = useState("");
-
-  const groups: [string, Directive[]][] = [
-    ["Breakpoint-wide", directives.filter((d) => d.scope === "global")],
-    [orgName, directives.filter((d) => d.scope !== "global")],
-  ];
-
-  return (
-    <section className="overflow-hidden rounded-xl border border-line">
-      <div className="border-b border-line px-4 py-3">
-        <h2 className="text-[0.875rem] font-semibold text-ink">Agent programming</h2>
-        <p className="mt-0.5 text-[0.75rem] text-muted">
-          Assembled into every extraction and scan run, Breakpoint-wide first,
-          then the client&#8217;s own. A row edit here reaches the agent
-          without a deploy.
-        </p>
-      </div>
-
-      <div className="grid gap-px bg-line lg:grid-cols-2">
-        {groups.map(([title, list]) => (
-          <div key={title} className="bg-surface px-4 py-3">
-            <p className="label text-faint">{title}</p>
-            <ul className="mt-2 space-y-1.5">
-              {list.map((d) => (
-                <li
-                  key={d.id}
-                  className={cn(
-                    "flex items-start justify-between gap-2 rounded-md border border-line px-2.5 py-2",
-                    !d.active && "opacity-50",
-                  )}
-                >
-                  <p className="min-w-0 text-[0.75rem] leading-snug text-ink-soft">
-                    <span className="mr-1.5 rounded bg-surface-sunk px-1 py-0.5 text-[0.625rem] font-semibold text-muted">
-                      {d.topic}
-                    </span>
-                    {d.body}
-                  </p>
-                  <span className="flex shrink-0 gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => void onPost({ action: "directive_toggle", id: d.id })}
-                      className="text-[0.6875rem] font-medium text-muted hover:text-ink"
-                    >
-                      {d.active ? "Disable" : "Enable"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void onPost({ action: "directive_remove", id: d.id })}
-                      className="text-faint hover:text-clay-700"
-                      aria-label="Remove directive"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </span>
-                </li>
-              ))}
-              {list.length === 0 && (
-                <li className="rounded-md border border-dashed border-line px-2.5 py-2 text-[0.75rem] text-muted">
-                  Nothing yet.
-                </li>
-              )}
-            </ul>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 border-t border-line px-4 py-3">
-        <select
-          value={scope}
-          onChange={(e) => setScope(e.target.value as "global" | "org")}
-          className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
-        >
-          <option value="global">Breakpoint-wide</option>
-          <option value="org">{orgName} only</option>
-        </select>
-        <select
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
-        >
-          {["general", "extraction", "scanning", "matching", "notices"].map((x) => (
-            <option key={x} value={x}>
-              {x}
-            </option>
-          ))}
-        </select>
-        <input
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="One instruction, stated plainly."
-          className="min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 py-1.5 text-[0.75rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
-        />
-        <ActionButton
-          variant="secondary"
-          disabled={!body.trim()}
-          onClick={async () => {
-            const ok = await onPost({ action: "directive_add", scope, topic, body });
-            if (ok) setBody("");
-          }}
-        >
-          Add
-        </ActionButton>
-      </div>
-    </section>
   );
 }

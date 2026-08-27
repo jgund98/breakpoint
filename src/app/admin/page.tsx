@@ -1,43 +1,23 @@
-import { STATE_META } from "@/lib/clause";
 import { org, rows } from "@/lib/portfolio";
-import { OpsBoard, type LocationSnapshot } from "@/components/admin/OpsBoard";
+import { HQBoard, type ClientCard } from "@/components/admin/HQBoard";
 
 /**
- * Internal operations.
+ * Breakpoint HQ: the level above the clients.
  *
- * The client never sees this. It is where the team programs how each
- * portfolio is watched and works the request queue. Rides the workspace
- * session behind the site lock until staff auth exists.
+ * System-wide agent programming, incoming onboarding submissions, and
+ * the roster. Everything scoped to one client lives on that client's
+ * board at /admin/clients/[slug]. Rides the workspace session behind
+ * the site lock until staff auth exists.
  */
-export default function AdminPage() {
-  const locations: LocationSnapshot[] = rows.map((r) => {
-    /* The stores this clause turns on, for the printed sheet. */
-    const named = new Set<string>();
-    for (const tr of r.clause.triggers) {
-      if (tr.kind === "named_tenant") tr.names.forEach((n) => named.add(n));
-      else if (tr.kind === "tenant_count") tr.pool.forEach((n) => named.add(n));
-    }
-    const watched = [...named]
-      .map((id) => r.center.suites.find((s) => s.id === id))
-      .filter((s): s is NonNullable<typeof s> => Boolean(s))
-      .map((s) => ({ name: s.name, status: s.status }));
-
-    const tightest = [...r.evaluation.triggers].sort((a, b) => a.ratio - b.ratio)[0];
-
-    return {
-      id: r.id,
-      centerRef: r.center.id,
-      centerName: r.center.name,
-      city: r.center.city,
-      state: r.center.state,
-      evalLabel: STATE_META[r.evaluation.state].label,
-      evalTone: STATE_META[r.evaluation.state].tone,
-      watched,
-      tightest: tightest
-        ? `Tightest test: ${tightest.label} — ${tightest.headroom}`
-        : "No computable test on file.",
-    };
-  });
+export default function AdminHome() {
+  const clients: ClientCard[] = [
+    {
+      slug: org.slug,
+      name: org.name,
+      locations: rows.length,
+      centers: new Set(rows.map((r) => r.center.id)).size,
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -46,12 +26,10 @@ export default function AdminPage() {
           <p className="text-[0.9375rem] font-semibold text-cream">
             Breakpoint <span className="font-normal text-cream/60">· Operations</span>
           </p>
-          <p className="text-[0.75rem] text-cream/60">
-            Internal · {org.name}
-          </p>
+          <p className="text-[0.75rem] text-cream/60">Internal · HQ</p>
         </div>
       </header>
-      <OpsBoard orgName={org.name} locations={locations} />
+      <HQBoard clients={clients} />
     </div>
   );
 }

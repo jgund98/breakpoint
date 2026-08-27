@@ -93,6 +93,9 @@ export const pendingMatches: PendingMatch[] = file.pendingMatches ?? [];
 
 export const org = {
   name: "Abercrombie & Fitch",
+  /* Must match currentOrg().slug in repo.ts: it keys every org-scoped
+     database row and the client board's URL. */
+  slug: "abercrombie-fitch",
   descriptor: "Specialty apparel",
   totalDoors: portfolio.length,
   watched: portfolio.length,

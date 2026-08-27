@@ -156,15 +156,47 @@ const sub = await page.evaluate(async (mark) => {
 }, MARK);
 check(`onboarding submission accepted (${sub})`, sub === 200);
 
-/* ================= 3. operations sees and works it ================= */
-console.log("--- operations board ---");
+/* ================= 3a. HQ: the level above the clients ================= */
+console.log("--- HQ (/admin) ---");
 await page.goto(`${BASE}/admin`, { waitUntil: "networkidle0" });
 await pause(1000);
+const hq = await body();
+check("HQ shows the client roster", /Open the board/.test(hq) && /Abercrombie/.test(hq));
+check("submission visible as a work order", new RegExp(MARK + " Client").test(hq));
+check("system canon present at HQ", /Never fuzzy-match a tenant name/.test(hq));
+check("client-only rules NOT at HQ", !/only this client/i.test(hq));
+
+/* the global directive editor writes from HQ */
+await page.evaluate((mark) => {
+  const input = [...document.querySelectorAll("input")].find((i) =>
+    (i.placeholder || "").includes("One instruction"),
+  );
+  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+  set.call(input, mark + " directive body");
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}, MARK);
+await pause(200);
+await clickText("Add");
+await pause(900);
+const { rows: dir } = await sql.query(
+  `select scope from agent_directive where body like $1`,
+  [MARK + "%"],
+);
+check(
+  "global directive persisted from HQ",
+  dir.length === 1 && dir[0].scope === "global",
+);
+
+/* ================= 3b. the client board ================= */
+console.log("--- client board (/admin/clients/abercrombie-fitch) ---");
+await page.goto(`${BASE}/admin/clients/abercrombie-fitch`, {
+  waitUntil: "networkidle0",
+});
+await pause(1000);
 const a0 = await body();
-check("board loads with gap counters", /Open requests/i.test(a0));
+check("client board loads with gap counters", /Open requests/i.test(a0));
 check("client requests visible", /Closure reported|Closure report/.test(a0));
-check("submission visible as a work order", new RegExp(MARK + " Client").test(a0));
-check("18 seeded directives present", /Never fuzzy-match a tenant name/.test(a0));
+check("no submissions on the client board", !new RegExp(MARK + " Client").test(a0));
 
 await clickText("Mark handled");
 await pause(1000);
@@ -214,23 +246,40 @@ const { rows: src } = await sql.query(
 );
 check("center source persisted to the database", src.length === 1);
 
-/* the directive editor writes too */
-await page.evaluate((mark) => {
-  const input = [...document.querySelectorAll("input")].find((i) =>
-    (i.placeholder || "").includes("One instruction"),
+/* ================= 4. lease papers per location ================= */
+const doc = await page.evaluate(async (mark) => {
+  const fd = new FormData();
+  fd.append(
+    "file",
+    new Blob([new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d])], {
+      type: "application/pdf",
+    }),
+    mark + "-lease.pdf",
   );
-  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
-  set.call(input, mark + " directive body");
-  input.dispatchEvent(new Event("input", { bubbles: true }));
+  fd.append("locationRef", "AF-1126");
+  fd.append("kind", "lease");
+  const up = await fetch("/admin/api/documents", { method: "POST", body: fd });
+  const listRes = await fetch("/admin/api/documents?location=AF-1126", {
+    cache: "no-store",
+  });
+  const list = listRes.ok ? await listRes.json() : { documents: [] };
+  const mine = list.documents.find((d) => d.filename === mark + "-lease.pdf");
+  let viewOk = false;
+  if (mine) {
+    const view = await fetch(`/admin/api/documents?id=${mine.id}`);
+    viewOk =
+      view.ok && (view.headers.get("content-type") || "").includes("pdf");
+  }
+  return { upStatus: up.status, listed: !!mine, viewOk };
 }, MARK);
-await pause(200);
-await clickText("Add");
-await pause(900);
-const { rows: dir } = await sql.query(
-  `select id from agent_directive where body like $1`,
+check(`lease document uploaded (${doc.upStatus})`, doc.upStatus === 200);
+check("lease document listed for its location", doc.listed);
+check("lease document streams back as a PDF", doc.viewOk);
+const { rows: docRows } = await sql.query(
+  `select byte_size from lease_document where filename like $1`,
   [MARK + "%"],
 );
-check("directive persisted", dir.length === 1);
+check("lease document row in the database", docRows.length === 1);
 
 console.log(`\nconsole errors: ${errors.length}`);
 if (errors.length) errors.slice(0, 3).forEach((e) => console.log("  " + e.slice(0, 160)));
@@ -243,6 +292,7 @@ for (const [label, q, args] of [
   ["location_config", `delete from location_config where place_id like $1`, [MARK + "%"]],
   ["center_source", `delete from center_source where url = 'https://probe.example/directory'`, []],
   ["agent_directive", `delete from agent_directive where body like $1`, [MARK + "%"]],
+  ["lease_document", `delete from lease_document where filename like $1`, [MARK + "%"]],
 ]) {
   const r = await sql.query(q, args);
   cleaned.push(`${label}:${r.rowCount}`);
