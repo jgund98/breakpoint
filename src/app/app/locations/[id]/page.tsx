@@ -16,6 +16,7 @@ import {
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
 import { TODAY, rowById, rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
+import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
 import { Rise } from "@/components/app/Motion";
 import {
   ActionButton,
@@ -525,6 +526,28 @@ export default async function LocationPage({
               ))}
             </ul>
           </Panel>
+
+          {/* ---- the estoppel moment ---- */}
+          <EstoppelCheck
+            locationId={row.id}
+            centerName={center.name}
+            live={ev.anyFailing || ev.state === "remedy_active"}
+            asOf={prettyDate(TODAY)}
+            failing={ev.triggers
+              .filter((t) => t.failing)
+              .map((t) => ({ label: t.label, cite: t.cite, observed: t.observed }))}
+          />
+
+          {/* ---- what the tenant can start themselves ---- */}
+          <LocationActions
+            locationId={row.id}
+            centerName={center.name}
+            suites={center.suites.map((s) => ({
+              id: s.id,
+              name: s.name,
+              status: s.status,
+            }))}
+          />
         </div>
       </div>
 

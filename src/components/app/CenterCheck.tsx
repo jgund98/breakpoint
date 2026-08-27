@@ -79,6 +79,9 @@ export function CenterCheck({
   const [activeId, setActiveId] = useState(centers[0]?.locationId ?? "");
   const [paste, setPaste] = useState("");
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
+  const [recording, setRecording] = useState(false);
+  const [recorded, setRecorded] = useState<string | null>(null);
+  const [recordError, setRecordError] = useState<string | null>(null);
 
   const active = centers.find((c) => c.locationId === activeId) ?? centers[0];
 
@@ -199,6 +202,47 @@ export function CenterCheck({
   }, [active, accepted, asOf]);
 
   const acceptedCount = Object.values(accepted).filter(Boolean).length;
+
+  /*
+   * Filing the check. Each confirmed change goes in as its own store
+   * report, because that is what it is: a person looked at the
+   * directory and attests to what it said. One row per store keeps the
+   * queue workable when a real sweep confirms twelve changes at once.
+   */
+  const record = async () => {
+    if (!active) return;
+    setRecording(true);
+    setRecordError(null);
+    const changes = active.center.suites.filter((su) => accepted[su.id]);
+    try {
+      for (const su of changes) {
+        const closing = su.status === "open";
+        const res = await fetch("/app/api/requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            kind: "closure_report",
+            locationId: active.locationId,
+            centerName: active.center.name,
+            storeName: su.name,
+            observedOn: new Date().toISOString().slice(0, 10),
+            body: closing
+              ? "Weekly check: absent from the published directory."
+              : "Weekly check: listed again after being marked closed.",
+          }),
+        });
+        if (!res.ok) throw new Error("filing failed");
+      }
+      setRecorded(
+        `${changes.length} change${changes.length === 1 ? "" : "s"} filed`,
+      );
+      setAccepted({});
+    } catch {
+      setRecordError("The check did not file. Nothing was lost; try again.");
+    } finally {
+      setRecording(false);
+    }
+  };
 
   if (!active) return null;
 
@@ -413,13 +457,24 @@ export function CenterCheck({
                 </ul>
 
                 <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-3">
-                  <ActionButton variant="primary" disabled>
-                    Record this check
+                  <ActionButton
+                    variant="primary"
+                    onClick={() => void record()}
+                    disabled={recording || acceptedCount === 0}
+                  >
+                    {recording ? "Filing" : "Record this check"}
                   </ActionButton>
-                  <p className="text-[0.75rem] text-muted">
-                    Saving is wired to the account once the database is
-                    connected. See db/001_initial.sql.
-                  </p>
+                  {recorded && (
+                    <p className="text-[0.75rem] text-open-700">{recorded}.</p>
+                  )}
+                  {recordError && (
+                    <p className="text-[0.75rem] text-clay-700">{recordError}</p>
+                  )}
+                  {!recorded && !recordError && (
+                    <p className="text-[0.75rem] text-muted">
+                      Files each confirmed change as a store report.
+                    </p>
+                  )}
                 </div>
               </Panel>
             </motion.div>

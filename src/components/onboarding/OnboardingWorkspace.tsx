@@ -57,6 +57,8 @@ export function OnboardingWorkspace({
   const [ready, setReady] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [note, setNote] = useState<Note>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const first = useRef(true);
 
   useEffect(() => {
@@ -99,6 +101,39 @@ export function OnboardingWorkspace({
     }));
 
   const progress = useMemo(() => completion(s), [s]);
+
+  /*
+   * Sending it to us. The whole state goes as one document, because the
+   * team sets the account up from exactly what the client assembled,
+   * not from a lossy summary of it. Submitting again after edits is
+   * expected and files a fresh copy.
+   */
+  const submit = async () => {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/onboarding/api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientName,
+          clientSlug,
+          storeEstimate,
+          state: s,
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setSubmitError(data?.error ?? "The submission did not send. Try again.");
+        return;
+      }
+      set("submittedAt", new Date().toISOString());
+    } catch {
+      setSubmitError("The submission did not send. Check the connection and try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const loadRoster = (text: string, fileName = "") => {
     const { headers, rows } = parseDelimited(text);
@@ -200,8 +235,48 @@ export function OnboardingWorkspace({
               v={`${progress.done} of ${progress.total}`}
               tone={progress.done === progress.total ? "open" : undefined}
             />
+            <div className="pb-0.5">
+              {s.submittedAt ? (
+                <div className="text-right">
+                  <p className="text-[0.75rem] font-semibold text-open-700">
+                    Sent{" "}
+                    {new Date(s.submittedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => void submit()}
+                    disabled={submitting}
+                    className="text-[0.6875rem] text-muted underline underline-offset-2 hover:text-petrol-700"
+                  >
+                    Send updates
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => void submit()}
+                  disabled={submitting || progress.done < progress.total}
+                  title={
+                    progress.done < progress.total
+                      ? "Finish the required tasks first"
+                      : undefined
+                  }
+                  className="rounded-lg bg-petrol-800 px-4 py-2 text-[0.8125rem] font-semibold text-cream transition-colors hover:bg-petrol-700 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {submitting ? "Sending" : "Send to Breakpoint"}
+                </button>
+              )}
+            </div>
           </dl>
         </div>
+        {submitError && (
+          <p className="mx-auto max-w-[74rem] px-6 pb-2 text-[0.75rem] text-clay-700">
+            {submitError}
+          </p>
+        )}
         <div className="h-0.5 w-full bg-surface-sunk">
           <div
             className="h-full bg-brass-500 transition-[width] duration-500"

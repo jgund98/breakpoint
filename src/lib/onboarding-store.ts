@@ -34,6 +34,8 @@ export type OnboardingState = {
   /** Bumped when the shape changes so a stale save cannot half-load. */
   version: 1;
   updatedAt: string;
+  /** Set when the client sends the onboarding to us. */
+  submittedAt?: string;
 
   /**
    * How each body of data is reaching us, and any detail that route

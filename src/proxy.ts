@@ -10,7 +10,10 @@ import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
  * putting a sign-in in front of intake means the first thing a new
  * customer meets is a door they have no key to.
  */
-const WORKSPACE = ["/app"];
+/* /admin rides the same session until staff auth exists. It is the
+   team's surface, not the client's, and splitting the two logins is
+   part of the real-auth work. */
+const WORKSPACE = ["/app", "/admin"];
 
 /**
  * Two gates, in order.
