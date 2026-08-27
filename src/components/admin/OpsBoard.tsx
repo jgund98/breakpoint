@@ -99,6 +99,8 @@ function describeSchedule(s: Schedule | null | undefined): string {
   return `Monthly: ${s.days.map((d) => (d === "last" ? "last day" : `${d}th`)).join(", ")}`;
 }
 
+/* Local accessors on purpose: "due today" means the operator's today,
+   and this renders only after the client fetch, never at SSR. */
 function dueToday(s: Schedule | null | undefined, now = new Date()): boolean {
   if (!s) return false;
   if (s.cadence === "weekly") return now.getDay() === s.weekday;

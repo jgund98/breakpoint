@@ -306,6 +306,11 @@ export const coverage = (() => {
     checksPerSweep,
     /** Distinct stores under watch. */
     storesWatched: targets.length,
-    nextSweepISO: iso(addDays(new Date(TODAY), 7 - new Date(TODAY).getDay())),
+    /* UTC accessors, deliberately. TODAY parses as UTC midnight, and a
+       local getDay() reads it as the previous evening west of Greenwich:
+       a UTC build said "next report Aug 16" and an Eastern browser
+       recomputed "Aug 17", which is a hydration mismatch on every page
+       carrying the sidebar. */
+    nextSweepISO: iso(addDays(new Date(TODAY), 7 - new Date(TODAY).getUTCDay())),
   };
 })();

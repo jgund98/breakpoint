@@ -127,7 +127,7 @@ export const reports: Report[] = (() => {
   // last three monthlies
   for (let m = 1; m <= 3; m++) {
     const d = new Date(today);
-    d.setMonth(d.getMonth() - m, 1);
+    d.setUTCMonth(d.getUTCMonth() - m, 1);
     const label = d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
     const h = hash(label);
     out.push({
@@ -143,9 +143,9 @@ export const reports: Report[] = (() => {
   // last two quarterlies
   for (let q = 1; q <= 2; q++) {
     const d = new Date(today);
-    d.setMonth(d.getMonth() - q * 3, 1);
-    const quarter = Math.floor(d.getMonth() / 3) + 1;
-    const label = `Q${quarter} ${d.getFullYear()}`;
+    d.setUTCMonth(d.getUTCMonth() - q * 3, 1);
+    const quarter = Math.floor(d.getUTCMonth() / 3) + 1;
+    const label = `Q${quarter} ${d.getUTCFullYear()}`;
     const h = hash(label);
     out.push({
       id: `RPT-Q${label.replace(" ", "")}`,
