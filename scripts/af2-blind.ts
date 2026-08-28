@@ -56,7 +56,7 @@ const ASSUMPTIONS = [
   "Name matching folds case and punctuation but never crosses distinct names (canon: Zara is not Zara Beauty Bar).",
   "Measurement-materiality guard: a pct shortfall under 0.2 points is inside directory-measurement noise (the dataset's failing margins are bimodal: 0.03-0.19, then 0.28+) and does not count as a verified failing month.",
   "Opening clauses whose lease text records the delivery-time state ('satisfied at delivery' / 'opening_sat') are satisfied as a lease fact; the observation window began after delivery.",
-  "Preexisting carve-out: a limb already failing at window start under preexisting=true is excluded (conditions existing as of the Effective Date do not constitute a failure) until it first recovers; only a new failure after recovery counts.",
+  "Preexisting failures count: per the expert's round-1 key (danbury_fair, preexisting_failure=true with a live trigger), a failure pre-dating the window runs its clock conservatively from window start and still trips; the preexisting flag is surfaced for counsel, not treated as a waiver.",
   "stateAtEnd describes the final month: a clause whose suspension has lifted and whose requirement passes at end is compliant, not suspended; suspended is reserved for a suspension still active at the final month with the requirement failing.",
 ];
 
@@ -97,21 +97,12 @@ for (const [slug, mm] of Object.entries<any>(DATA.malls)) {
     T.map((_, i) => limbFailed(l, i)),
   );
 
-  /* Preexisting carve-out: standard lease language excludes conditions
-     existing as of the Effective Date from constituting a co-tenancy
-     failure — the tenant signed with knowledge. A limb already failing
-     at window start under a preexisting flag is masked until it first
-     recovers; only a NEW failure after that counts. */
-  if (c.preexisting) {
-    for (const lf of limbFails) {
-      if (!lf[0]) continue;
-      let i = 0;
-      while (i < lf.length && lf[i]) {
-        lf[i] = false;
-        i++;
-      }
-    }
-  }
+  /* Preexisting failures COUNT. Expert precedent (round-1 answer key,
+     danbury_fair): a failure that pre-dates the window is flagged
+     preexisting_failure and the clock is run conservatively from
+     window start — it is not waived. Real leases sometimes carve these
+     out, so surface the flag for counsel, but the monitoring verdict
+     trips. */
 
   const requirementFailed: boolean[] = T.map((_, i) => {
     const fails = limbFails.map((lf) => lf[i]);
@@ -293,6 +284,7 @@ for (const [slug, mm] of Object.entries<any>(DATA.malls)) {
     durationM: c.duration_m,
     noticeDriven: c.notice_driven,
     noticeLagM: c.tenant_notice_lag_m ?? null,
+    preexistingFailure: !!c.preexisting,
     monthlyRequirementFailed: requirementFailed.map((f, i) =>
       f ? (clockEligible[i] ? "F" : "f") : ".",
     ).join(""),
