@@ -103,15 +103,19 @@ export default function NoticesPage() {
         <Panel flush>
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
             <div>
-              <p className="label text-indigo-600">Package preview</p>
-              <h2 className="mt-1.5 text-[1.0625rem] font-semibold text-slate-900">
-                {lead.center.name}
-              </h2>
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h2 className="text-[1.0625rem] font-bold tracking-tight text-slate-900">
+                  {lead.center.name}
+                </h2>
+                <Pill tone="petrol" dot>
+                  Package preview
+                </Pill>
+              </div>
               <p className="mt-1 text-[0.8125rem] text-slate-500">
                 {lead.id} · prepared for {org.name}. Awaiting counsel review.
               </p>
             </div>
-            <p className="text-[0.75rem] text-slate-500">
+            <p className="text-[0.75rem] font-medium text-slate-500">
               Move it through review below.
             </p>
           </div>
@@ -125,15 +129,15 @@ export default function NoticesPage() {
                     .map((t) => (
                       <li
                         key={t.id}
-                        className="rounded-xl border border-rose-100 bg-rose-50 p-3.5"
+                        className="rounded-xl border border-slate-200 border-l-4 border-l-rose-600 bg-white p-3.5 shadow-sm"
                       >
                         <p className="text-[0.8125rem] font-semibold text-slate-900">
-                          {t.label} <span className="text-slate-400">{t.cite}</span>
+                          {t.label} <span className="font-normal text-slate-400">{t.cite}</span>
                         </p>
                         <p className="mt-1 text-[0.8125rem] text-slate-700">
                           Required: {t.requirement}
                         </p>
-                        <p className="text-[0.8125rem] text-rose-700">
+                        <p className="text-[0.8125rem] font-bold text-rose-600">
                           Observed: {t.observed}
                         </p>
                         {t.culprits.length > 0 && (
@@ -208,9 +212,12 @@ export default function NoticesPage() {
               </Section>
 
               <Section n="05" title="Draft notice">
-                <div className="rounded-xl border border-slate-200 bg-slate-100 p-4 text-[0.8125rem] leading-[1.8] text-slate-700">
-                  <p>
-                    Re: Co-Tenancy, {lead.center.name}, Store {lead.storeNumber}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 text-[0.8125rem] leading-[1.8] text-slate-700 shadow-sm">
+                  <p className="flex items-center justify-between gap-3 font-semibold text-slate-900">
+                    <span>
+                      Re: Co-Tenancy, {lead.center.name}, Store {lead.storeNumber}
+                    </span>
+                    <Pill tone="muted">Draft</Pill>
                   </p>
                   <p className="mt-3">
                     Pursuant to {lead.clause.locations[0]} of the Lease, Tenant
@@ -255,8 +262,10 @@ function Section({
 }) {
   return (
     <div>
-      <div className="flex items-baseline gap-2.5">
-        <span className="text-[0.8125rem] font-bold text-amber-500">{n}</span>
+      <div className="flex items-center gap-2.5">
+        <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-600 text-[0.625rem] font-bold text-white shadow-sm">
+          {n.replace(/^0/, "")}
+        </span>
         <h3 className="text-[0.875rem] font-semibold text-slate-900">{title}</h3>
       </div>
       <div className="mt-2.5">{children}</div>
