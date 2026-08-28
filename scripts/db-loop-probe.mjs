@@ -266,10 +266,10 @@ await page.evaluate(() => {
 });
 await pause(500);
 await page.evaluate((mark) => {
+  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
   const input = [...document.querySelectorAll("input")].find((i) =>
     (i.placeholder || "").startsWith("ChIJ"),
   );
-  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
   set.call(input, mark + "-PLACE");
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }, MARK);
@@ -338,6 +338,156 @@ const { rows: docRows } = await sql.query(
 );
 check("lease document row in the database", docRows.length === 1);
 
+/* ================= 5. the operating loop ================= */
+console.log("--- the operating loop ---");
+
+/* the handled request alerted the client */
+const { rows: reqAlert } = await sql.query(
+  `select id from notification where org_slug = 'abercrombie-fitch'
+    and kind = 'request' and created_at > now() - interval '5 minutes'`,
+);
+check("handling a request filed a client alert", reqAlert.length >= 1);
+
+/* the amendment queues the record for human approval */
+const queued = await page.evaluate(async () => {
+  const res = await fetch("/admin/api", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "location",
+      org: "abercrombie-fitch",
+      locationRef: "AF-1126",
+      status: "active",
+      schedule: null,
+      placeId: "",
+      leaseUpdatedOn: "2026-08-01",
+      notes: "",
+    }),
+  });
+  return res.status;
+});
+check(`lease update saved (${queued})`, queued === 200);
+const { rows: pipe } = await sql.query(
+  `select stage, source_excerpt from location_pipeline
+    where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`,
+);
+check(
+  "lease update queued the record for review",
+  pipe.length === 1 && pipe[0].stage === "extracted" && !!pipe[0].source_excerpt,
+);
+
+/* a filed scan pass with a closure alerts the client */
+const runRes = await page.evaluate(async (mark) => {
+  const res = await fetch("/admin/api", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "scan_run_file",
+      org: "abercrombie-fitch",
+      note: mark + " pass",
+      observations: [
+        {
+          locationRef: "AF-1126",
+          centerRef: "PROBE-CTR",
+          store: mark + " Anchor",
+          status: "closed",
+          changed: true,
+        },
+        {
+          locationRef: "AF-1126",
+          centerRef: "PROBE-CTR",
+          store: mark + " Inline",
+          status: "open",
+          changed: false,
+        },
+      ],
+    }),
+  });
+  return res.status;
+}, MARK);
+check(`scan pass filed (${runRes})`, runRes === 200);
+const { rows: obsRows } = await sql.query(
+  `select changed from scan_observation where store_name like $1`,
+  [MARK + "%"],
+);
+check("observations persisted store by store", obsRows.length === 2);
+const { rows: scanAlert } = await sql.query(
+  `select id from notification where org_slug = 'abercrombie-fitch'
+    and kind = 'scan' and created_at > now() - interval '5 minutes'`,
+);
+check("the closure alerted the client", scanAlert.length >= 1);
+
+/* the extraction desk shows the queued record and a person approves it */
+await page.goto(`${BASE}/admin/extraction`, { waitUntil: "networkidle0" });
+await pause(1000);
+check(
+  "extraction desk shows the queued record",
+  /AF-1126/.test(await body()) && /awaiting review/i.test(await body()),
+);
+await page.evaluate(() => {
+  const row = [...document.querySelectorAll("button")].find((b) =>
+    (b.textContent || "").includes("AF-1126"),
+  );
+  row?.click();
+});
+await pause(500);
+await clickText("Approve, put it under watch");
+await pause(1200);
+const { rows: pipeAfter } = await sql.query(
+  `select 1 from location_pipeline
+    where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`,
+);
+check("approval put the record back under watch", pipeAfter.length === 0);
+
+/* the client bell carries the alerts, and reading clears it */
+await page.goto(`${BASE}/app`, { waitUntil: "networkidle0" });
+await pause(800);
+const bell = await page.evaluate(async () => {
+  const r = await fetch("/app/api/notifications", { cache: "no-store" });
+  const d = await r.json();
+  const before = d.unread;
+  await fetch("/app/api/notifications", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ all: true }),
+  });
+  const r2 = await fetch("/app/api/notifications", { cache: "no-store" });
+  const d2 = await r2.json();
+  return { before, after: d2.unread };
+});
+check(
+  `client bell held ${bell.before} unread; mark-all cleared it`,
+  bell.before >= 3 && bell.after === 0,
+);
+
+/* the served notice's next chapter */
+const nsRes = await page.evaluate(async (mark) => {
+  const res = await fetch("/app/api/notice-status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      locationRef: "AF-1126",
+      stage: "acknowledged",
+      servedOn: "2026-08-20",
+      response: mark + " landlord acknowledged by email",
+    }),
+  });
+  return res.status;
+}, MARK);
+check(`landlord response recorded (${nsRes})`, nsRes === 200);
+const { rows: ns } = await sql.query(
+  `select stage from notice_status
+    where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`,
+);
+check("notice status persisted", ns.length === 1 && ns[0].stage === "acknowledged");
+
+/* the console kept its own record */
+const { rows: auditRows } = await sql.query(
+  `select count(*)::int as n from audit_log
+    where created_at > now() - interval '5 minutes'`,
+);
+check(`audit trail recorded the session (${auditRows[0].n} entries)`, auditRows[0].n >= 4);
+
 console.log(`\nconsole errors: ${errors.length}`);
 if (errors.length) errors.slice(0, 3).forEach((e) => console.log("  " + e.slice(0, 160)));
 
@@ -351,6 +501,12 @@ for (const [label, q, args] of [
   ["agent_directive", `delete from agent_directive where body like $1`, [MARK + "%"]],
   ["lease_document", `delete from lease_document where filename like $1`, [MARK + "%"]],
   ["org", `delete from org where slug = 'probe-client'`, []],
+  ["scan_run", `delete from scan_run where note like $1`, [MARK + "%"]],
+  ["notification", `delete from notification where org_slug = 'abercrombie-fitch' and created_at > now() - interval '10 minutes'`, []],
+  ["location_pipeline", `delete from location_pipeline where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`, []],
+  ["notice_status", `delete from notice_status where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`, []],
+  ["location_config AF-1126", `delete from location_config where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126' and place_id is null`, []],
+  ["audit_log", `delete from audit_log where created_at > now() - interval '10 minutes'`, []],
 ]) {
   const r = await sql.query(q, args);
   cleaned.push(`${label}:${r.rowCount}`);

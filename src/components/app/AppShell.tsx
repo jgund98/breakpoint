@@ -13,6 +13,8 @@ import {
   LayoutDashboard,
   Radar,
   Scale,
+  CalendarClock,
+  FileBarChart2,
   Settings2,
   SlidersHorizontal,
   Sparkles,
@@ -25,6 +27,7 @@ import { DEMO_USER } from "@/lib/session";
 import { useScrollLock } from "@/lib/useScrollLock";
 import { ScanStatus } from "./ScanStatus";
 import { PovToggle } from "@/components/admin/ui";
+import { NotificationBell } from "./NotificationBell";
 
 /**
  * The workspace shell, on the same design system as the console:
@@ -55,7 +58,9 @@ const NAV = [
   {
     heading: "Act",
     items: [
+      { href: "/app/deadlines", label: "Deadlines", Icon: CalendarClock },
       { href: "/app/notices", label: "Notice packages", Icon: FileSignature },
+      { href: "/app/report", label: "Portfolio report", Icon: FileBarChart2 },
       { href: "/app/setup", label: "Portfolio setup", Icon: Settings2 },
       { href: "/app/settings", label: "Settings", Icon: SlidersHorizontal },
     ],
@@ -155,7 +160,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* ---- sidebar, desktop ---- */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200/60 bg-white lg:flex">
+      <aside className="print:hidden fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200/60 bg-white lg:flex">
         <div className="flex h-16 items-center border-b border-slate-100 px-5">
           <Link href="/app" aria-label="Breakpoint" className="text-slate-900">
             <Logo />
@@ -172,7 +177,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ---- top bar ---- */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/90 backdrop-blur-sm lg:pl-64">
+      <header className="print:hidden sticky top-0 z-30 border-b border-slate-200/60 bg-white/90 backdrop-blur-sm lg:pl-64">
         <div className="flex h-16 items-center gap-4 px-4 sm:px-6">
           <button
             type="button"
@@ -204,6 +209,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {claimable} locations ready to claim
             </span>
 
+            <NotificationBell />
             <Link
               href="/app/notices"
               className="hidden h-10 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
@@ -294,7 +300,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* ---- content ---- */}
-      <main id="main" className="lg:pl-64">
+      <main id="main" className="lg:pl-64 print:pl-0">
         <div className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 sm:py-9">
           {children}
         </div>

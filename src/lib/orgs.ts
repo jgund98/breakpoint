@@ -19,6 +19,9 @@ export type OrgRow = {
   status: "onboarding" | "live" | "paused";
   descriptor: string | null;
   created_at: string;
+  account_manager: string | null;
+  contract_start: string | null;
+  contract_renewal: string | null;
 };
 
 /** Datasets wired into the engine so far, keyed by org slug. */
@@ -33,7 +36,8 @@ export async function orgBySlug(slug: string): Promise<OrgRow | null> {
   const clean = (slug ?? "").trim().slice(0, 64);
   if (!clean) return null;
   const { rows: found } = await db().query(
-    `select id, slug, name, status, descriptor, created_at
+    `select id, slug, name, status, descriptor, created_at,
+            account_manager, contract_start, contract_renewal
        from org where slug = $1`,
     [clean],
   );

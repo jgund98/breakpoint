@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ArrowRight,
+  BellRing,
   Check,
   ChevronDown,
+  FileSearch,
+  FileSignature,
   Link2Off,
   MapPinOff,
   MessageSquareDot,
@@ -27,6 +31,8 @@ import {
   EVAL_BADGE,
 } from "@/components/admin/ui";
 import { KIND_LABEL } from "@/components/admin/useConsole";
+import { ScanRecorder } from "@/components/admin/ScanRecorder";
+import Link from "next/link";
 import { scanSheetHtml } from "@/lib/scan-sheet";
 
 /**
@@ -84,6 +90,42 @@ type LeaseDoc = {
   filename: string;
   byte_size: number;
   created_at: string;
+};
+
+type AlertRow = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string | null;
+  location_ref: string | null;
+  created_at: string;
+  read_at: string | null;
+};
+
+type PipelineRow = { location_ref: string; stage: string; note: string | null };
+
+type NoticeStatusRow = {
+  location_ref: string;
+  stage: string;
+  served_on: string | null;
+  response: string | null;
+  updated_at: string;
+};
+
+type ScanRunRow = {
+  id: string;
+  ran_by: string;
+  note: string | null;
+  locations: number;
+  stores: number;
+  changes: number;
+  created_at: string;
+};
+
+type Account = {
+  accountManager: string | null;
+  contractStart: string | null;
+  contractRenewal: string | null;
 };
 
 type RequestRow = {
@@ -222,6 +264,15 @@ export function OpsBoard({
   const [configs, setConfigs] = useState<Map<string, LocationConfig>>(new Map());
   const [sources, setSources] = useState<Source[]>([]);
   const [requests, setRequests] = useState<RequestRow[]>([]);
+  const [alerts, setAlerts] = useState<AlertRow[]>([]);
+  const [pipeline, setPipeline] = useState<PipelineRow[]>([]);
+  const [noticeStatus, setNoticeStatus] = useState<NoticeStatusRow[]>([]);
+  const [scanRuns, setScanRuns] = useState<ScanRunRow[]>([]);
+  const [account, setAccount] = useState<Account>({
+    accountManager: null,
+    contractStart: null,
+    contractRenewal: null,
+  });
   const [loaded, setLoaded] = useState(false);
   const [openRow, setOpenRow] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
@@ -242,6 +293,15 @@ export function OpsBoard({
     );
     setSources(data.sources);
     setRequests(data.requests);
+    setAlerts(data.alerts ?? []);
+    setPipeline(data.pipeline ?? []);
+    setNoticeStatus(data.noticeStatus ?? []);
+    setScanRuns(data.scanRuns ?? []);
+    setAccount({
+      accountManager: data.org?.accountManager ?? null,
+      contractStart: data.org?.contractStart?.slice?.(0, 10) ?? null,
+      contractRenewal: data.org?.contractRenewal?.slice?.(0, 10) ?? null,
+    });
     setLoaded(true);
   }, [orgSlug]);
 
@@ -328,6 +388,16 @@ export function OpsBoard({
   if (!loaded) {
     return <p className="py-16 text-center text-[0.8125rem] text-slate-400">Loading the board.</p>;
   }
+
+  const dueIds = new Set(
+    locations
+      .filter((l) => {
+        const cfg = configs.get(l.id);
+        if (cfg?.status === "paused" || cfg?.status === "removed") return false;
+        return dueToday(cfg?.scan_schedule ?? orgSchedule);
+      })
+      .map((l) => l.id),
+  );
 
   const printSheet = () => {
     const due = locations.filter((l) => {
@@ -425,6 +495,47 @@ export function OpsBoard({
               </span>
             )}
           </div>
+        </Section>
+      </Rise>
+
+      {/* ---- records pulled back for review ---- */}
+      {pipeline.length > 0 && (
+        <Rise delay={120}>
+          <Link
+            href="/admin/extraction"
+            className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 shadow-sm transition-all hover:shadow-md"
+          >
+            <span className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                <FileSearch className="h-5 w-5" />
+              </span>
+              <span>
+                <span className="block text-[0.875rem] font-semibold text-slate-900">
+                  {pipeline.length} record{pipeline.length === 1 ? "" : "s"} awaiting
+                  human approval
+                </span>
+                <span className="block text-[0.75rem] text-slate-600">
+                  {pipeline.map((p) => p.location_ref).join(", ")} · review on the
+                  extraction desk
+                </span>
+              </span>
+            </span>
+            <ArrowRight className="h-4 w-4 shrink-0 text-amber-500" />
+          </Link>
+        </Rise>
+      )}
+
+      {/* ---- the account facts ---- */}
+      <Rise delay={130}>
+        <Section
+          title="Account"
+          blurb="Who owns this client and when the contract turns. The renewal date is when the watch record earns the invoice."
+        >
+          <AccountEditor
+            key={account.accountManager ?? "" + account.contractRenewal}
+            account={account}
+            onSave={(a) => void post({ action: "org_update", ...a })}
+          />
         </Section>
       </Rise>
 
@@ -592,6 +703,158 @@ export function OpsBoard({
           )}
         </Section>
       </Rise>
+
+      {/* ---- the recorder: monitoring as a record ---- */}
+      {hasPortfolio && (
+        <Rise delay={220}>
+          <ScanRecorder
+            orgSlug={orgSlug}
+            locations={locations}
+            dueIds={dueIds}
+            onFiled={() => void load()}
+          />
+        </Rise>
+      )}
+
+      {scanRuns.length > 0 && (
+        <Rise delay={240}>
+          <Section title="Filed passes" flush>
+            <ul className="divide-y divide-slate-100">
+              {scanRuns.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-6 py-3"
+                >
+                  <span className="text-[0.8125rem] text-slate-700">
+                    <span className="tnum font-semibold text-slate-900">
+                      {new Date(r.created_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    <span className="tnum ml-2 text-slate-500">
+                      {r.stores} stores · {r.locations} locations
+                    </span>
+                    {r.note && <span className="ml-2 text-slate-400">{r.note}</span>}
+                  </span>
+                  <Badge tone={r.changes > 0 ? "amber" : "emerald"} dot>
+                    {r.changes > 0
+                      ? r.changes + " change" + (r.changes === 1 ? "" : "s")
+                      : "No change"}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        </Rise>
+      )}
+
+      {/* ---- what the client was told ---- */}
+      <Rise delay={260}>
+        <Section
+          title="Alerts sent"
+          blurb="Every alert filed to this client's bell, with whether they've read it. When a client asks whether anyone told them, this answers in one look."
+          flush
+          aside={
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <BellRing className="h-4 w-4" />
+            </span>
+          }
+        >
+          {alerts.length === 0 ? (
+            <EmptyNote>
+              Nothing sent yet. Handling a request or filing a pass with a
+              change alerts the client automatically.
+            </EmptyNote>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {alerts.slice(0, 10).map((a) => (
+                <li
+                  key={a.id}
+                  className="flex flex-wrap items-start justify-between gap-3 px-6 py-3"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[0.8125rem] font-medium text-slate-800">
+                      {a.title}
+                      {a.location_ref && (
+                        <span className="ml-1.5 text-slate-400">{a.location_ref}</span>
+                      )}
+                    </span>
+                    <span className="block text-[0.6875rem] text-slate-400">
+                      {new Date(a.created_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </span>
+                  <Badge tone={a.read_at ? "emerald" : "amber"} dot>
+                    {a.read_at ? "Read" : "Unread"}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      </Rise>
+
+      {/* ---- served notices, tracked by the client ---- */}
+      {noticeStatus.length > 0 && (
+        <Rise delay={280}>
+          <Section
+            title="Served notices"
+            blurb="The client's record of where each served notice stands with the landlord."
+            flush
+            aside={
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <FileSignature className="h-4 w-4" />
+              </span>
+            }
+          >
+            <ul className="divide-y divide-slate-100">
+              {noticeStatus.map((n) => (
+                <li
+                  key={n.location_ref}
+                  className="flex flex-wrap items-start justify-between gap-3 px-6 py-3"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[0.8125rem] font-semibold text-slate-900">
+                      {n.location_ref}
+                      {n.served_on && (
+                        <span className="ml-2 font-normal text-slate-400">
+                          served {n.served_on.slice(0, 10)}
+                        </span>
+                      )}
+                    </span>
+                    {n.response && (
+                      <span className="block text-[0.75rem] leading-snug text-slate-500">
+                        {n.response}
+                      </span>
+                    )}
+                  </span>
+                  <Badge
+                    tone={
+                      n.stage === "disputed"
+                        ? "rose"
+                        : n.stage === "cured" || n.stage === "resolved"
+                          ? "emerald"
+                          : n.stage === "acknowledged"
+                            ? "indigo"
+                            : "slate"
+                    }
+                    dot
+                  >
+                    {n.stage}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        </Rise>
+      )}
 
       <p className="text-[0.6875rem] text-slate-400">
         Internal. Changes persist to the account database and drive the scan
@@ -989,5 +1252,75 @@ function RowEditor({
         </tr>
       )}
     </>
+  );
+}
+
+/* ------------------------------------------------------------------
+   the account facts
+   ------------------------------------------------------------------ */
+
+function AccountEditor({
+  account,
+  onSave,
+}: {
+  account: {
+    accountManager: string | null;
+    contractStart: string | null;
+    contractRenewal: string | null;
+  };
+  onSave: (v: {
+    accountManager: string;
+    contractStart: string;
+    contractRenewal: string;
+  }) => void;
+}) {
+  const [am, setAm] = useState(account.accountManager ?? "");
+  const [start, setStart] = useState(account.contractStart ?? "");
+  const [renewal, setRenewal] = useState(account.contractRenewal ?? "");
+
+  return (
+    <div className="flex flex-wrap items-end gap-3">
+      <div>
+        <label className="mb-1 block text-[0.75rem] font-medium text-slate-500">
+          Account manager
+        </label>
+        <input
+          value={am}
+          onChange={(e) => setAm(e.target.value)}
+          placeholder="Who owns this client"
+          className={cn(inputCls, "w-52")}
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-[0.75rem] font-medium text-slate-500">
+          Contract start
+        </label>
+        <input
+          type="date"
+          value={start}
+          onChange={(e) => setStart(e.target.value)}
+          className={inputCls}
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-[0.75rem] font-medium text-slate-500">
+          Renewal
+        </label>
+        <input
+          type="date"
+          value={renewal}
+          onChange={(e) => setRenewal(e.target.value)}
+          className={inputCls}
+        />
+      </div>
+      <Btn
+        variant="secondary"
+        onClick={() =>
+          onSave({ accountManager: am, contractStart: start, contractRenewal: renewal })
+        }
+      >
+        Save account
+      </Btn>
+    </div>
   );
 }

@@ -17,6 +17,8 @@ export type OrgRow = {
   open_requests: number;
   locations: number | null;
   centers: number | null;
+  account_manager: string | null;
+  contract_renewal: string | null;
 };
 
 export type Submission = {
@@ -59,6 +61,8 @@ export type Coverage = {
 
 export type ConsoleData = {
   orgs: OrgRow[];
+  pipelinePending: number;
+  avgHandleSeconds: number | null;
   submissions: Submission[];
   directives: Directive[];
   requestsAll: RequestRow[];

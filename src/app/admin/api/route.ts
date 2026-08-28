@@ -21,11 +21,49 @@ import { NextRequest, NextResponse } from "next/server";
 import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
 import { db } from "@/lib/db";
 import { orgBySlug, sanitizeSlug, PORTFOLIOS } from "@/lib/orgs";
+import { rowById } from "@/lib/portfolio";
 
 export const runtime = "nodejs";
 
 function authorized(request: NextRequest) {
   return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
+}
+
+/** Append-only record of what the console did. Never blocks the action. */
+async function audit(
+  action: string,
+  orgSlug: string | null,
+  subject: string | null,
+  detail?: string,
+) {
+  try {
+    await db().query(
+      `insert into audit_log (actor, action, org_slug, subject, detail)
+       values ('ops', $1, $2, $3, $4)`,
+      [action, orgSlug, subject, detail ?? null],
+    );
+  } catch {
+    /* the log must never take the action down with it */
+  }
+}
+
+/** Files an alert for the client. Their bell and our delivery log read it. */
+async function notify(
+  orgSlug: string,
+  kind: string,
+  title: string,
+  body: string | null,
+  locationRef?: string | null,
+) {
+  try {
+    await db().query(
+      `insert into notification (org_slug, kind, title, body, location_ref)
+       values ($1, $2, $3, $4, $5)`,
+      [orgSlug, kind, title, body, locationRef ?? null],
+    );
+  } catch {
+    /* same rule as the audit log */
+  }
 }
 
 const clip = (v: unknown, max: number) =>
@@ -62,48 +100,102 @@ export async function GET(request: NextRequest) {
     if (!org)
       return NextResponse.json({ error: "Unknown client." }, { status: 404 });
 
-    const [settings, configs, sources, requests] = await Promise.all([
-      db().query(`select scan_schedule from org_settings where org_slug = $1`, [
-        org.slug,
-      ]),
-      db().query(
-        `select location_ref, status, scan_schedule, place_id, lease_updated_on, notes
-           from location_config where org_slug = $1`,
-        [org.slug],
-      ),
-      db().query(
-        `select id, center_ref, kind, url, place_id, label from center_source
-          order by created_at`,
-      ),
-      db().query(
-        `select id, location_ref, center_name, kind, store_name, observed_on, body,
-                created_at, handled_at, handled_by
-           from client_request where org_slug = $1
-          order by (handled_at is null) desc, created_at desc
-          limit 100`,
-        [org.slug],
-      ),
-    ]);
+    const [settings, configs, sources, requests, pipeline, alerts, notices, runs] =
+      await Promise.all([
+        db().query(`select scan_schedule from org_settings where org_slug = $1`, [
+          org.slug,
+        ]),
+        db().query(
+          `select location_ref, status, scan_schedule, place_id, lease_updated_on, notes
+             from location_config where org_slug = $1`,
+          [org.slug],
+        ),
+        db().query(
+          `select id, center_ref, kind, url, place_id, label from center_source
+            order by created_at`,
+        ),
+        db().query(
+          `select id, location_ref, center_name, kind, store_name, observed_on, body,
+                  created_at, handled_at, handled_by
+             from client_request where org_slug = $1
+            order by (handled_at is null) desc, created_at desc
+            limit 100`,
+          [org.slug],
+        ),
+        db().query(
+          `select location_ref, stage, extracted, source_excerpt, confidence, note,
+                  created_at, updated_at
+             from location_pipeline where org_slug = $1
+            order by created_at`,
+          [org.slug],
+        ),
+        db().query(
+          `select id, kind, title, body, location_ref, created_at, read_at
+             from notification where org_slug = $1
+            order by created_at desc limit 30`,
+          [org.slug],
+        ),
+        db().query(
+          `select location_ref, stage, served_on, response, updated_at
+             from notice_status where org_slug = $1
+            order by updated_at desc`,
+          [org.slug],
+        ),
+        db().query(
+          `select id, ran_by, note, locations, stores, changes, created_at
+             from scan_run where org_slug = $1
+            order by created_at desc limit 8`,
+          [org.slug],
+        ),
+      ]);
 
     return NextResponse.json({
       org: {
         slug: org.slug,
         name: org.name,
         status: org.status,
+        descriptor: org.descriptor,
+        accountManager: org.account_manager,
+        contractStart: org.contract_start,
+        contractRenewal: org.contract_renewal,
         hasPortfolio: Boolean(PORTFOLIOS[org.slug]),
       },
       orgSchedule: settings.rows[0]?.scan_schedule ?? null,
       locations: configs.rows,
       sources: sources.rows,
       requests: requests.rows,
+      pipeline: pipeline.rows,
+      alerts: alerts.rows,
+      noticeStatus: notices.rows,
+      scanRuns: runs.rows,
     });
   }
 
+  /* ---- the cross-client extraction queue ---- */
+  if (request.nextUrl.searchParams.get("pipeline")) {
+    const [queue, audits] = await Promise.all([
+      db().query(
+        `select p.org_slug, o.name as org_name, p.location_ref, p.stage,
+                p.extracted, p.source_excerpt, p.confidence, p.note,
+                p.created_at, p.updated_at
+           from location_pipeline p
+           left join org o on o.slug = p.org_slug
+          order by p.created_at`,
+      ),
+      db().query(
+        `select actor, action, org_slug, subject, detail, created_at
+           from audit_log order by created_at desc limit 80`,
+      ),
+    ]);
+    return NextResponse.json({ queue: queue.rows, audit: audits.rows });
+  }
+
   /* ---- HQ: the whole company ---- */
-  const [orgs, submissions, directives, requestsAll, placeCover, dirCover] =
+  const [orgs, submissions, directives, requestsAll, placeCover, dirCover, pipelineAll, handleAvg] =
     await Promise.all([
     db().query(
       `select o.slug, o.name, o.status, o.descriptor, o.created_at,
+              o.account_manager, o.contract_renewal,
               coalesce(r.open_requests, 0)::int as open_requests
          from org o
          left join (
@@ -144,6 +236,13 @@ export async function GET(request: NextRequest) {
       `select count(distinct center_ref)::int as n from center_source
         where kind = 'directory'`,
     ),
+    db().query(
+      `select count(*)::int as n from location_pipeline`,
+    ),
+    db().query(
+      `select avg(extract(epoch from handled_at - created_at))::int as secs
+         from client_request where handled_at is not null`,
+    ),
   ]);
 
   return NextResponse.json({
@@ -159,6 +258,8 @@ export async function GET(request: NextRequest) {
       withPlaceByOrg: placeCover.rows,
       centersWithDirectory: dirCover.rows[0]?.n ?? 0,
     },
+    pipelinePending: pipelineAll.rows[0]?.n ?? 0,
+    avgHandleSeconds: handleAvg.rows[0]?.secs ?? null,
   });
 }
 
@@ -195,6 +296,7 @@ export async function POST(request: NextRequest) {
          set scan_schedule = excluded.scan_schedule, updated_at = now()`,
       [org.slug, JSON.stringify(schedule)],
     );
+    await audit("org_schedule", org.slug, null, JSON.stringify(schedule));
     return NextResponse.json({ ok: true });
   }
 
@@ -236,18 +338,190 @@ export async function POST(request: NextRequest) {
         clip(payload.notes, 2000) || null,
       ],
     );
+
+    /* An amendment landing is what queues re-extraction: the current
+       record is snapshotted as the draft a person will re-approve
+       against the new papers. Only meaningful once a portfolio is
+       wired into the engine. */
+    if (leaseUpdatedOn && PORTFOLIOS[org.slug]) {
+      const row = rowById(ref);
+      if (row) {
+        const extracted = {
+          cite: row.clause.id,
+          tests: row.evaluation.triggers.map((t) => ({
+            label: t.label,
+            cite: t.cite,
+          })),
+          remedy: row.clause.remedy?.kind ?? null,
+          preconditions: row.clause.preconditions?.length ?? 0,
+        };
+        await db().query(
+          `insert into location_pipeline
+             (org_slug, location_ref, stage, extracted, source_excerpt, confidence, note, updated_at)
+           values ($1, $2, 'extracted', $3, $4, $5, $6, now())
+           on conflict (org_slug, location_ref) do update set
+             stage = 'extracted',
+             extracted = excluded.extracted,
+             source_excerpt = excluded.source_excerpt,
+             confidence = excluded.confidence,
+             note = excluded.note,
+             updated_at = now()`,
+          [
+            org.slug,
+            ref,
+            JSON.stringify(extracted),
+            row.clause.sourceText ?? null,
+            Math.round((row.clause.confidence ?? 0) * 100) || null,
+            `Lease updated ${leaseUpdatedOn}; record queued for re-approval.`,
+          ],
+        );
+        await audit("pipeline_queued", org.slug, ref, `lease updated ${leaseUpdatedOn}`);
+      }
+    }
+    await audit("location_saved", org.slug, ref);
+    return NextResponse.json({ ok: true });
+  }
+
+  /* ---- the abstraction lifecycle ---- */
+  if (action === "pipeline_approve") {
+    const org = await orgBySlug(clip(payload.org, 64));
+    const ref = clip(payload.locationRef, 64);
+    if (!org || !ref)
+      return NextResponse.json({ error: "No location." }, { status: 400 });
+    const { rowCount } = await db().query(
+      `delete from location_pipeline where org_slug = $1 and location_ref = $2`,
+      [org.slug, ref],
+    );
+    if (!rowCount)
+      return NextResponse.json({ error: "Nothing in review." }, { status: 404 });
+    await audit("pipeline_approved", org.slug, ref);
+    await notify(
+      org.slug,
+      "record",
+      "Clause record re-approved",
+      `The updated record for ${ref} was reviewed by a person and is live under watch again.`,
+      ref,
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  /* ---- a filed scan pass: monitoring as a record ---- */
+  if (action === "scan_run_file") {
+    const org = await orgBySlug(clip(payload.org, 64));
+    if (!org)
+      return NextResponse.json({ error: "Unknown client." }, { status: 400 });
+    const raw = Array.isArray(payload.observations) ? payload.observations : [];
+    const obs = raw
+      .slice(0, 4000)
+      .map((o: Record<string, unknown>) => ({
+        locationRef: clip(o.locationRef, 64),
+        centerRef: clip(o.centerRef, 120),
+        store: clip(o.store, 160),
+        status: clip(o.status, 12),
+        changed: Boolean(o.changed),
+        note: clip(o.note, 500) || null,
+      }))
+      .filter(
+        (o) =>
+          o.locationRef &&
+          o.centerRef &&
+          o.store &&
+          ["open", "closed", "unclear"].includes(o.status),
+      );
+    if (!obs.length)
+      return NextResponse.json({ error: "A pass needs observations." }, { status: 400 });
+
+    const changes = obs.filter((o) => o.changed).length;
+    const { rows: runRows } = await db().query(
+      `insert into scan_run (org_slug, ran_by, note, locations, stores, changes)
+       values ($1, 'ops', $2, $3, $4, $5) returning id`,
+      [
+        org.slug,
+        clip(payload.note, 500) || null,
+        new Set(obs.map((o) => o.locationRef)).size,
+        obs.length,
+        changes,
+      ],
+    );
+    const runId = runRows[0].id;
+    for (const o of obs) {
+      await db().query(
+        `insert into scan_observation
+           (run_id, org_slug, location_ref, center_ref, store_name, status, changed, note)
+         values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [runId, org.slug, o.locationRef, o.centerRef, o.store, o.status, o.changed, o.note],
+      );
+      if (o.changed && o.status === "closed") {
+        await notify(
+          org.slug,
+          "scan",
+          "Change detected on a scan",
+          `${o.store} was observed closed at this center. The clause evaluation is being re-checked.`,
+          o.locationRef,
+        );
+      }
+    }
+    await audit(
+      "scan_filed",
+      org.slug,
+      null,
+      `${obs.length} stores across ${new Set(obs.map((o) => o.locationRef)).size} locations, ${changes} changes`,
+    );
+    return NextResponse.json({ ok: true, id: runId, changes });
+  }
+
+  /* ---- the account facts ---- */
+  if (action === "org_update") {
+    const org = await orgBySlug(clip(payload.org, 64));
+    if (!org)
+      return NextResponse.json({ error: "Unknown client." }, { status: 400 });
+    const dateOrNull = (v: unknown) => {
+      const s = clip(v, 10);
+      return /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null;
+    };
+    await db().query(
+      `update org set account_manager = $2, contract_start = $3, contract_renewal = $4
+        where slug = $1`,
+      [
+        org.slug,
+        clip(payload.accountManager, 120) || null,
+        dateOrNull(payload.contractStart),
+        dateOrNull(payload.contractRenewal),
+      ],
+    );
+    await audit("org_updated", org.slug, null, "account facts");
     return NextResponse.json({ ok: true });
   }
 
   if (action === "request_handled" && org) {
     const id = clip(payload.id, 64);
     if (!id) return NextResponse.json({ error: "No request." }, { status: 400 });
-    await db().query(
+    const { rows: handled } = await db().query(
       `update client_request
           set handled_at = now(), handled_by = $2
-        where id = $1 and org_slug = $3`,
+        where id = $1 and org_slug = $3 and handled_at is null
+        returning kind, center_name, location_ref`,
       [id, clip(payload.by, 80) || "ops", org.slug],
     );
+    if (handled.length) {
+      const r = handled[0];
+      const what =
+        r.kind === "manual_scan"
+          ? "Your scan request was handled"
+          : r.kind === "closure_report"
+            ? "Your closure report was reviewed"
+            : "Your estoppel review was handled";
+      await notify(
+        org.slug,
+        "request",
+        what,
+        r.center_name
+          ? `${r.center_name}. The result is on the location's record.`
+          : "The result is on the location's record.",
+        r.location_ref,
+      );
+      await audit("request_handled", org.slug, r.location_ref, r.kind);
+    }
     return NextResponse.json({ ok: true });
   }
 
@@ -269,6 +543,7 @@ export async function POST(request: NextRequest) {
        values ($1, $2, $3, $4, $5) returning id`,
       [centerRef, kind, url || null, placeId || null, clip(payload.label, 120) || null],
     );
+    await audit("source_added", null, centerRef, url || placeId);
     return NextResponse.json({ ok: true, id: rows[0].id });
   }
 
@@ -276,6 +551,7 @@ export async function POST(request: NextRequest) {
     const id = clip(payload.id, 64);
     if (!id) return NextResponse.json({ error: "No source." }, { status: 400 });
     await db().query(`delete from center_source where id = $1`, [id]);
+    await audit("source_removed", null, id);
     return NextResponse.json({ ok: true });
   }
 
@@ -308,6 +584,7 @@ export async function POST(request: NextRequest) {
         where id = $1 and processed_at is null`,
       [id],
     );
+    await audit("org_created", slug, id, name);
     return NextResponse.json({ ok: true, slug });
   }
 
@@ -331,6 +608,7 @@ export async function POST(request: NextRequest) {
        values ($1, $2, 'onboarding', $3)`,
       [name, slug, clip(payload.descriptor, 120) || null],
     );
+    await audit("org_created", slug, null, name);
     return NextResponse.json({ ok: true, slug });
   }
 
@@ -343,6 +621,7 @@ export async function POST(request: NextRequest) {
       target.slug,
       status,
     ]);
+    await audit("org_status", target.slug, null, status);
     return NextResponse.json({ ok: true });
   }
 
@@ -355,6 +634,7 @@ export async function POST(request: NextRequest) {
         where id = $1`,
       [id, clip(payload.by, 80) || "ops"],
     );
+    await audit("submission_processed", null, id);
     return NextResponse.json({ ok: true });
   }
 
@@ -372,6 +652,7 @@ export async function POST(request: NextRequest) {
        returning id`,
       [topic, body],
     );
+    await audit("directive_added", null, topic, body.slice(0, 120));
     return NextResponse.json({ ok: true, id: rows[0].id });
   }
 

@@ -5,9 +5,10 @@ import {
   Lock,
   BrainCircuit,
   Boxes,
+  ScrollText,
 } from "lucide-react";
 import { PageHeader } from "@/components/admin/Shell";
-import { Card, IconChip, Badge } from "@/components/admin/ui";
+import { Card, IconChip, Badge, Th, EmptyNote } from "@/components/admin/ui";
 import { db } from "@/lib/db";
 import { PORTFOLIOS } from "@/lib/orgs";
 
@@ -29,6 +30,24 @@ export default async function SystemPage() {
     configs: 0,
   };
   let dbOk = true;
+  let audit: {
+    id: string;
+    actor: string;
+    action: string;
+    org_slug: string | null;
+    subject: string | null;
+    detail: string | null;
+    created_at: string;
+  }[] = [];
+  try {
+    const a = await db().query(
+      `select id, actor, action, org_slug, subject, detail, created_at
+         from audit_log order by created_at desc limit 40`,
+    );
+    audit = a.rows;
+  } catch {
+    /* surfaces as the database row below */
+  }
   try {
     const r = await db().query(`
       select
@@ -140,6 +159,67 @@ export default async function SystemPage() {
         title="System"
         blurb="What is actually true about this install, checked live. No decorative toggles."
       />
+      {/* ---- the audit trail ---- */}
+      <Card className="overflow-hidden">
+        <div className="flex items-center gap-3 border-b border-slate-100 px-6 py-4">
+          <IconChip color="slate" size="sm">
+            <ScrollText className="h-4 w-4" />
+          </IconChip>
+          <div>
+            <h2 className="text-[0.9375rem] font-semibold text-slate-900">
+              Audit trail
+            </h2>
+            <p className="text-[0.75rem] text-slate-500">
+              Who did what on this console, newest first. Append-only.
+            </p>
+          </div>
+        </div>
+        {audit.length === 0 ? (
+          <EmptyNote>Nothing recorded yet. Every console action lands here.</EmptyNote>
+        ) : (
+          <div className="max-h-96 overflow-y-auto">
+            <table className="w-full border-collapse text-left">
+              <thead className="sticky top-0 bg-white">
+                <tr className="border-b border-slate-100 bg-slate-50/60">
+                  {["When", "Actor", "Action", "Client", "Subject", "Detail"].map((h) => (
+                    <Th key={h}>{h}</Th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {audit.map((a) => (
+                  <tr key={a.id}>
+                    <td className="tnum whitespace-nowrap px-6 py-2.5 text-[0.75rem] text-slate-500">
+                      {new Date(a.created_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                    <td className="px-6 py-2.5 text-[0.75rem] font-medium text-slate-700">
+                      {a.actor}
+                    </td>
+                    <td className="px-6 py-2.5 font-mono text-[0.6875rem] text-indigo-700">
+                      {a.action}
+                    </td>
+                    <td className="px-6 py-2.5 text-[0.75rem] text-slate-500">
+                      {a.org_slug ?? "—"}
+                    </td>
+                    <td className="px-6 py-2.5 text-[0.75rem] text-slate-500">
+                      {a.subject ?? "—"}
+                    </td>
+                    <td className="max-w-56 truncate px-6 py-2.5 text-[0.75rem] text-slate-400">
+                      {a.detail ?? "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
       <div className="space-y-3">
         {rows.map((r) => (
           <Card key={r.title} className="flex items-start gap-4 px-6 py-5">

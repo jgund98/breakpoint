@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Lock, X } from "lucide-react";
 import {
@@ -59,6 +59,26 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
   const { state, setNotice, ready } = useWorkspace();
   const [declining, setDeclining] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+
+  /* The served notice's next chapter, shared with the team's board. */
+  const [tracked, setTracked] = useState<
+    Record<string, { stage: string; response: string | null }>
+  >({});
+  useEffect(() => {
+    let alive = true;
+    void fetch("/app/api/notice-status", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!alive || !d) return;
+        const map: Record<string, { stage: string; response: string | null }> = {};
+        for (const s of d.statuses ?? [])
+          map[s.location_ref] = { stage: s.stage, response: s.response };
+        setTracked(map);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const role = DEMO_USER.role;
   const can = (p: Permission) => ROLES[role].permissions.includes(p);
@@ -212,6 +232,15 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                 </li>
               </ol>
 
+              {stage === "served" && (
+                <ResponseTracker
+                  locationRef={c.id}
+                  servedOn={record?.servedOn?.slice(0, 10) ?? null}
+                  current={tracked[c.id] ?? null}
+                  onSaved={(v) => setTracked((p) => ({ ...p, [c.id]: v }))}
+                />
+              )}
+
               <AnimatePresence>
                 {declining === c.id && (
                   <motion.div
@@ -256,5 +285,127 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
         on file with the evidence behind it.
       </p>
     </Panel>
+  );
+}
+
+/* ------------------------------------------------------------------
+   after service: what the landlord did about it
+   ------------------------------------------------------------------ */
+
+const RESPONSE_STAGES = [
+  { id: "served", label: "No response yet", tone: "muted" as Tone },
+  { id: "acknowledged", label: "Acknowledged", tone: "petrol" as Tone },
+  { id: "disputed", label: "Disputed", tone: "clay" as Tone },
+  { id: "cured", label: "Cured", tone: "open" as Tone },
+  { id: "resolved", label: "Resolved", tone: "open" as Tone },
+];
+
+function ResponseTracker({
+  locationRef,
+  servedOn,
+  current,
+  onSaved,
+}: {
+  locationRef: string;
+  servedOn: string | null;
+  current: { stage: string; response: string | null } | null;
+  onSaved: (v: { stage: string; response: string | null }) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [stage, setStage] = useState(current?.stage ?? "served");
+  const [response, setResponse] = useState(current?.response ?? "");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setStage(current?.stage ?? "served");
+    setResponse(current?.response ?? "");
+  }, [current]);
+
+  const meta =
+    RESPONSE_STAGES.find((s) => s.id === (current?.stage ?? "served")) ??
+    RESPONSE_STAGES[0];
+
+  const save = async () => {
+    setSaving(true);
+    const res = await fetch("/app/api/notice-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        locationRef,
+        stage,
+        servedOn: servedOn ?? undefined,
+        response: response.trim() || undefined,
+      }),
+    });
+    setSaving(false);
+    if (res.ok) {
+      onSaved({ stage, response: response.trim() || null });
+      setEditing(false);
+    }
+  };
+
+  return (
+    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="flex items-center gap-2">
+          <span className="text-[0.75rem] font-semibold text-slate-700">
+            Landlord response
+          </span>
+          <Pill tone={meta.tone} dot>
+            {meta.label}
+          </Pill>
+        </span>
+        {!editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-[0.75rem] font-semibold text-indigo-600 hover:text-indigo-800"
+          >
+            {current ? "Update" : "Record it"}
+          </button>
+        )}
+      </div>
+      {current?.response && !editing && (
+        <p className="mt-1.5 text-[0.75rem] leading-snug text-slate-600">
+          {current.response}
+        </p>
+      )}
+      {editing && (
+        <div className="mt-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-wrap gap-1.5">
+            {RESPONSE_STAGES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setStage(s.id)}
+                className={cn(
+                  "rounded-lg border px-2.5 py-1.5 text-[0.75rem] font-semibold transition-all",
+                  stage === s.id
+                    ? "border-indigo-200 bg-indigo-50 text-indigo-700"
+                    : "border-slate-200 bg-white text-slate-500 hover:text-slate-800",
+                )}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={response}
+            onChange={(e) => setResponse(e.target.value)}
+            rows={2}
+            placeholder="What the landlord said, and any documents received."
+            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-[0.8125rem] text-slate-800 shadow-sm placeholder:text-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
+          />
+          <div className="flex items-center gap-2">
+            <ActionButton disabled={saving} onClick={() => void save()}>
+              {saving ? "Saving" : "Save"}
+            </ActionButton>
+            <ActionButton variant="quiet" onClick={() => setEditing(false)}>
+              Cancel
+            </ActionButton>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

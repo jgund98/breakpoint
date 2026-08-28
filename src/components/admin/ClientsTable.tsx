@@ -225,6 +225,7 @@ export function ClientsTable() {
                           </Link>
                           <span className="block text-[0.6875rem] text-slate-400">
                             {o.descriptor ?? o.slug}
+                            {o.account_manager ? ` · ${o.account_manager}` : ""}
                           </span>
                         </span>
                       </span>

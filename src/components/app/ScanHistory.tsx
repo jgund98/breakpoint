@@ -3,6 +3,7 @@ import { Radar } from "lucide-react";
 import { sweeps } from "@/lib/activity";
 import { prettyDate } from "@/lib/clause";
 import { Panel, PanelHead, Pill } from "./ui";
+import { FiledScans } from "./FiledScans";
 
 /**
  * The last scans, on the location itself.
@@ -12,7 +13,13 @@ import { Panel, PanelHead, Pill } from "./ui";
  * what it read, and exactly what moved at this center — with the store
  * names, because "2 changes" without names is a claim, not a report.
  */
-export function ScanHistory({ centerName }: { centerName: string }) {
+export function ScanHistory({
+  centerName,
+  centerRef,
+}: {
+  centerName: string;
+  centerRef: string;
+}) {
   const recent = sweeps.slice(0, 6).map((s) => ({
     ...s,
     mine: s.moved.filter((m) => m.center === centerName),
@@ -32,7 +39,10 @@ export function ScanHistory({ centerName }: { centerName: string }) {
           </Link>
         }
       />
-      <ul className="mt-4 divide-y divide-slate-100">
+      <div className="mt-4">
+        <FiledScans centerRef={centerRef} />
+      </div>
+      <ul className="divide-y divide-slate-100">
         {recent.map((s) => (
           <li key={s.id} className="py-3 first:pt-0 last:pb-0">
             <div className="flex items-center justify-between gap-3">

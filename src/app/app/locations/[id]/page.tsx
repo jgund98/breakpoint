@@ -18,6 +18,7 @@ import { TODAY, rowById, rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
 import { ScanHistory } from "@/components/app/ScanHistory";
+import { PapersOnFile } from "@/components/app/PapersOnFile";
 import { Rise } from "@/components/app/Motion";
 import {
   ActionButton,
@@ -277,10 +278,48 @@ export default async function LocationPage({
                               observed {prettyDate(e.observedAt)}
                             </span>
                           </div>
-                          <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
-                            {unit ? `${unit.name}: ` : ""}
-                            {e.statement}
-                          </p>
+                          <details className="group mt-1">
+                            <summary className="cursor-pointer list-none text-[0.8125rem] leading-relaxed text-slate-700 [&::-webkit-details-marker]:hidden">
+                              {unit ? `${unit.name}: ` : ""}
+                              {e.statement}
+                              <span className="ml-1.5 text-[0.6875rem] font-semibold text-indigo-600 group-open:hidden">
+                                Details
+                              </span>
+                            </summary>
+                            <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                              <dl className="grid gap-x-6 gap-y-1 text-[0.75rem] sm:grid-cols-2">
+                                <div className="flex justify-between gap-3 sm:block">
+                                  <dt className="text-slate-400">Source</dt>
+                                  <dd className="font-medium text-slate-700">{meta.label}</dd>
+                                </div>
+                                <div className="flex justify-between gap-3 sm:block">
+                                  <dt className="text-slate-400">Evidence tier</dt>
+                                  <dd className="font-medium text-slate-700">
+                                    {meta.tier === "primary"
+                                      ? "Primary: can carry a notice on its own"
+                                      : "Secondary: a signal until corroborated or verified"}
+                                  </dd>
+                                </div>
+                                <div className="flex justify-between gap-3 sm:block">
+                                  <dt className="text-slate-400">Observed</dt>
+                                  <dd className="tnum font-medium text-slate-700">
+                                    {prettyDate(e.observedAt)}
+                                  </dd>
+                                </div>
+                                {unit && (
+                                  <div className="flex justify-between gap-3 sm:block">
+                                    <dt className="text-slate-400">Store</dt>
+                                    <dd className="font-medium text-slate-700">{unit.name}</dd>
+                                  </div>
+                                )}
+                              </dl>
+                              <p className="mt-2 border-t border-slate-200 pt-2 text-[0.6875rem] leading-snug text-slate-400">
+                                The capture behind this observation is on file with
+                                Breakpoint and travels with any notice package
+                                assembled from it.
+                              </p>
+                            </div>
+                          </details>
                         </div>
                       </li>
                     );
@@ -305,7 +344,7 @@ export default async function LocationPage({
 
         <div className="space-y-4">
           {/* ---- the watch, on this door ---- */}
-          <ScanHistory centerName={center.name} />
+          <ScanHistory centerName={center.name} centerRef={center.id} />
 
           {/* ---- clause strength ---- */}
           <Panel>
@@ -530,6 +569,9 @@ export default async function LocationPage({
               ))}
             </ul>
           </Panel>
+
+          {/* ---- the papers we hold ---- */}
+          <PapersOnFile locationId={row.id} />
 
           {/* ---- the estoppel moment ---- */}
           <EstoppelCheck

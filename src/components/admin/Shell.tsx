@@ -9,6 +9,7 @@ import {
   Inbox,
   MessageSquareDot,
   BrainCircuit,
+  FileSearch,
   SlidersHorizontal,
   ChevronRight,
   Bell,
@@ -30,6 +31,7 @@ import { CountBubble, Monogram, PovToggle } from "@/components/admin/ui";
 type ShellCounts = {
   openRequests: number;
   waitingSubmissions: number;
+  pipelinePending: number;
   orgs: { slug: string; name: string; status: string; locations: number | null }[];
 };
 
@@ -38,6 +40,7 @@ const NAV = [
   { href: "/admin/clients", label: "Clients", sub: "Registry & boards", icon: Building2, exact: false },
   { href: "/admin/onboarding", label: "Onboarding", sub: "Invites & submissions", icon: Inbox, exact: true, badge: "waiting" as const },
   { href: "/admin/requests", label: "Requests", sub: "Everything clients filed", icon: MessageSquareDot, exact: true, badge: "open" as const },
+  { href: "/admin/extraction", label: "Extraction", sub: "Records awaiting approval", icon: FileSearch, exact: true, badge: "pipeline" as const },
   { href: "/admin/agent", label: "Agent canon", sub: "System-wide programming", icon: BrainCircuit, exact: true },
   { href: "/admin/system", label: "System", sub: "Health & configuration", icon: SlidersHorizontal, exact: true },
 ];
@@ -49,6 +52,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const [counts, setCounts] = useState<ShellCounts>({
     openRequests: 0,
     waitingSubmissions: 0,
+    pipelinePending: 0,
     orgs: [],
   });
   const [query, setQuery] = useState("");
@@ -68,6 +72,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       waitingSubmissions: (data.submissions ?? []).filter(
         (s: { processed_at: string | null }) => !s.processed_at,
       ).length,
+      pipelinePending: data.pipelinePending ?? 0,
       orgs: data.orgs ?? [],
     });
   }, []);
@@ -125,7 +130,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 ? counts.openRequests
                 : item.badge === "waiting"
                   ? counts.waitingSubmissions
-                  : 0;
+                  : item.badge === "pipeline"
+                    ? counts.pipelinePending
+                    : 0;
             return (
               <Link
                 key={item.href}

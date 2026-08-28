@@ -68,9 +68,16 @@ export function RequestsQueue() {
         title="Requests"
         blurb="Everything clients have filed from their workspaces, across every account."
         aside={
-          <Badge tone={counts.open > 0 ? "amber" : "emerald"} dot>
-            {counts.open > 0 ? `${counts.open} open` : "Clear"}
-          </Badge>
+          <>
+            {data.avgHandleSeconds !== null && (
+              <Badge tone="slate">
+                Median response {(data.avgHandleSeconds / 3600).toFixed(1)}h
+              </Badge>
+            )}
+            <Badge tone={counts.open > 0 ? "amber" : "emerald"} dot>
+              {counts.open > 0 ? `${counts.open} open` : "Clear"}
+            </Badge>
+          </>
         }
       />
 
