@@ -180,6 +180,55 @@ change).
   33–50% of fixed rent; election windows commonly 6–18 months;
   termination rights usually after 12 months of alternative rent.
 
+### Round-2 lessons (the expert's 65-mall dataset, 2026-08-28)
+Dataset `af_portfolio_dataset (2).json` on the Desktop (65 malls,
+2024-09..2026-08, seed 42); evaluator `scripts/af2-blind.ts`; blind
+predictions frozen at `shots/af2-predictions.json` (commit a95e74b,
+BEFORE any round-2 key existed). Final digest: 37 compliant, 10
+remedy_active, 7 cap_reached, 5 cured, 2 watch, 2 opening_satisfied,
+1 opening_deferral_ended, 1 opening_deferred; $6,947,485 cumulative.
+Laws learned or confirmed:
+- **Measurement-materiality guard.** The failing pct margins were
+  bimodal: a hairline tier 0.03-0.19 points below threshold, then
+  nothing until 0.28+. Hairline shortfalls are inside directory-derived
+  measurement noise and must NOT run the clock (they turned four
+  designed `duration_not_met` malls into false trips). Guard: a pct
+  month counts as failing only when short by >= 0.2 points; hairline
+  months are watch-level, never verified failures.
+- **Preexisting failures COUNT.** Expert precedent from the round-1
+  key (danbury_fair): `preexisting_failure: true` with a live trigger,
+  notes "failure pre-dates window start; clocks shown from window
+  start are conservative." Do not treat preexisting as waived; run the
+  clock conservatively from window start, trip, and surface the flag
+  for counsel (real leases sometimes carve these out, so the flag is
+  a counsel question, not a verdict change). I first ruled carve-out
+  and the precedent proved me wrong; the flag exists to be shown, not
+  to zero the record.
+- **Opening clauses can be settled by lease text.** "Satisfied at
+  delivery" in the clause is a lease fact; the observation window
+  began after delivery and the series cannot see delivery day. Do not
+  re-litigate a stated delivery-time condition from window data.
+- **stateAtEnd describes the final month.** A lifted suspension with a
+  passing requirement at end is compliant, not suspended; failures
+  observed during suspension are recorded (lowercase f) but never run
+  the clock.
+- **Cap accounting nuance.** The expert computes cap expiry as
+  CALENDAR months from remedy start (remedy_start + cap_m); the
+  evaluator counts cumulative remedy months. Identical for continuous
+  failures; they diverge only across cure/re-trip cycles. Flag any
+  capped, cycling clause for explicit reading.
+- **State vocabulary mapping** (key → engine): "condition_failing
+  (duration not yet met)" = watch_duration_running; "triggered
+  (cure/notice period running)" = triggered_awaiting_relief;
+  "post_cap (termination window open)" = cap_reached;
+  "opening_conditions_met (rent commenced)" = opening_satisfied /
+  opening_deferral_ended.
+- **Blind protocol.** Predictions are frozen by git commit BEFORE any
+  key is opened; answer keys are NEVER committed to the repo. A prior
+  round's already-scored key is legitimate study material for the next
+  round; the current round's key stays sealed until predictions are
+  committed.
+
 ---
 
 ## 3. THE AGENT CANON (runtime programming)
