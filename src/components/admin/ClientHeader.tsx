@@ -51,8 +51,7 @@ export function ClientHeader({
   };
 
   return (
-    <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-6 shadow-xl shadow-indigo-500/25 sm:p-7">
-      <div className="absolute right-0 top-0 h-72 w-72 -translate-y-1/2 translate-x-1/4 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-3xl" />
+    <div className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-b from-indigo-700 to-indigo-800 p-6 shadow-xl shadow-indigo-500/25 sm:p-7">
       <div className="relative">
         <Link
           href="/admin/clients"

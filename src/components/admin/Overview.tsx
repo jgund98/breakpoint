@@ -107,9 +107,7 @@ export function Overview({
 
       {/* ---- hero: the number, backed by the scan record ---- */}
       <Rise>
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-8 shadow-xl shadow-indigo-500/25">
-          <div className="absolute right-0 top-0 h-[420px] w-[420px] -translate-y-1/2 translate-x-1/3 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-3xl" />
-          <div className="absolute bottom-0 left-0 h-64 w-64 -translate-x-1/4 translate-y-1/2 rounded-full bg-gradient-to-tr from-violet-400/30 to-transparent blur-3xl" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-indigo-700 to-indigo-800 p-8 shadow-xl shadow-indigo-500/25">
           <div className="relative grid gap-8 lg:grid-cols-[1fr_20rem]">
             <div>
               <div className="mb-6 flex items-start justify-between gap-4">

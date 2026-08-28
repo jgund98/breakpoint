@@ -42,19 +42,8 @@ export function Verdict({
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 shadow-xl shadow-indigo-500/25"
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-indigo-700 to-indigo-800 shadow-xl shadow-indigo-500/25"
     >
-      {/* glow, radial gradient only, never a filter blur */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full"
-        style={{
-          background: live
-            ? "radial-gradient(closest-side, rgba(251,191,36,0.28), transparent 72%)"
-            : "radial-gradient(closest-side, rgba(255,255,255,0.18), transparent 72%)",
-        }}
-      />
-
       <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
         <div>
           <p className="label text-amber-400">
