@@ -100,7 +100,8 @@ export async function GET(request: NextRequest) {
   }
 
   /* ---- HQ: the whole company ---- */
-  const [orgs, submissions, directives] = await Promise.all([
+  const [orgs, submissions, directives, requestsAll, placeCover, dirCover] =
+    await Promise.all([
     db().query(
       `select o.slug, o.name, o.status, o.descriptor, o.created_at,
               coalesce(r.open_requests, 0)::int as open_requests
@@ -126,6 +127,23 @@ export async function GET(request: NextRequest) {
         where scope = 'global'
         order by sort, created_at`,
     ),
+    db().query(
+      `select r.id, r.org_slug, o.name as org_name, r.location_ref, r.center_name,
+              r.kind, r.store_name, r.observed_on, r.body, r.created_at, r.handled_at
+         from client_request r
+         left join org o on o.slug = r.org_slug
+        order by (r.handled_at is null) desc, r.created_at desc
+        limit 100`,
+    ),
+    db().query(
+      `select org_slug,
+              count(*) filter (where place_id is not null and place_id <> '') as with_place
+         from location_config group by org_slug`,
+    ),
+    db().query(
+      `select count(distinct center_ref)::int as n from center_source
+        where kind = 'directory'`,
+    ),
   ]);
 
   return NextResponse.json({
@@ -136,6 +154,11 @@ export async function GET(request: NextRequest) {
     })),
     submissions: submissions.rows,
     directives: directives.rows,
+    requestsAll: requestsAll.rows,
+    coverage: {
+      withPlaceByOrg: placeCover.rows,
+      centersWithDirectory: dirCover.rows[0]?.n ?? 0,
+    },
   });
 }
 
@@ -284,6 +307,29 @@ export async function POST(request: NextRequest) {
           set processed_at = now(), processed_by = 'account-created'
         where id = $1 and processed_at is null`,
       [id],
+    );
+    return NextResponse.json({ ok: true, slug });
+  }
+
+  /* Create a client by hand, ahead of any submission: the invite-first
+     flow. The onboarding console link is minted from the same fields. */
+  if (action === "org_create_manual") {
+    const name = clip(payload.name, 120);
+    if (!name)
+      return NextResponse.json({ error: "A client needs a name." }, { status: 400 });
+    const slug = sanitizeSlug(clip(payload.slug, 64) || name);
+    if (!slug)
+      return NextResponse.json({ error: "Unusable slug." }, { status: 400 });
+    const existing = await orgBySlug(slug);
+    if (existing)
+      return NextResponse.json(
+        { error: `"${slug}" is already a client.` },
+        { status: 409 },
+      );
+    await db().query(
+      `insert into org (name, slug, status, descriptor)
+       values ($1, $2, 'onboarding', $3)`,
+      [name, slug, clip(payload.descriptor, 120) || null],
     );
     return NextResponse.json({ ok: true, slug });
   }

@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { STATE_META } from "@/lib/clause";
-import { org as pilotOrg, rows } from "@/lib/portfolio";
+import { rows } from "@/lib/portfolio";
 import { orgBySlug, PORTFOLIOS } from "@/lib/orgs";
+import { ClientHeader } from "@/components/admin/ClientHeader";
 import { OpsBoard, type LocationSnapshot } from "@/components/admin/OpsBoard";
 
 /**
@@ -12,7 +12,7 @@ import { OpsBoard, type LocationSnapshot } from "@/components/admin/OpsBoard";
  * imported into the engine renders in setup state: schedule and
  * requests are live, locations appear when the import lands. The A&F
  * pilot is the one portfolio wired so far (see PORTFOLIOS in
- * lib/orgs.ts). Company-wide concerns live one level up at /admin.
+ * lib/orgs.ts). Company-wide concerns live one level up.
  */
 export default async function ClientBoardPage({
   params,
@@ -59,28 +59,12 @@ export default async function ClientBoardPage({
       });
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line bg-petrol-950">
-        <div className="mx-auto flex max-w-[80rem] flex-wrap items-baseline justify-between gap-3 px-6 py-3.5">
-          <p className="text-[0.9375rem] font-semibold text-cream">
-            Breakpoint{" "}
-            <span className="font-normal text-cream/60">
-              · Operations · {client.name}
-            </span>
-            {client.status !== "live" && (
-              <span className="ml-2 rounded bg-cream/10 px-1.5 py-0.5 text-[0.6875rem] font-medium text-cream/70">
-                {client.status}
-              </span>
-            )}
-          </p>
-          <Link
-            href="/admin"
-            className="text-[0.75rem] text-cream/60 transition-colors hover:text-cream"
-          >
-            &larr; All clients
-          </Link>
-        </div>
-      </header>
+    <div>
+      <ClientHeader
+        slug={client.slug}
+        name={client.name}
+        status={client.status}
+      />
       <OpsBoard
         orgSlug={client.slug}
         orgName={client.name}
@@ -91,11 +75,4 @@ export default async function ClientBoardPage({
   );
 }
 
-/* pilotOrg is imported so a slug drift between the static portfolio and
-   the registry fails loudly in development rather than silently. */
-if (process.env.NODE_ENV !== "production" && pilotOrg.slug !== "abercrombie-fitch") {
-  throw new Error("portfolio org.slug drifted from the registry seed");
-}
-
-export const metadata = { title: "Operations" };
 export const dynamic = "force-dynamic";

@@ -36,27 +36,27 @@ export function ScanStatus({ compact = false }: { compact?: boolean }) {
     <Link
       href="/app/activity"
       className={cn(
-        "group block border-t border-line transition-colors duration-250 hover:bg-petrol-50/50",
+        "group block border-t border-slate-100 transition-colors duration-250 hover:bg-slate-50",
         compact ? "px-5 py-3.5" : "px-5 py-4",
       )}
     >
       <div className="flex items-center gap-2">
         <span className="relative flex h-2 w-2">
           <motion.span
-            className="absolute inline-flex h-full w-full rounded-full bg-open-600"
+            className="absolute inline-flex h-full w-full rounded-full bg-emerald-500"
             animate={{ scale: [1, 2.4], opacity: [0.55, 0] }}
             transition={{ duration: 2.4, repeat: Infinity, ease: "easeOut" }}
           />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-open-600" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
         </span>
-        <span className="text-[0.6875rem] font-semibold tracking-wide text-open-700 uppercase">
+        <span className="text-[0.6875rem] font-semibold tracking-wide text-emerald-600 uppercase">
           Monitoring active
         </span>
       </div>
 
-      <p className="tnum mt-2 text-[0.8125rem] font-medium text-ink">
+      <p className="tnum mt-2 text-[0.8125rem] font-medium text-slate-900">
         Last scan {daysAgo === 0 ? "today" : `${daysAgo}d ago`}
-        <span className="ml-1.5 font-normal text-muted">
+        <span className="ml-1.5 font-normal text-slate-500">
           {prettyDate(last?.ranOn ?? activitySummary.lastSweep)}
         </span>
       </p>
@@ -67,23 +67,23 @@ export function ScanStatus({ compact = false }: { compact?: boolean }) {
           [coverage.storesWatched.toLocaleString("en-US"), "stores"],
           [String(last?.changes ?? 0), last?.changes === 1 ? "change" : "changes"],
         ].map(([v, k]) => (
-          <p key={k} className="text-[0.6875rem] text-muted">
-            <span className="tnum font-semibold text-ink-soft">{v}</span> {k}
+          <p key={k} className="text-[0.6875rem] text-slate-500">
+            <span className="tnum font-semibold text-slate-700">{v}</span> {k}
           </p>
         ))}
       </div>
 
       {/* the running meter */}
-      <div className="mt-2.5 h-0.5 w-full overflow-hidden rounded-full bg-surface-sunk">
+      <div className="mt-2.5 h-0.5 w-full overflow-hidden rounded-full bg-slate-100">
         <div
-          className="h-full rounded-full bg-brass-500 transition-[width] duration-100 ease-linear"
+          className="h-full rounded-full bg-amber-400 transition-[width] duration-100 ease-linear"
           style={{ width: `${elapsed}%` }}
         />
       </div>
 
-      <p className="mt-2 text-[0.6875rem] leading-snug text-muted">
+      <p className="mt-2 text-[0.6875rem] leading-snug text-slate-500">
         Next full report {prettyDate(coverage.nextSweepISO)}
-        <span className="block text-faint transition-colors group-hover:text-petrol-700">
+        <span className="block text-slate-400 transition-colors group-hover:text-indigo-600">
           View scan history
         </span>
       </p>

@@ -156,19 +156,20 @@ const sub = await page.evaluate(async (mark) => {
 }, MARK);
 check(`onboarding submission accepted (${sub})`, sub === 200);
 
-/* ================= 3a. HQ: the whole company ================= */
-console.log("--- HQ (/admin) ---");
+/* ================= 3a. the console: overview ================= */
+console.log("--- console overview (/admin) ---");
 await page.goto(`${BASE}/admin`, { waitUntil: "networkidle0" });
 await pause(1000);
 const hq = await body();
 check(
-  "HQ shows the registry with company stats",
+  "overview shows company stats",
   /Locations under watch/i.test(hq) && /Abercrombie/.test(hq),
 );
-check("submission visible as a work order", new RegExp(MARK + " Client").test(hq));
-check("system canon present at HQ", /Never fuzzy-match a tenant name/.test(hq));
 
-/* the registry is searchable */
+/* ---- clients: the registry is searchable ---- */
+console.log("--- clients (/admin/clients) ---");
+await page.goto(`${BASE}/admin/clients`, { waitUntil: "networkidle0" });
+await pause(1000);
 const setSearch = (value) =>
   page.evaluate((v) => {
     const input = [...document.querySelectorAll("input")].find((i) =>
@@ -180,11 +181,18 @@ const setSearch = (value) =>
   }, value);
 await setSearch("zzz-no-such-client");
 await pause(300);
-check("roster search filters", /No clients match/.test(await body()));
+check("registry search filters", /No clients match/.test(await body()));
 await setSearch("");
 await pause(300);
 
-/* a submission is promoted into a client account */
+/* ---- onboarding: a submission is promoted into an account ---- */
+console.log("--- onboarding (/admin/onboarding) ---");
+await page.goto(`${BASE}/admin/onboarding`, { waitUntil: "networkidle0" });
+await pause(1000);
+check(
+  "submission visible as a work order",
+  new RegExp(MARK + " Client").test(await body()),
+);
 await clickText("Create the account");
 await pause(1200);
 const { rows: newOrg } = await sql.query(
@@ -194,9 +202,16 @@ check(
   "submission promoted to an org (status onboarding)",
   newOrg.length === 1 && newOrg[0].status === "onboarding",
 );
-check("new client appears on the roster", new RegExp(MARK + " Client").test(await body()));
+check("promoted submission reads as set up", /Set up/.test(await body()));
 
-/* the global directive editor writes from HQ */
+/* ---- agent canon: the global directive editor writes ---- */
+console.log("--- agent canon (/admin/agent) ---");
+await page.goto(`${BASE}/admin/agent`, { waitUntil: "networkidle0" });
+await pause(1000);
+check(
+  "system canon present",
+  /Never fuzzy-match a tenant name/.test(await body()),
+);
 await page.evaluate((mark) => {
   const input = [...document.querySelectorAll("input")].find((i) =>
     (i.placeholder || "").includes("One instruction"),
@@ -213,7 +228,7 @@ const { rows: dir } = await sql.query(
   [MARK + "%"],
 );
 check(
-  "global directive persisted from HQ",
+  "global directive persisted",
   dir.length === 1 && dir[0].scope === "global",
 );
 

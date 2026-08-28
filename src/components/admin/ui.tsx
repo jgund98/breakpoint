@@ -1,14 +1,76 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 /**
- * The admin surface's section system. Every block on every board is a
- * Section: same radius, same border, same header band, same type
- * scale, aside slot top-right. Stat strips are StatTiles in the same
- * grid everywhere. Nothing on a board is allowed to invent its own
- * frame — uniformity is the design.
+ * The admin console's design system, learned from QuoteTurbo2's portal:
+ * white cards with generous radius and layered slate shadows, colored
+ * icon chips, slate neutrals, staggered rise-in entrances, one accent
+ * (Breakpoint indigo where QT2 uses emerald). Every block on every
+ * admin page is built from these pieces — nothing invents its own
+ * frame.
  */
 
+/* ------------------------------------------------------------------
+   entrance choreography: mount → rise. QT2 does this per-block with
+   delay steps; Rise wraps any block in it.
+   ------------------------------------------------------------------ */
+
+export function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
+export function Rise({
+  delay = 0,
+  className,
+  children,
+}: {
+  delay?: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  const mounted = useMounted();
+  return (
+    <div
+      className={cn(
+        "transform transition-all duration-700",
+        mounted ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+        className,
+      )}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------
+   cards
+   ------------------------------------------------------------------ */
+
+export function Card({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-slate-200/60 bg-white shadow-xl shadow-slate-200/50",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** A card with the standard header band. Tables/lists pass flush. */
 export function Section({
   title,
   blurb,
@@ -18,79 +80,260 @@ export function Section({
 }: {
   title: string;
   blurb?: string;
-  /** Right side of the header band: a count, a control, a button. */
   aside?: ReactNode;
-  /** Tables and lists sit flush; forms get the padded body. */
   flush?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-line bg-surface">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-line px-5 py-3">
+    <Card className="overflow-hidden">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-slate-100 px-6 py-4">
         <div className="min-w-0">
-          <h2 className="text-[0.875rem] font-semibold text-ink">{title}</h2>
+          <h2 className="text-[0.9375rem] font-semibold tracking-tight text-slate-900">
+            {title}
+          </h2>
           {blurb && (
-            <p className="mt-0.5 max-w-[52rem] text-[0.75rem] leading-snug text-muted">
+            <p className="mt-0.5 max-w-[52rem] text-[0.8125rem] leading-snug text-slate-500">
               {blurb}
             </p>
           )}
         </div>
         {aside && <div className="flex shrink-0 items-center gap-2">{aside}</div>}
       </div>
-      <div className={flush ? undefined : "px-5 py-4"}>{children}</div>
-    </section>
+      <div className={flush ? undefined : "px-6 py-5"}>{children}</div>
+    </Card>
   );
 }
 
-export function StatStrip({ children }: { children: ReactNode }) {
+/* ------------------------------------------------------------------
+   icon chips + stats
+   ------------------------------------------------------------------ */
+
+export type ChipColor = "indigo" | "emerald" | "amber" | "rose" | "sky" | "violet" | "slate";
+
+const CHIP: Record<ChipColor, string> = {
+  indigo: "bg-indigo-50 text-indigo-600",
+  emerald: "bg-emerald-50 text-emerald-600",
+  amber: "bg-amber-50 text-amber-600",
+  rose: "bg-rose-50 text-rose-600",
+  sky: "bg-sky-50 text-sky-600",
+  violet: "bg-violet-50 text-violet-600",
+  slate: "bg-slate-100 text-slate-500",
+};
+
+export function IconChip({
+  color = "slate",
+  size = "md",
+  className,
+  children,
+}: {
+  color?: ChipColor;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <div className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+    <div
+      className={cn(
+        "flex items-center justify-center rounded-xl",
+        size === "sm" ? "h-8 w-8" : size === "lg" ? "h-12 w-12 rounded-2xl" : "h-10 w-10",
+        CHIP[color],
+        className,
+      )}
+    >
       {children}
     </div>
   );
 }
 
-export function StatTile({
+export function StatCard({
   label,
   value,
+  sub,
+  icon,
+  color = "slate",
   hot,
+  delay = 0,
 }: {
   label: string;
   value: ReactNode;
-  /** Brass when it demands attention, green when it is at rest. */
+  sub?: string;
+  icon?: ReactNode;
+  color?: ChipColor;
+  /** Pulls the number to amber when it demands attention. */
   hot?: boolean;
+  delay?: number;
 }) {
   return (
-    <div className="bg-surface px-5 py-3.5">
-      <p className="label text-faint">{label}</p>
-      <p
-        className={cn(
-          "tnum font-display mt-1 text-[1.375rem] leading-none",
-          hot ? "text-brass-700" : "text-open-700",
-        )}
-      >
-        {value}
-      </p>
-    </div>
+    <Rise delay={delay}>
+      <Card className="px-5 py-4 transition-shadow duration-300 hover:shadow-2xl hover:shadow-slate-300/50">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[0.75rem] font-medium text-slate-500">{label}</p>
+            <p
+              className={cn(
+                "tnum mt-1 text-[1.75rem] font-bold leading-none tracking-tight",
+                hot ? "text-amber-600" : "text-slate-900",
+              )}
+            >
+              {value}
+            </p>
+            {sub && <p className="mt-1.5 text-[0.6875rem] text-slate-400">{sub}</p>}
+          </div>
+          {icon && <IconChip color={hot ? "amber" : color}>{icon}</IconChip>}
+        </div>
+      </Card>
+    </Rise>
   );
 }
 
-/** The one search box style used on every board. */
+/* ------------------------------------------------------------------
+   controls
+   ------------------------------------------------------------------ */
+
+export function Btn({
+  variant = "primary",
+  className,
+  disabled,
+  onClick,
+  children,
+}: {
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  className?: string;
+  disabled?: boolean;
+  onClick?: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 text-[0.8125rem] font-medium transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-40",
+        variant === "primary" &&
+          "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-500",
+        variant === "secondary" &&
+          "border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-slate-300 hover:text-slate-900",
+        variant === "ghost" && "text-slate-500 hover:bg-slate-100 hover:text-slate-900",
+        variant === "danger" &&
+          "bg-rose-600 text-white shadow-lg shadow-rose-500/25 hover:bg-rose-500",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function SearchInput({
   value,
   onChange,
   placeholder,
+  className,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  className?: string;
 }) {
   return (
     <input
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-52 rounded-md border border-line bg-surface px-2.5 py-1.5 text-[0.75rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+      className={cn(
+        "h-9 w-56 rounded-xl border border-slate-200 bg-white px-3.5 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15",
+        className,
+      )}
     />
   );
+}
+
+export const inputCls =
+  "rounded-xl border border-slate-200 bg-white px-3 py-2 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
+
+export const selectCls =
+  "rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[0.8125rem] text-slate-700 shadow-sm transition-colors hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
+
+/* ------------------------------------------------------------------
+   badges
+   ------------------------------------------------------------------ */
+
+export type BadgeTone = "emerald" | "amber" | "rose" | "slate" | "indigo" | "sky";
+
+const BADGE: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
+  amber: "bg-amber-50 text-amber-700 ring-amber-600/10",
+  rose: "bg-rose-50 text-rose-700 ring-rose-600/10",
+  slate: "bg-slate-100 text-slate-600 ring-slate-600/10",
+  indigo: "bg-indigo-50 text-indigo-700 ring-indigo-600/10",
+  sky: "bg-sky-50 text-sky-700 ring-sky-600/10",
+};
+
+const BADGE_DOT: Record<BadgeTone, string> = {
+  emerald: "bg-emerald-500",
+  amber: "bg-amber-500",
+  rose: "bg-rose-500",
+  slate: "bg-slate-400",
+  indigo: "bg-indigo-500",
+  sky: "bg-sky-500",
+};
+
+export function Badge({
+  tone = "slate",
+  dot,
+  children,
+}: {
+  tone?: BadgeTone;
+  dot?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold ring-1 ring-inset",
+        BADGE[tone],
+      )}
+    >
+      {dot && <span className={cn("h-1.5 w-1.5 rounded-full", BADGE_DOT[tone])} />}
+      {children}
+    </span>
+  );
+}
+
+/* Maps the workspace's evaluation tones onto the console's badges. */
+export const EVAL_BADGE: Record<string, BadgeTone> = {
+  open: "emerald",
+  watch: "amber",
+  brass: "amber",
+  clay: "rose",
+  muted: "slate",
+  petrol: "indigo",
+};
+
+/* ------------------------------------------------------------------
+   table primitives: one look for every table in the console
+   ------------------------------------------------------------------ */
+
+export function Th({
+  className,
+  children,
+}: {
+  className?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <th
+      className={cn(
+        "px-6 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400",
+        className,
+      )}
+    >
+      {children}
+    </th>
+  );
+}
+
+export function EmptyNote({ children }: { children: ReactNode }) {
+  return <p className="px-6 py-5 text-[0.8125rem] text-slate-500">{children}</p>;
 }

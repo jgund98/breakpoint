@@ -40,11 +40,4 @@ export async function orgBySlug(slug: string): Promise<OrgRow | null> {
   return (found[0] as OrgRow) ?? null;
 }
 
-/** A slug we are willing to mint from client-supplied text. */
-export function sanitizeSlug(raw: string): string {
-  return (raw ?? "")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 64);
-}
+export { sanitizeSlug } from "@/lib/slug";

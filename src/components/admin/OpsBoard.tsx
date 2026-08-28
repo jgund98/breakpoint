@@ -1,10 +1,31 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Link2Off,
+  MapPinOff,
+  MessageSquareDot,
+  Printer,
+  Radar,
+  Trash2,
+} from "lucide-react";
 import { cn } from "@/lib/cn";
-import { ActionButton, Pill, type Tone } from "@/components/app/ui";
-import { Section, StatStrip, StatTile, SearchInput } from "@/components/admin/ui";
+import {
+  Badge,
+  Btn,
+  Rise,
+  Section,
+  SearchInput,
+  StatCard,
+  Th,
+  EmptyNote,
+  inputCls,
+  selectCls,
+  EVAL_BADGE,
+} from "@/components/admin/ui";
+import { KIND_LABEL } from "@/components/admin/useConsole";
 import { scanSheetHtml } from "@/lib/scan-sheet";
 
 /**
@@ -15,8 +36,6 @@ import { scanSheetHtml } from "@/lib/scan-sheet";
  * Places id for each storefront, the directory links a scan reads for
  * each center, and the lease papers each location's record is extracted
  * from. It is also the queue of everything this client has asked for.
- * Company-wide concerns — the registry, submissions, the agent canon —
- * live at /admin.
  *
  * The design rule is exceptions-only, because clients arrive with
  * hundreds or thousands of stores: the org schedule covers everyone,
@@ -79,12 +98,6 @@ type RequestRow = {
 };
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-const KIND_LABEL: Record<string, string> = {
-  manual_scan: "Scan now",
-  closure_report: "Closure report",
-  estoppel_review: "Estoppel review",
-};
 
 /* Show this many rows before asking for a narrower search: a
    thousand-store client must not render a thousand expandable rows. */
@@ -151,7 +164,7 @@ function ScheduleEditor({
           else if (v === "weekly") onChange({ cadence: "weekly", weekday: 1 });
           else onChange(parseCustom(custom) ?? { cadence: "monthly_days", days: [15, "last"] });
         }}
-        className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+        className={selectCls}
       >
         {inheritable && <option value="inherit">Inherit org schedule</option>}
         <option value="weekly">Weekly</option>
@@ -162,7 +175,7 @@ function ScheduleEditor({
         <select
           value={value.weekday}
           onChange={(e) => onChange({ cadence: "weekly", weekday: Number(e.target.value) })}
-          className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+          className={selectCls}
         >
           {WEEKDAYS.map((d, i) => (
             <option key={d} value={i}>
@@ -181,7 +194,7 @@ function ScheduleEditor({
             if (parsed) onChange(parsed);
           }}
           placeholder="15, last"
-          className="w-28 rounded-md border border-line bg-surface px-2 py-1.5 font-mono text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+          className={cn(inputCls, "w-28 font-mono")}
         />
       )}
     </div>
@@ -312,7 +325,7 @@ export function OpsBoard({
   }, [locations, query, exceptionsOnly, isException]);
 
   if (!loaded) {
-    return <p className="px-6 py-10 text-[0.8125rem] text-muted">Loading the board.</p>;
+    return <p className="py-16 text-center text-[0.8125rem] text-slate-400">Loading the board.</p>;
   }
 
   const printSheet = () => {
@@ -349,213 +362,237 @@ export function OpsBoard({
   };
 
   return (
-    <div className="mx-auto max-w-[80rem] space-y-5 px-6 py-6">
+    <div className="space-y-6">
       {/* ---- the numbers that are the to-do list ---- */}
-      <StatStrip>
-        <StatTile
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
           label="Open requests"
           value={gaps.openRequests}
+          icon={<MessageSquareDot className="h-5 w-5" />}
+          color="indigo"
           hot={gaps.openRequests > 0}
+          delay={0}
         />
-        <StatTile label="Scans due today" value={gaps.due} hot={gaps.due > 0} />
-        <StatTile
+        <StatCard
+          label="Scans due today"
+          value={gaps.due}
+          icon={<Radar className="h-5 w-5" />}
+          color="sky"
+          hot={gaps.due > 0}
+          delay={50}
+        />
+        <StatCard
           label="Missing Places ids"
           value={gaps.missingPlace}
+          icon={<MapPinOff className="h-5 w-5" />}
+          color="violet"
           hot={gaps.missingPlace > 0}
+          delay={100}
         />
-        <StatTile
+        <StatCard
           label="Missing directory links"
           value={gaps.missingDirectory}
+          icon={<Link2Off className="h-5 w-5" />}
+          color="emerald"
           hot={gaps.missingDirectory > 0}
+          delay={150}
         />
-      </StatStrip>
+      </div>
 
       {/* ---- org schedule ---- */}
-      <Section
-        title={`Scan schedule · ${orgName}`}
-        blurb="Every location inherits this unless it carries an override below."
-        aside={<p className="text-[0.75rem] text-muted">{describeSchedule(orgSchedule)}</p>}
-      >
-        <div className="flex flex-wrap items-center gap-3">
-          <ScheduleEditor value={orgSchedule} onChange={setOrgSchedule} />
-          <ActionButton
-            variant="secondary"
-            onClick={() => void post({ action: "org_schedule", schedule: orgSchedule })}
-          >
-            Save schedule
-          </ActionButton>
-          {flash && <span className="text-[0.75rem] text-open-700">Saved {flash}</span>}
-        </div>
-      </Section>
+      <Rise delay={100}>
+        <Section
+          title={`Scan schedule · ${orgName}`}
+          blurb="Every location inherits this unless it carries an override below."
+          aside={
+            <p className="text-[0.8125rem] font-medium text-slate-500">
+              {describeSchedule(orgSchedule)}
+            </p>
+          }
+        >
+          <div className="flex flex-wrap items-center gap-3">
+            <ScheduleEditor value={orgSchedule} onChange={setOrgSchedule} />
+            <Btn
+              variant="secondary"
+              onClick={() => void post({ action: "org_schedule", schedule: orgSchedule })}
+            >
+              Save schedule
+            </Btn>
+            {flash && (
+              <span className="text-[0.75rem] font-medium text-emerald-600">
+                Saved {flash}
+              </span>
+            )}
+          </div>
+        </Section>
+      </Rise>
 
       {/* ---- requests queue ---- */}
-      <Section
-        title="Client requests"
-        flush
-        aside={
-          gaps.openRequests > 0 ? (
-            <Pill tone={"watch" as Tone} dot>
-              {gaps.openRequests} open
-            </Pill>
+      <Rise delay={150}>
+        <Section
+          title="Client requests"
+          flush
+          aside={
+            <Badge tone={gaps.openRequests > 0 ? "amber" : "emerald"} dot>
+              {gaps.openRequests > 0 ? `${gaps.openRequests} open` : "Clear"}
+            </Badge>
+          }
+        >
+          {requests.length === 0 ? (
+            <EmptyNote>Nothing filed yet.</EmptyNote>
           ) : (
-            <Pill tone={"open" as Tone} dot>
-              Clear
-            </Pill>
-          )
-        }
-      >
-        {requests.length === 0 ? (
-          <p className="px-5 py-4 text-[0.8125rem] text-muted">Nothing filed yet.</p>
-        ) : (
-          <ul className="divide-y divide-line">
-            {requests.map((r) => (
-              <li
-                key={r.id}
-                className="flex flex-wrap items-start justify-between gap-3 px-5 py-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="text-[0.8125rem] text-ink">
-                    <span className="font-medium">{KIND_LABEL[r.kind] ?? r.kind}</span>
-                    {r.center_name ? ` · ${r.center_name}` : ""}
-                    {r.store_name ? ` · ${r.store_name}` : ""}
-                    {r.location_ref ? (
-                      <span className="ml-1.5 text-faint">{r.location_ref}</span>
-                    ) : null}
-                  </p>
-                  {r.body && (
-                    <p className="mt-0.5 text-[0.75rem] leading-snug text-muted">
-                      {r.body}
+            <ul className="divide-y divide-slate-100">
+              {requests.map((r) => (
+                <li
+                  key={r.id}
+                  className="flex flex-wrap items-start justify-between gap-3 px-6 py-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[0.8125rem] text-slate-800">
+                      <span className="font-semibold">{KIND_LABEL[r.kind] ?? r.kind}</span>
+                      {r.center_name ? ` · ${r.center_name}` : ""}
+                      {r.store_name ? ` · ${r.store_name}` : ""}
+                      {r.location_ref ? (
+                        <span className="ml-1.5 text-slate-400">{r.location_ref}</span>
+                      ) : null}
                     </p>
+                    {r.body && (
+                      <p className="mt-0.5 text-[0.75rem] leading-snug text-slate-500">
+                        {r.body}
+                      </p>
+                    )}
+                    <p className="mt-0.5 text-[0.6875rem] text-slate-400">
+                      {new Date(r.created_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                      {r.observed_on ? ` · observed ${r.observed_on.slice(0, 10)}` : ""}
+                    </p>
+                  </div>
+                  {r.handled_at ? (
+                    <Badge tone="emerald" dot>
+                      Handled
+                    </Badge>
+                  ) : (
+                    <Btn
+                      variant="secondary"
+                      onClick={() => void post({ action: "request_handled", id: r.id })}
+                    >
+                      Mark handled
+                    </Btn>
                   )}
-                  <p className="mt-0.5 text-[0.6875rem] text-faint">
-                    {new Date(r.created_at).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                    })}
-                    {r.observed_on ? ` · observed ${r.observed_on.slice(0, 10)}` : ""}
-                  </p>
-                </div>
-                {r.handled_at ? (
-                  <Pill tone={"open" as Tone} dot>
-                    Handled
-                  </Pill>
-                ) : (
-                  <ActionButton
-                    variant="secondary"
-                    onClick={() => void post({ action: "request_handled", id: r.id })}
-                  >
-                    Mark handled
-                  </ActionButton>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Section>
+      </Rise>
 
       {/* ---- locations ---- */}
-      <Section
-        title="Locations"
-        blurb="Exceptions only: a row needs touching when it is paused, scheduled apart from the org, or missing its Places id or directory link."
-        flush
-        aside={
-          hasPortfolio ? (
-            <>
-              <SearchInput
-                value={query}
-                onChange={setQuery}
-                placeholder="Find a location…"
-              />
-              <button
-                type="button"
-                onClick={() => setExceptionsOnly((v) => !v)}
-                className={cn(
-                  "rounded-md border px-2.5 py-1.5 text-[0.75rem] font-medium transition-colors",
-                  exceptionsOnly
-                    ? "border-petrol-500 bg-petrol-50 text-petrol-800"
-                    : "border-line bg-surface text-muted hover:text-ink",
-                )}
-              >
-                Exceptions only
-              </button>
-              <ActionButton
-                variant="secondary"
-                disabled={gaps.due === 0}
-                onClick={printSheet}
-              >
-                Print the scan sheet
-              </ActionButton>
-            </>
-          ) : undefined
-        }
-      >
-        {!hasPortfolio ? (
-          <div className="px-5 py-5">
-            <p className="text-[0.8125rem] font-medium text-ink">
-              No locations yet — awaiting portfolio import.
-            </p>
-            <p className="mt-1 max-w-[44rem] text-[0.75rem] leading-snug text-muted">
-              The roster from this client&#8217;s onboarding submission becomes
-              locations when it is imported into the monitoring engine. Their
-              schedule above and anything they file meanwhile are already
-              live.
-            </p>
-          </div>
-        ) : (
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-line bg-surface-sunk/50">
-                {["Location", "Position", "Status", "Schedule", "Places id", "Directory", ""].map(
-                  (h) => (
-                    <th key={h} className="label px-5 py-2 font-semibold text-faint">
-                      {h}
-                    </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {shown.slice(0, MAX_ROWS).map((l) => {
-                const cfg = configs.get(l.id);
-                const open = openRow === l.id;
-                const dirCount = directoryByCenter.get(l.centerRef) ?? 0;
-                return (
-                  <RowEditor
-                    key={l.id}
-                    orgSlug={orgSlug}
-                    location={l}
-                    cfg={cfg}
-                    dirCount={dirCount}
-                    sources={sources.filter((s) => s.center_ref === l.centerRef)}
-                    open={open}
-                    onToggle={() => setOpenRow(open ? null : l.id)}
-                    onSave={post}
-                  />
-                );
-              })}
-              {shown.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-5 py-5 text-[0.8125rem] text-muted">
-                    No locations match.
-                  </td>
-                </tr>
-              )}
-              {shown.length > MAX_ROWS && (
-                <tr>
-                  <td colSpan={7} className="px-5 py-3 text-[0.75rem] text-muted">
-                    Showing the first {MAX_ROWS} of {shown.length}. Narrow the
-                    search to reach the rest.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </Section>
+      <Rise delay={200}>
+        <Section
+          title="Locations"
+          blurb="Exceptions only: a row needs touching when it is paused, scheduled apart from the org, or missing its Places id or directory link."
+          flush
+          aside={
+            hasPortfolio ? (
+              <>
+                <SearchInput
+                  value={query}
+                  onChange={setQuery}
+                  placeholder="Find a location…"
+                />
+                <button
+                  type="button"
+                  onClick={() => setExceptionsOnly((v) => !v)}
+                  className={cn(
+                    "h-9 rounded-xl border px-3 text-[0.8125rem] font-medium transition-all duration-200 active:scale-95",
+                    exceptionsOnly
+                      ? "border-indigo-200 bg-indigo-50 text-indigo-700"
+                      : "border-slate-200 bg-white text-slate-500 shadow-sm hover:border-slate-300 hover:text-slate-800",
+                  )}
+                >
+                  Exceptions only
+                </button>
+                <Btn
+                  variant="secondary"
+                  disabled={gaps.due === 0}
+                  onClick={printSheet}
+                >
+                  <Printer className="h-4 w-4" /> Print the scan sheet
+                </Btn>
+              </>
+            ) : undefined
+          }
+        >
+          {!hasPortfolio ? (
+            <div className="px-6 py-6">
+              <p className="text-[0.875rem] font-semibold text-slate-900">
+                No locations yet — awaiting portfolio import.
+              </p>
+              <p className="mt-1 max-w-[44rem] text-[0.8125rem] leading-snug text-slate-500">
+                The roster from this client&#8217;s onboarding submission becomes
+                locations when it is imported into the monitoring engine. Their
+                schedule above and anything they file meanwhile are already
+                live.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/60">
+                    {["Location", "Position", "Status", "Schedule", "Places id", "Directory", ""].map(
+                      (h) => (
+                        <Th key={h}>{h}</Th>
+                      ),
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {shown.slice(0, MAX_ROWS).map((l) => {
+                    const cfg = configs.get(l.id);
+                    const open = openRow === l.id;
+                    const dirCount = directoryByCenter.get(l.centerRef) ?? 0;
+                    return (
+                      <RowEditor
+                        key={l.id}
+                        orgSlug={orgSlug}
+                        location={l}
+                        cfg={cfg}
+                        dirCount={dirCount}
+                        sources={sources.filter((s) => s.center_ref === l.centerRef)}
+                        open={open}
+                        onToggle={() => setOpenRow(open ? null : l.id)}
+                        onSave={post}
+                      />
+                    );
+                  })}
+                  {shown.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-8 text-center text-[0.8125rem] text-slate-400">
+                        No locations match.
+                      </td>
+                    </tr>
+                  )}
+                  {shown.length > MAX_ROWS && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-3 text-[0.75rem] text-slate-500">
+                        Showing the first {MAX_ROWS} of {shown.length}. Narrow the
+                        search to reach the rest.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Section>
+      </Rise>
 
-      <p className="text-[0.6875rem] text-faint">
+      <p className="text-[0.6875rem] text-slate-400">
         Internal. Changes persist to the account database and drive the scan
         queue the team works from.
       </p>
@@ -658,65 +695,75 @@ function RowEditor({
     <>
       <tr
         onClick={onToggle}
-        className={cn("cursor-pointer", open ? "bg-petrol-50" : "hover:bg-surface-sunk")}
+        className={cn(
+          "cursor-pointer transition-colors",
+          open ? "bg-indigo-50/60" : "hover:bg-slate-50",
+        )}
       >
-        <td className="px-5 py-2.5">
-          <p className="text-[0.8125rem] font-medium text-ink">{location.centerName}</p>
-          <p className="text-[0.6875rem] text-muted">
+        <td className="px-6 py-3">
+          <p className="text-[0.8125rem] font-semibold text-slate-900">
+            {location.centerName}
+          </p>
+          <p className="text-[0.6875rem] text-slate-400">
             {location.id} · {location.city}, {location.state}
           </p>
         </td>
-        <td className="px-5 py-2.5">
-          <Pill tone={location.evalTone as Tone} dot>
+        <td className="px-6 py-3">
+          <Badge tone={EVAL_BADGE[location.evalTone] ?? "slate"} dot>
             {location.evalLabel}
-          </Pill>
+          </Badge>
         </td>
-        <td className="px-5 py-2.5 text-[0.75rem] text-ink-soft">
+        <td className="px-6 py-3 text-[0.75rem] text-slate-600">
           {cfg?.status && cfg.status !== "active" ? (
-            <Pill tone={"clay" as Tone}>{cfg.status}</Pill>
+            <Badge tone="rose">{cfg.status}</Badge>
           ) : (
             "active"
           )}
         </td>
-        <td className="px-5 py-2.5 text-[0.75rem] text-ink-soft">
+        <td className="px-6 py-3 text-[0.75rem] text-slate-600">
           {cfg?.scan_schedule ? describeSchedule(cfg.scan_schedule) : "inherits"}
         </td>
-        <td className="px-5 py-2.5">
+        <td className="px-6 py-3">
           {cfg?.place_id ? (
-            <Check className="h-3.5 w-3.5 text-open-600" />
+            <Check className="h-4 w-4 text-emerald-500" />
           ) : (
-            <span className="text-[0.75rem] text-brass-700">missing</span>
+            <span className="text-[0.75rem] font-medium text-amber-600">missing</span>
           )}
         </td>
-        <td className="px-5 py-2.5">
+        <td className="px-6 py-3">
           {dirCount > 0 ? (
-            <span className="tnum text-[0.75rem] text-ink-soft">{dirCount}</span>
+            <span className="tnum text-[0.75rem] text-slate-600">{dirCount}</span>
           ) : (
-            <span className="text-[0.75rem] text-brass-700">missing</span>
+            <span className="text-[0.75rem] font-medium text-amber-600">missing</span>
           )}
         </td>
-        <td className="px-5 py-2.5 text-right">
+        <td className="px-6 py-3 text-right">
           <ChevronDown
-            className={cn("h-3.5 w-3.5 text-faint transition-transform", open && "rotate-180")}
+            className={cn(
+              "h-4 w-4 text-slate-300 transition-transform",
+              open && "rotate-180",
+            )}
           />
         </td>
       </tr>
 
       {open && (
-        <tr className="bg-surface-sunk/40">
-          <td colSpan={7} className="px-5 py-4">
+        <tr className="bg-slate-50/60">
+          <td colSpan={7} className="px-6 py-5">
             <div
-              className="grid gap-4 lg:grid-cols-2"
+              className="grid gap-6 lg:grid-cols-2"
               onClick={(e) => e.stopPropagation()}
             >
               {/* ---- the location itself ---- */}
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="label text-muted">Status</label>
+                  <label className="w-20 text-[0.75rem] font-medium text-slate-500">
+                    Status
+                  </label>
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value as LocationConfig["status"])}
-                    className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+                    className={selectCls}
                   >
                     <option value="active">Active</option>
                     <option value="paused">Paused, keep on file</option>
@@ -725,31 +772,35 @@ function RowEditor({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="label text-muted">Schedule</label>
+                  <label className="w-20 text-[0.75rem] font-medium text-slate-500">
+                    Schedule
+                  </label>
                   <ScheduleEditor value={schedule} inheritable onChange={setSchedule} />
                 </div>
 
                 <div>
-                  <label className="label text-muted">
+                  <label className="mb-1 block text-[0.75rem] font-medium text-slate-500">
                     Google Places id, this storefront
                   </label>
                   <input
                     value={placeId}
                     onChange={(e) => setPlaceId(e.target.value)}
                     placeholder="ChIJ…"
-                    className="mt-1 w-full rounded-md border border-line bg-surface px-2.5 py-1.5 font-mono text-[0.75rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                    className={cn(inputCls, "w-full font-mono")}
                   />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="label text-muted">Lease updated</label>
+                  <label className="text-[0.75rem] font-medium text-slate-500">
+                    Lease updated
+                  </label>
                   <input
                     type="date"
                     value={leaseDate}
                     onChange={(e) => setLeaseDate(e.target.value)}
-                    className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+                    className={inputCls}
                   />
-                  <span className="text-[0.6875rem] text-muted">
+                  <span className="text-[0.6875rem] text-slate-400">
                     Setting this queues re-extraction of the clause record.
                   </span>
                 </div>
@@ -759,21 +810,25 @@ function RowEditor({
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   placeholder="Ops notes for this location."
-                  className="w-full rounded-md border border-line bg-surface p-2.5 text-[0.75rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                  className={cn(inputCls, "w-full")}
                 />
 
                 <div className="flex items-center gap-3">
-                  <ActionButton onClick={() => void save()}>Save location</ActionButton>
-                  {saved && <span className="text-[0.75rem] text-open-700">Saved</span>}
+                  <Btn onClick={() => void save()}>Save location</Btn>
+                  {saved && (
+                    <span className="text-[0.75rem] font-medium text-emerald-600">
+                      Saved
+                    </span>
+                  )}
                 </div>
               </div>
 
               {/* ---- the center's sources, shared by every store in it ---- */}
               <div className="space-y-2">
-                <p className="label text-muted">
+                <p className="text-[0.75rem] font-semibold text-slate-700">
                   Sources for {location.centerName}
                 </p>
-                <p className="text-[0.6875rem] leading-snug text-muted">
+                <p className="text-[0.6875rem] leading-snug text-slate-400">
                   Shared across every location in this center. The scan reads
                   these each pass.
                 </p>
@@ -781,10 +836,10 @@ function RowEditor({
                   {sources.map((s) => (
                     <li
                       key={s.id}
-                      className="flex items-center justify-between gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5"
+                      className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2"
                     >
-                      <p className="min-w-0 truncate font-mono text-[0.6875rem] text-ink-soft">
-                        <span className="mr-1.5 rounded bg-surface-sunk px-1 py-0.5 text-[0.625rem] font-semibold text-muted">
+                      <p className="min-w-0 truncate font-mono text-[0.6875rem] text-slate-600">
+                        <span className="mr-1.5 rounded-md bg-slate-100 px-1.5 py-0.5 text-[0.625rem] font-bold uppercase text-slate-500">
                           {s.kind}
                         </span>
                         {s.url ?? s.place_id}
@@ -792,7 +847,7 @@ function RowEditor({
                       <button
                         type="button"
                         onClick={() => void onSave({ action: "source_remove", id: s.id })}
-                        className="text-faint transition-colors hover:text-clay-700"
+                        className="text-slate-300 transition-colors hover:text-rose-600"
                         aria-label="Remove source"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -800,7 +855,7 @@ function RowEditor({
                     </li>
                   ))}
                   {sources.length === 0 && (
-                    <li className="rounded-md border border-dashed border-line px-2.5 py-2 text-[0.75rem] text-muted">
+                    <li className="rounded-xl border border-dashed border-slate-200 px-3 py-2.5 text-[0.75rem] text-slate-400">
                       Nothing linked. The scan for this center has nowhere to
                       look yet.
                     </li>
@@ -811,9 +866,9 @@ function RowEditor({
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
                     placeholder="https://the-mall.com/directory"
-                    className="min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 py-1.5 font-mono text-[0.6875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                    className={cn(inputCls, "min-w-0 flex-1 font-mono text-[0.6875rem]")}
                   />
-                  <ActionButton
+                  <Btn
                     variant="secondary"
                     disabled={!newUrl.trim()}
                     onClick={async () => {
@@ -827,18 +882,20 @@ function RowEditor({
                     }}
                   >
                     Add
-                  </ActionButton>
+                  </Btn>
                 </div>
               </div>
             </div>
 
             {/* ---- the papers behind this location ---- */}
             <div
-              className="mt-4 border-t border-line pt-3"
+              className="mt-5 border-t border-slate-200/70 pt-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <p className="label text-muted">Lease papers on file</p>
-              <p className="mt-0.5 text-[0.6875rem] leading-snug text-muted">
+              <p className="text-[0.75rem] font-semibold text-slate-700">
+                Lease papers on file
+              </p>
+              <p className="mt-0.5 text-[0.6875rem] leading-snug text-slate-400">
                 The lease, its amendments, and any estoppels. This location&#8217;s
                 clause record is extracted from these, so an amendment landing
                 here is what triggers re-extraction.
@@ -847,14 +904,14 @@ function RowEditor({
                 {(docs ?? []).map((d) => (
                   <li
                     key={d.id}
-                    className="flex items-center justify-between gap-2 rounded-md border border-line bg-surface px-2.5 py-1.5"
+                    className="flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2"
                   >
-                    <p className="min-w-0 truncate text-[0.75rem] text-ink-soft">
-                      <span className="mr-1.5 rounded bg-surface-sunk px-1 py-0.5 text-[0.625rem] font-semibold text-muted">
+                    <p className="min-w-0 truncate text-[0.75rem] text-slate-600">
+                      <span className="mr-1.5 rounded-md bg-slate-100 px-1.5 py-0.5 text-[0.625rem] font-bold uppercase text-slate-500">
                         {d.kind}
                       </span>
                       {d.filename}
-                      <span className="ml-1.5 text-[0.6875rem] text-faint">
+                      <span className="ml-1.5 text-[0.6875rem] text-slate-400">
                         {fmtSize(d.byte_size)} ·{" "}
                         {new Date(d.created_at).toLocaleDateString("en-US", {
                           month: "short",
@@ -868,7 +925,7 @@ function RowEditor({
                         href={`/admin/api/documents?id=${d.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[0.6875rem] font-medium text-petrol-700 hover:text-petrol-900"
+                        className="text-[0.6875rem] font-semibold text-indigo-600 hover:text-indigo-800"
                       >
                         View
                       </a>
@@ -881,16 +938,16 @@ function RowEditor({
                           );
                           void loadDocs();
                         }}
-                        className="text-faint hover:text-clay-700"
+                        className="text-slate-300 transition-colors hover:text-rose-600"
                         aria-label="Remove document"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </span>
                   </li>
                 ))}
                 {docs !== null && docs.length === 0 && (
-                  <li className="rounded-md border border-dashed border-line px-2.5 py-2 text-[0.75rem] text-muted">
+                  <li className="rounded-xl border border-dashed border-slate-200 px-3 py-2.5 text-[0.75rem] text-slate-400">
                     Nothing on file yet. Until the papers are here, the clause
                     record rests on the client&#8217;s abstract alone.
                   </li>
@@ -900,7 +957,7 @@ function RowEditor({
                 <select
                   value={docKind}
                   onChange={(e) => setDocKind(e.target.value)}
-                  className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+                  className={selectCls}
                 >
                   {["lease", "amendment", "estoppel", "other"].map((k) => (
                     <option key={k} value={k}>
@@ -908,7 +965,7 @@ function RowEditor({
                     </option>
                   ))}
                 </select>
-                <label className="inline-flex cursor-pointer items-center rounded-md border border-line bg-surface px-3 py-1.5 text-[0.75rem] font-medium text-ink transition-colors hover:bg-surface-sunk">
+                <label className="inline-flex h-9 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4 text-[0.8125rem] font-medium text-slate-700 shadow-sm transition-all hover:border-slate-300 active:scale-95">
                   {docBusy ? "Uploading…" : "Upload a document"}
                   <input
                     type="file"
@@ -923,7 +980,7 @@ function RowEditor({
                   />
                 </label>
                 {docError && (
-                  <span className="text-[0.6875rem] text-clay-700">{docError}</span>
+                  <span className="text-[0.6875rem] text-rose-600">{docError}</span>
                 )}
               </div>
             </div>

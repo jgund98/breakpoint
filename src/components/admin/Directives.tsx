@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { ActionButton } from "@/components/app/ui";
-import { Section } from "@/components/admin/ui";
+import { Btn, Card, inputCls, selectCls } from "@/components/admin/ui";
 
 /**
  * Agent programming.
@@ -25,6 +24,14 @@ export type Directive = {
 
 const TOPICS = ["general", "extraction", "scanning", "matching", "notices"];
 
+const TOPIC_CHIP: Record<string, string> = {
+  general: "bg-slate-100 text-slate-600",
+  extraction: "bg-indigo-50 text-indigo-600",
+  scanning: "bg-sky-50 text-sky-600",
+  matching: "bg-violet-50 text-violet-600",
+  notices: "bg-amber-50 text-amber-700",
+};
+
 export function DirectiveEditor({
   title,
   blurb,
@@ -37,59 +44,71 @@ export function DirectiveEditor({
   /** The one scope this editor reads and writes. */
   scope: "global" | "org";
   directives: Directive[];
-  onPost: (payload: Record<string, unknown>) => Promise<boolean>;
+  onPost: (payload: Record<string, unknown>) => Promise<unknown>;
 }) {
   const [topic, setTopic] = useState("general");
   const [body, setBody] = useState("");
 
   return (
-    <Section title={title} blurb={blurb} flush>
-      <ul className="space-y-1.5 px-5 py-4">
+    <Card className="overflow-hidden">
+      <div className="border-b border-slate-100 px-6 py-4">
+        <h2 className="text-[0.9375rem] font-semibold text-slate-900">{title}</h2>
+        <p className="mt-0.5 max-w-[52rem] text-[0.8125rem] leading-snug text-slate-500">
+          {blurb}
+        </p>
+      </div>
+
+      <ul className="space-y-2 px-6 py-5">
         {directives.map((d) => (
           <li
             key={d.id}
             className={cn(
-              "flex items-start justify-between gap-2 rounded-md border border-line px-2.5 py-2",
+              "flex items-start justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-4 py-3 transition-colors hover:border-slate-200",
               !d.active && "opacity-50",
             )}
           >
-            <p className="min-w-0 text-[0.75rem] leading-snug text-ink-soft">
-              <span className="mr-1.5 rounded bg-surface-sunk px-1 py-0.5 text-[0.625rem] font-semibold text-muted">
+            <p className="min-w-0 text-[0.8125rem] leading-snug text-slate-700">
+              <span
+                className={cn(
+                  "mr-2 rounded-md px-1.5 py-0.5 text-[0.625rem] font-bold uppercase tracking-wide",
+                  TOPIC_CHIP[d.topic] ?? TOPIC_CHIP.general,
+                )}
+              >
                 {d.topic}
               </span>
               {d.body}
             </p>
-            <span className="flex shrink-0 gap-1.5">
+            <span className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
                 onClick={() => void onPost({ action: "directive_toggle", id: d.id })}
-                className="text-[0.6875rem] font-medium text-muted hover:text-ink"
+                className="text-[0.6875rem] font-semibold text-slate-500 hover:text-slate-900"
               >
                 {d.active ? "Disable" : "Enable"}
               </button>
               <button
                 type="button"
                 onClick={() => void onPost({ action: "directive_remove", id: d.id })}
-                className="text-faint hover:text-clay-700"
+                className="text-slate-300 transition-colors hover:text-rose-600"
                 aria-label="Remove directive"
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             </span>
           </li>
         ))}
         {directives.length === 0 && (
-          <li className="rounded-md border border-dashed border-line px-2.5 py-2 text-[0.75rem] text-muted">
+          <li className="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-[0.8125rem] text-slate-400">
             Nothing yet.
           </li>
         )}
       </ul>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-line px-5 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 bg-slate-50/50 px-6 py-4">
         <select
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
-          className="rounded-md border border-line bg-surface px-2 py-1.5 text-[0.75rem] text-ink focus:border-petrol-500 focus:outline-none"
+          className={selectCls}
         >
           {TOPICS.map((x) => (
             <option key={x} value={x}>
@@ -101,19 +120,18 @@ export function DirectiveEditor({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder="One instruction, stated plainly."
-          className="min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 py-1.5 text-[0.75rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+          className={cn(inputCls, "min-w-0 flex-1")}
         />
-        <ActionButton
-          variant="secondary"
+        <Btn
           disabled={!body.trim()}
           onClick={async () => {
-            const ok = await onPost({ action: "directive_add", scope, topic, body });
-            if (ok) setBody("");
+            await onPost({ action: "directive_add", scope, topic, body });
+            setBody("");
           }}
         >
           Add
-        </ActionButton>
+        </Btn>
       </div>
-    </Section>
+    </Card>
   );
 }
