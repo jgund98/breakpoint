@@ -377,11 +377,11 @@ export function EmptyState({
  * a paragraph.
  */
 export function PageHead({
-  eyebrow,
   title,
   lede,
   right,
 }: {
+  /** Accepted for compatibility; the sidebar already says the group. */
   eyebrow?: string;
   title: string;
   /** One short line. Long explanations belong in `help`. */
@@ -389,12 +389,9 @@ export function PageHead({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="mb-1 flex flex-wrap items-end justify-between gap-3">
       <div className="min-w-0">
-        {eyebrow && (
-          <p className="text-[0.75rem] font-medium text-slate-400">{eyebrow}</p>
-        )}
-        <h1 className="mt-0.5 text-[1.375rem] leading-tight font-bold tracking-tight text-slate-900">
+        <h1 className="text-[1.375rem] font-bold tracking-tight text-slate-900">
           {title}
         </h1>
         {lede && (

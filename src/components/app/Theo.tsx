@@ -290,7 +290,7 @@ function Block({ block }: { block: AnswerBlock }) {
         {block.items.map((s) => (
           <div key={s.label} className="rounded-xl border border-slate-200 bg-slate-100 p-3">
             <p className="text-[0.75rem] text-slate-500">{s.label}</p>
-            <p className="tnum font-display mt-1 text-[1.25rem] leading-none text-slate-900">
+            <p className="tnum mt-1 text-[1.25rem] font-bold leading-none text-slate-900">
               {s.value}
             </p>
             {s.hint && (

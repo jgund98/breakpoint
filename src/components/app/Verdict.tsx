@@ -42,9 +42,7 @@ export function Verdict({
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-      className={`relative overflow-hidden rounded-2xl border ${
-        live ? "border-amber-200 bg-petrol-900" : "border-slate-200 bg-petrol-900"
-      }`}
+      className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 shadow-xl shadow-indigo-500/25"
     >
       {/* glow, radial gradient only, never a filter blur */}
       <div
@@ -52,8 +50,8 @@ export function Verdict({
         className="pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full"
         style={{
           background: live
-            ? "radial-gradient(closest-side, rgba(217,154,43,0.34), transparent 72%)"
-            : "radial-gradient(closest-side, rgba(79,70,229,0.34), transparent 72%)",
+            ? "radial-gradient(closest-side, rgba(251,191,36,0.28), transparent 72%)"
+            : "radial-gradient(closest-side, rgba(255,255,255,0.18), transparent 72%)",
         }}
       />
 
@@ -65,12 +63,11 @@ export function Verdict({
 
           {live ? (
             <>
-              <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-white">
+              <h2 className="mt-3 text-[clamp(1.625rem,3.2vw,2.375rem)] font-bold leading-tight tracking-tight text-white">
                 {decisions} location{decisions === 1 ? "" : "s"}{" "}
                 {decisions === 1 ? "qualifies" : "qualify"} for{" "}
                 <span className="whitespace-nowrap">
-                  co-tenancy{" "}
-                  <span className="display-em text-amber-400">rent.</span>
+                  co-tenancy <span className="text-amber-400">rent</span>
                 </span>
               </h2>
               <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
@@ -98,13 +95,13 @@ export function Verdict({
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link
                   href="/app/notices"
-                  className="inline-flex items-center rounded-lg bg-amber-500 px-5 py-3 text-[0.875rem] font-semibold whitespace-nowrap text-petrol-950 transition-colors duration-250 hover:bg-amber-400"
+                  className="inline-flex h-10 items-center rounded-xl bg-amber-400 px-4 text-[0.8125rem] font-semibold whitespace-nowrap text-slate-900 shadow-lg shadow-amber-500/30 transition-all duration-200 hover:bg-amber-300 active:scale-95"
                 >
                   Assemble notice packages
                 </Link>
                 <Link
                   href="/app/locations"
-                  className="inline-flex items-center rounded-lg border border-white/20 px-5 py-3 text-[0.875rem] font-semibold whitespace-nowrap text-white transition-colors duration-250 hover:bg-white/10"
+                  className="inline-flex h-10 items-center rounded-xl border border-white/25 bg-white/15 px-4 text-[0.8125rem] font-semibold whitespace-nowrap text-white backdrop-blur-sm transition-all duration-200 hover:bg-white/25 active:scale-95"
                 >
                   Review the evidence
                 </Link>
@@ -112,9 +109,9 @@ export function Verdict({
             </>
           ) : (
             <>
-              <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-white">
+              <h2 className="mt-3 text-[clamp(1.625rem,3.2vw,2.375rem)] font-bold leading-tight tracking-tight text-white">
                 Every test in your portfolio is{" "}
-                <span className="display-em text-amber-400">satisfied.</span>
+                <span className="text-amber-400">satisfied</span>
               </h2>
               <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
                 <Fact k="Failing tests" v="0" />
@@ -126,7 +123,7 @@ export function Verdict({
         </div>
 
         {/* the watch record, always shown */}
-        <div className="rounded-xl border border-white/12 bg-white/5 p-5">
+        <div className="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm">
           <p className="label text-indigo-200/70">Watch record</p>
           <dl className="mt-4 space-y-3.5">
             {/*

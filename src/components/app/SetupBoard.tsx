@@ -224,7 +224,7 @@ export function SetupBoard() {
               >
                 <span className="flex items-center gap-2">
                   <Icon className="h-3.5 w-3.5 text-slate-500" />
-                  <span className="tnum font-display text-[1.125rem] leading-none text-slate-900">
+                  <span className="tnum text-[1.125rem] font-bold leading-none text-slate-900">
                     {n}
                   </span>
                 </span>

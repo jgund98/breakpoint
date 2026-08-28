@@ -160,7 +160,7 @@ export default function CoveragePage() {
                 <span className="text-[0.8125rem] font-medium text-slate-900">
                   {label}
                 </span>
-                <span className="tnum font-display text-[1.25rem] leading-none text-slate-900">
+                <span className="tnum text-[1.25rem] font-bold leading-none text-slate-900">
                   {n}
                 </span>
               </div>

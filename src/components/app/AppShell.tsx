@@ -2,70 +2,114 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   X,
   Activity,
+  CalendarClock,
+  ChevronRight,
   ClipboardCheck,
+  FileBarChart2,
   FileSignature,
   FileText,
   LayoutDashboard,
   Radar,
   Scale,
-  CalendarClock,
-  FileBarChart2,
+  Search,
   Settings2,
   SlidersHorizontal,
   Sparkles,
   Store,
 } from "lucide-react";
-import { Logo } from "@/components/brand/Logo";
 import { cn } from "@/lib/cn";
-import { org, summary } from "@/lib/portfolio";
+import { org, rows, summary } from "@/lib/portfolio";
 import { DEMO_USER } from "@/lib/session";
 import { useScrollLock } from "@/lib/useScrollLock";
-import { ScanStatus } from "./ScanStatus";
-import { PovToggle } from "@/components/admin/ui";
+import { Monogram, PovToggle } from "@/components/admin/ui";
 import { NotificationBell } from "./NotificationBell";
+import { ScanStatus } from "./ScanStatus";
 
 /**
- * The workspace shell, on the same design system as the console:
- * white sidebar, icon-chip navigation with the indigo active state,
- * slate ground, the scan pulse living at the bottom of the rail where
- * a paying client sees the watch running on every page.
+ * The workspace shell, a structural twin of the console shell: same
+ * brand chip, same rail anatomy (icon chip, label, one-line purpose,
+ * chevron, staggered entrance), same topbar order (search, then the
+ * action cluster, then identity). One product, two seats — the only
+ * differences are the substance: the client's search finds locations,
+ * the rail ends in the scan pulse, and the money chip stays.
  */
 
 const NAV = [
   {
     heading: "Monitor",
     items: [
-      { href: "/app", label: "Overview", exact: true, Icon: LayoutDashboard },
-      { href: "/app/theo", label: "Ask Theo", Icon: Sparkles },
-      { href: "/app/locations", label: "Locations", Icon: Store },
-      { href: "/app/coverage", label: "Coverage", Icon: Radar },
-      { href: "/app/check", label: "Weekly check", Icon: ClipboardCheck },
-      { href: "/app/activity", label: "Activity", Icon: Activity },
+      { href: "/app", label: "Overview", sub: "The whole portfolio", exact: true, Icon: LayoutDashboard },
+      { href: "/app/theo", label: "Ask Theo", sub: "Answers with sources", Icon: Sparkles },
+      { href: "/app/locations", label: "Locations", sub: "Every watched door", Icon: Store },
+      { href: "/app/coverage", label: "Coverage", sub: "Where we look", Icon: Radar },
+      { href: "/app/check", label: "Weekly check", sub: "Paste a directory", Icon: ClipboardCheck },
+      { href: "/app/activity", label: "Activity", sub: "Scans and reports", Icon: Activity },
     ],
   },
   {
     heading: "Analyze",
     items: [
-      { href: "/app/clauses", label: "Clause library", Icon: FileText },
-      { href: "/app/clause-value", label: "Clause value", Icon: Scale },
+      { href: "/app/clauses", label: "Clause library", sub: "Graded provisions", Icon: FileText },
+      { href: "/app/clause-value", label: "Clause value", sub: "What each would pay", Icon: Scale },
     ],
   },
   {
     heading: "Act",
     items: [
-      { href: "/app/deadlines", label: "Deadlines", Icon: CalendarClock },
-      { href: "/app/notices", label: "Notice packages", Icon: FileSignature },
-      { href: "/app/report", label: "Portfolio report", Icon: FileBarChart2 },
-      { href: "/app/setup", label: "Portfolio setup", Icon: Settings2 },
-      { href: "/app/settings", label: "Settings", Icon: SlidersHorizontal },
+      { href: "/app/deadlines", label: "Deadlines", sub: "Clocks and elections", Icon: CalendarClock },
+      { href: "/app/notices", label: "Notice packages", sub: "Assembled for counsel", Icon: FileSignature },
+      { href: "/app/report", label: "Portfolio report", sub: "The period, printable", Icon: FileBarChart2 },
+      { href: "/app/setup", label: "Portfolio setup", sub: "Papers to live", Icon: Settings2 },
+      { href: "/app/settings", label: "Settings", sub: "Team and alerts", Icon: SlidersHorizontal },
     ],
   },
 ] as const;
+
+/* The same mark the console wears. One product, one logo. */
+function BrandHeader({ sub, bare = false }: { sub: string; bare?: boolean }) {
+  return (
+    <div
+      className={cn(
+        "flex h-16 items-center gap-3 px-5",
+        !bare && "border-b border-slate-100",
+      )}
+    >
+      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
+        <span className="text-[1rem] font-bold leading-none text-white">b</span>
+        <span className="mb-2.5 ml-px h-1 w-1 rounded-[2px] bg-amber-400" />
+      </div>
+      <div>
+        <p className="text-[0.9375rem] font-bold tracking-tight text-slate-900">
+          Breakpoint
+        </p>
+        <p className="text-[0.6875rem] font-medium text-slate-400">{sub}</p>
+      </div>
+    </div>
+  );
+}
+
+function AccountRow() {
+  return (
+    <div className="border-b border-slate-100 px-4 py-3">
+      <div className="flex items-center gap-3">
+        <Monogram name={org.name} size="sm" />
+        <div className="min-w-0">
+          <p className="truncate text-[0.8125rem] font-semibold text-slate-900">
+            {org.name}
+          </p>
+          <p className="text-[0.6875rem] text-slate-400">
+            {org.watched} locations monitored
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -74,13 +118,13 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 
   let index = 0;
   return (
-    <nav className="space-y-5">
+    <nav className="space-y-4">
       {NAV.map((group) => (
         <div key={group.heading}>
           <p className="px-3 text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
             {group.heading}
           </p>
-          <ul className="mt-1.5 space-y-0.5">
+          <div className="mt-1 space-y-1">
             {group.items.map((item) => {
               const active =
                 "exact" in item && item.exact
@@ -88,23 +132,24 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                   : pathname.startsWith(item.href);
               const i = index++;
               return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={onNavigate}
-                    className={cn(
-                      "group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[0.8125rem] font-medium transition-all duration-200",
-                      active
-                        ? "bg-slate-100 text-slate-900 shadow-sm"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
-                    )}
-                    style={{
-                      opacity: mounted ? 1 : 0,
-                      transform: mounted ? "translateX(0)" : "translateX(-8px)",
-                      transition: "all 200ms",
-                      transitionDelay: `${i * 20}ms`,
-                    }}
-                  >
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={cn(
+                    "group flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
+                    active
+                      ? "bg-slate-100 text-slate-900 shadow-sm"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
+                  )}
+                  style={{
+                    opacity: mounted ? 1 : 0,
+                    transform: mounted ? "translateX(0)" : "translateX(-8px)",
+                    transition: "all 200ms",
+                    transitionDelay: `${i * 20}ms`,
+                  }}
+                >
+                  <span className="flex items-center gap-3">
                     <span
                       className={cn(
                         "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200",
@@ -115,30 +160,151 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                     >
                       <item.Icon className="h-4 w-4" />
                     </span>
-                    {item.label}
-                  </Link>
-                </li>
+                    <span className="text-left">
+                      <span className="block text-[0.8125rem] leading-tight">
+                        {item.label}
+                      </span>
+                      <span
+                        className={cn(
+                          "block text-[0.6875rem] leading-tight",
+                          active ? "text-indigo-600" : "text-slate-400",
+                        )}
+                      >
+                        {item.sub}
+                      </span>
+                    </span>
+                  </span>
+                  <ChevronRight
+                    className={cn(
+                      "h-4 w-4 shrink-0 transition-all duration-200",
+                      active
+                        ? "text-indigo-500 opacity-100"
+                        : "text-slate-300 opacity-0 group-hover:opacity-100",
+                    )}
+                  />
+                </Link>
               );
             })}
-          </ul>
+          </div>
         </div>
       ))}
     </nav>
   );
 }
 
-function AccountBlock() {
+/* The client's global search: their locations, by id, center or city. */
+function LocationSearch() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  const index = useMemo(
+    () =>
+      rows.map((r) => ({
+        id: r.id,
+        center: r.center.name,
+        place: `${r.center.city}, ${r.center.state}`,
+      })),
+    [],
+  );
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const hits = q
+    ? index
+        .filter((l) =>
+          `${l.id} ${l.center} ${l.place}`.toLowerCase().includes(q),
+        )
+        .slice(0, 6)
+    : [];
+
   return (
-    <div className="border-b border-slate-100 px-5 py-4">
-      <p className="text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
-        Account
-      </p>
-      <p className="mt-1.5 text-[0.9375rem] font-bold tracking-tight text-slate-900">
-        {org.name}
-      </p>
-      <p className="text-[0.75rem] text-slate-500">
-        {org.watched} locations monitored
-      </p>
+    <div ref={boxRef} className="relative hidden w-full max-w-sm sm:block">
+      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <input
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder="Jump to a location…"
+        className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-9 pr-3 text-[0.8125rem] text-slate-800 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
+      />
+      {open && q && (
+        <div className="absolute left-0 right-0 top-12 z-50 overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-2xl shadow-slate-300/50">
+          {hits.length === 0 ? (
+            <p className="px-4 py-3 text-[0.8125rem] text-slate-400">
+              No location matches &#8220;{query.trim()}&#8221;.
+            </p>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {hits.map((l) => (
+                <li key={l.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      setQuery("");
+                      router.push(`/app/locations/${l.id}`);
+                    }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                      <Store className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[0.8125rem] font-semibold text-slate-900">
+                        {l.center}
+                      </span>
+                      <span className="block text-[0.6875rem] text-slate-400">
+                        {l.id} · {l.place}
+                      </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UserCard({ onSignOut }: { onSignOut: () => void }) {
+  return (
+    <div className="border-t border-slate-100 bg-gradient-to-r from-slate-50/80 to-white p-4">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.8125rem] font-bold text-white shadow-lg shadow-indigo-500/30 ring-2 ring-white/60">
+            {DEMO_USER.initials}
+          </div>
+          <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[0.8125rem] font-semibold text-slate-900">
+            {DEMO_USER.name}
+          </p>
+          <p className="text-[0.6875rem] text-slate-400">{org.name}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onSignOut}
+          className="shrink-0 text-[0.6875rem] font-semibold text-slate-400 transition-colors hover:text-indigo-600"
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }
@@ -153,158 +319,145 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => setOpen(false), [pathname]);
   useScrollLock(open);
 
+  const signOut = async () => {
+    await fetch("/login/api", { method: "DELETE" });
+    router.push("/login");
+    router.refresh();
+  };
+
   const claimable =
     (summary.byState.get("claimable") ?? 0) +
     (summary.byState.get("election_open") ?? 0);
 
+  const sidebarBody = (onNavigate?: () => void) => (
+    <>
+      <AccountRow />
+      <div className="flex-1 overflow-y-auto px-3 py-4">
+        <NavList onNavigate={onNavigate} />
+      </div>
+      <div className="shrink-0">
+        <ScanStatus compact />
+      </div>
+      <UserCard onSignOut={() => void signOut()} />
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* ---- sidebar, desktop ---- */}
-      <aside className="print:hidden fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-200/60 bg-white lg:flex">
-        <div className="flex h-16 items-center border-b border-slate-100 px-5">
-          <Link href="/app" aria-label="Breakpoint" className="text-slate-900">
-            <Logo />
-          </Link>
-        </div>
-
-        <AccountBlock />
-
-        <div className="flex-1 overflow-y-auto px-2 py-4">
-          <NavList />
-        </div>
-
-        <ScanStatus />
+      <aside className="print:hidden fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-slate-200/60 bg-white lg:flex">
+        <BrandHeader sub="Client Workspace" />
+        {sidebarBody()}
       </aside>
 
-      {/* ---- top bar ---- */}
-      <header className="print:hidden sticky top-0 z-30 border-b border-slate-200/60 bg-white/90 backdrop-blur-sm lg:pl-64">
-        <div className="flex h-16 items-center gap-4 px-4 sm:px-6">
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            aria-expanded={open}
-            className="grid h-10 w-10 place-items-center rounded-xl text-slate-700 hover:bg-slate-100 lg:hidden"
-          >
-            <span className="flex h-3.5 w-5 flex-col justify-between">
-              <span className="block h-0.5 w-full bg-current" />
-              <span className="block h-0.5 w-full bg-current" />
-              <span className="block h-0.5 w-full bg-current" />
-            </span>
-          </button>
-
-          <Link href="/app" className="text-slate-900 lg:hidden" aria-label="Breakpoint">
-            <Logo />
-          </Link>
-
-          <div className="ml-auto flex items-center gap-2.5">
-            <div className="hidden md:block">
-              <PovToggle current="client" />
-            </div>
-            <span className="hidden h-10 items-center gap-2 rounded-full bg-amber-50 px-3.5 text-[0.75rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/10 sm:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 anim-pulse-dot" />
-              {/* Say which decision. The product now has more than one
-                  queue asking for one, and "needs a decision" on its own
-                  no longer identifies this as the money. */}
-              {claimable} locations ready to claim
-            </span>
-
-            <NotificationBell />
-            <Link
-              href="/app/notices"
-              className="hidden h-10 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
-            >
-              Open notice desk
-            </Link>
-
-            <div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white pl-1 pr-2.5 shadow-sm">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.6875rem] font-bold text-white shadow-md shadow-indigo-500/25">
-                {DEMO_USER.initials}
-              </span>
-              <span className="hidden text-[0.8125rem] font-semibold text-slate-800 sm:block">
-                {DEMO_USER.name}
-              </span>
-              <button
-                type="button"
-                onClick={async () => {
-                  await fetch("/login/api", { method: "DELETE" });
-                  router.push("/login");
-                  router.refresh();
-                }}
-                className="ml-1 border-l border-slate-200 pl-2 text-[0.75rem] font-medium whitespace-nowrap text-slate-400 transition-colors hover:text-indigo-600"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ---- mobile drawer ----
-           The panel carries its own header bar at the same height as
-           the app header. Without it the drawer's first row sits at
-           y=0 and reads as though it has merged with the header
-           behind it, which is exactly how it looked before. */}
-      <AnimatePresence>
-        {open && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <motion.button
+      {/* ---- content column ---- */}
+      <div className="lg:pl-72">
+        {/* ---- topbar, the console's anatomy ---- */}
+        <header className="print:hidden sticky top-0 z-30 border-b border-slate-200/60 bg-white/85 backdrop-blur-md">
+          <div className="flex h-16 items-center gap-3 px-4 lg:px-8">
+            <button
               type="button"
-              aria-label="Close navigation"
-              onClick={() => setOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
-            />
-
-            <motion.div
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-y-0 left-0 flex w-[17.5rem] flex-col border-r border-slate-200/60 bg-white"
+              onClick={() => setOpen((v) => !v)}
+              aria-label={open ? "Close navigation" : "Open navigation"}
+              aria-expanded={open}
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-slate-700 hover:bg-slate-100 lg:hidden"
             >
-              <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 pl-5 pr-3">
-                <Link
-                  href="/app"
-                  onClick={() => setOpen(false)}
-                  aria-label="Breakpoint"
-                  className="text-slate-900"
-                >
-                  <Logo />
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close navigation"
-                  className="grid h-10 w-10 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
+              <span className="flex h-3.5 w-5 flex-col justify-between">
+                <span className="block h-0.5 w-full bg-current" />
+                <span className="block h-0.5 w-full bg-current" />
+                <span className="block h-0.5 w-full bg-current" />
+              </span>
+            </button>
 
-              <AccountBlock />
+            <LocationSearch />
 
-              <div className="flex-1 overflow-y-auto px-2 py-4">
-                <NavList onNavigate={() => setOpen(false)} />
+            <div className="ml-auto flex items-center gap-2">
+              <div className="hidden md:block">
+                <PovToggle current="client" />
               </div>
+              <span className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-full bg-amber-50 px-3.5 text-[0.75rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/10 xl:inline-flex">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 anim-pulse-dot" />
+                {/* Say which decision. The product has more than one queue
+                    asking for one, and "needs a decision" on its own no
+                    longer identifies this as the money. */}
+                {claimable} locations ready to claim
+              </span>
+              <NotificationBell />
+              <Link
+                href="/app/notices"
+                className="hidden h-10 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
+              >
+                Open notice desk
+              </Link>
 
-              <div className="shrink-0">
-                <ScanStatus compact />
+              <span className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
+
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.75rem] font-bold text-white shadow-md shadow-indigo-500/25">
+                    {DEMO_USER.initials}
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+                </div>
+                <span className="hidden whitespace-nowrap text-[0.8125rem] font-semibold text-slate-800 xl:block">
+                  {DEMO_USER.name}
+                </span>
               </div>
-            </motion.div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </header>
 
-      {/* ---- content ---- */}
-      <main id="main" className="lg:pl-64 print:pl-0">
-        <div className="mx-auto max-w-[1500px] px-4 py-7 sm:px-6 sm:py-9">
+        {/* ---- mobile drawer ---- */}
+        <AnimatePresence>
+          {open && (
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <motion.button
+                type="button"
+                aria-label="Close navigation"
+                onClick={() => setOpen(false)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+              />
+
+              <motion.div
+                initial={{ x: "-100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "-100%" }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-y-0 left-0 flex w-[18rem] flex-col border-r border-slate-200/60 bg-white"
+              >
+                <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pr-3">
+                  <BrandHeader sub="Client Workspace" bare />
+                  <button
+                    type="button"
+                    onClick={() => setOpen(false)}
+                    aria-label="Close navigation"
+                    className="grid h-10 w-10 place-items-center rounded-xl text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                {sidebarBody(() => setOpen(false))}
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* ---- content ---- */}
+        <main
+          id="main"
+          className="print:pl-0 mx-auto max-w-[88rem] px-4 py-8 sm:px-6 lg:px-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(at 30% 0%, rgba(79,70,229,0.04) 0px, transparent 45%), radial-gradient(at 85% 10%, rgba(139,92,246,0.04) 0px, transparent 45%)",
+          }}
+        >
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

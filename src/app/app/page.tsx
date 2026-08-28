@@ -227,15 +227,17 @@ export default function OverviewPage() {
       </div>
 
       {/* ---- twelve weeks of sweeps, so continuity is visible ---- */}
-      <Panel className="card-enter d-4">
-        <PanelHead
-          title="Twelve weeks of monitoring"
-          hint="One bar per scan."
-          right={
-            <LinkButton href="/app/activity">Scan history</LinkButton>
-          }
-        />
-        <div className="mt-4 flex items-end gap-1.5">
+      <Panel flush className="card-enter d-4">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+          <PanelHead
+            title="Twelve weeks of monitoring"
+            hint="One bar per scan."
+            right={
+              <LinkButton href="/app/activity">Scan history</LinkButton>
+            }
+          />
+        </div>
+        <div className="flex items-end gap-1.5 px-5 py-5 sm:px-6">
           {[...sweeps].reverse().map((s) => {
             const height = 8 + Math.min(52, s.changes * 14);
             return (
@@ -261,7 +263,7 @@ export default function OverviewPage() {
 
       {/* ---- decisions ---- */}
       <Panel flush>
-        <div className="px-5 pt-5 sm:px-6 sm:pt-6">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
           <PanelHead
             title="Needs a decision"
             hint="Cure elapsed, preconditions met."
@@ -269,10 +271,10 @@ export default function OverviewPage() {
           />
         </div>
 
-        <div className="mt-4 overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[880px] border-collapse text-left">
             <thead>
-              <tr className="border-y border-slate-200 bg-slate-100/50">
+              <tr className="border-b border-slate-100 bg-slate-50/60">
                 {["Location", "Center", "State", "Failing test", "Evidence", "Per month", ""].map(
                   (h) => (
                     <th
@@ -360,12 +362,14 @@ export default function OverviewPage() {
 
       <div className="grid gap-3 lg:grid-cols-2">
         {/* ---- clocks ---- */}
-        <Panel>
-          <PanelHead
-            title="Clocks running"
-            hint="Cure windows and election deadlines."
-          />
-          <ul className="mt-4 divide-y divide-slate-100">
+        <Panel flush>
+          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <PanelHead
+              title="Clocks running"
+              hint="Cure windows and election deadlines."
+            />
+          </div>
+          <ul className="divide-y divide-slate-100 px-5 sm:px-6">
             {clocks.map((r) => {
               const election = r.evaluation.daysUntilElection;
               const cure = r.evaluation.daysUntilCureEnds;
@@ -388,7 +392,7 @@ export default function OverviewPage() {
                   </div>
                   <div className="shrink-0 text-right">
                     <p
-                      className={`tnum font-display text-[1.125rem] leading-none ${
+                      className={`tnum text-[1.125rem] font-bold leading-none ${
                         (days ?? 99) < 30 ? "text-rose-600" : "text-slate-900"
                       }`}
                     >
@@ -408,13 +412,15 @@ export default function OverviewPage() {
         </Panel>
 
         {/* ---- signals ---- */}
-        <Panel>
-          <PanelHead
-            title="Latest signals"
-            hint="Recent observations."
-            right={<LinkButton href="/app/signals">All signals</LinkButton>}
-          />
-          <ul className="mt-4 divide-y divide-slate-100">
+        <Panel flush>
+          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <PanelHead
+              title="Latest signals"
+              hint="Recent observations."
+              right={<LinkButton href="/app/signals">All signals</LinkButton>}
+            />
+          </div>
+          <ul className="divide-y divide-slate-100 px-5 sm:px-6">
             {signalFeed.slice(0, 6).map((s) => (
               <li key={s.id} className="flex items-start gap-3 py-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600" />
@@ -438,13 +444,15 @@ export default function OverviewPage() {
 
       {/* ---- the honest panels ---- */}
       <div className="grid gap-3 lg:grid-cols-2">
-        <Panel>
-          <PanelHead
-            title="Failing, but not claimable"
-            hint="The test fails, but your side of the lease has to hold too."
-          />
+        <Panel flush>
+          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <PanelHead
+              title="Failing, but not claimable"
+              hint="The test fails, but your side of the lease has to hold too."
+            />
+          </div>
           {blocked.length || unverified.length ? (
-            <ul className="mt-4 space-y-3">
+            <ul className="space-y-3 px-5 py-4 sm:px-6">
               {blocked.slice(0, 4).map((r) => (
                 <li
                   key={r.id}
@@ -471,7 +479,7 @@ export default function OverviewPage() {
               {unverified.slice(0, 3).map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-xl border border-slate-200 bg-slate-100 p-3.5"
+                  className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm"
                 >
                   <Link
                     href={`/app/locations/${r.id}`}
@@ -492,21 +500,23 @@ export default function OverviewPage() {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-[0.8125rem] text-slate-500">
+            <p className="px-5 py-4 text-[0.8125rem] text-slate-500 sm:px-6">
               Nothing currently blocked on a precondition.
             </p>
           )}
         </Panel>
 
-        <Panel>
-          <PanelHead
-            title="Denominator gaps"
-            hint="Occupancy tests needing more of the center rent roll."
-          />
+        <Panel flush>
+          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <PanelHead
+              title="Denominator gaps"
+              hint="Occupancy tests needing more of the center rent roll."
+            />
+          </div>
           {needsRentRoll.length ? (
-            <ul className="mt-4 space-y-3">
+            <ul className="space-y-3 px-5 py-4 sm:px-6">
               {needsRentRoll.slice(0, 4).map((r) => (
-                <li key={r.id} className="rounded-xl border border-slate-200 bg-slate-100 p-3.5">
+                <li key={r.id} className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-sm">
                   <div className="flex items-center justify-between gap-3">
                     <Link
                       href={`/app/locations/${r.id}`}
@@ -527,7 +537,7 @@ export default function OverviewPage() {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-[0.8125rem] text-slate-500">
+            <p className="px-5 py-4 text-[0.8125rem] text-slate-500 sm:px-6">
               Every failing test currently rests on an observable denominator.
             </p>
           )}

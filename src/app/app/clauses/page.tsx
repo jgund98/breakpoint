@@ -141,7 +141,7 @@ export default function ClausesPage() {
             return (
               <li key={row.id} className="flex flex-wrap items-start gap-4 px-5 py-4">
                 <span
-                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl font-display text-[1.125rem] ${
+                  className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-[1.125rem] font-bold ${
                     GRADE_TONE[grade.letter] === "open"
                       ? "bg-emerald-50 text-emerald-700"
                       : GRADE_TONE[grade.letter] === "watch"

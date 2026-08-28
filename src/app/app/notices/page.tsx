@@ -256,7 +256,7 @@ function Section({
   return (
     <div>
       <div className="flex items-baseline gap-2.5">
-        <span className="font-display text-[0.8125rem] text-amber-500">{n}</span>
+        <span className="text-[0.8125rem] font-bold text-amber-500">{n}</span>
         <h3 className="text-[0.875rem] font-semibold text-slate-900">{title}</h3>
       </div>
       <div className="mt-2.5">{children}</div>

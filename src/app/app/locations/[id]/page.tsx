@@ -354,7 +354,7 @@ export default async function LocationPage({
             />
             <div className="mt-4 flex items-center gap-4">
               <span
-                className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl font-display text-[1.75rem] ${
+                className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-[1.75rem] font-bold ${
                   GRADE_TONE[grade.letter] === "open"
                     ? "bg-emerald-50 text-emerald-700"
                     : GRADE_TONE[grade.letter] === "watch"
