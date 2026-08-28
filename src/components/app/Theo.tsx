@@ -98,13 +98,18 @@ export function Theo() {
     }
   };
 
+  /* Viewport-bound, the way a chat surface has to be: the panel fills
+     the screen below the topbar and page head, the conversation
+     scrolls INSIDE it, and the composer is always on screen, on a
+     laptop or a 4K monitor alike. Heights apply at lg only; small
+     screens keep natural flow. */
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
-      <Panel flush className="flex min-h-[560px] flex-col">
+    <div className="grid gap-4 lg:h-[calc(100svh-13.5rem)] lg:min-h-[540px] lg:grid-cols-[minmax(0,1fr)_260px]">
+      <Panel flush className="flex min-h-[480px] flex-col lg:h-full lg:min-h-0">
         {/* conversation */}
-        <div className="flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
           {turns.length === 0 && (
-            <div className="py-6">
+            <div className="flex min-h-full flex-col justify-center py-6">
               <div className="flex items-center gap-3">
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
                   <Sparkles className="h-5 w-5 text-white" />
@@ -269,7 +274,7 @@ export function Theo() {
       </Panel>
 
       {/* what he can answer */}
-      <div className="space-y-3">
+      <div className="space-y-3 lg:h-full lg:min-h-0 lg:overflow-y-auto">
         <Panel>
           <p className="text-[0.8125rem] font-semibold text-slate-900">
             What {theo.name} can answer
