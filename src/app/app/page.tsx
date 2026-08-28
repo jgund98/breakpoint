@@ -417,7 +417,7 @@ export default function OverviewPage() {
             <PanelHead
               title="Latest signals"
               hint="Recent observations."
-              right={<LinkButton href="/app/signals">All signals</LinkButton>}
+              right={<LinkButton href="/app/activity">All activity</LinkButton>}
             />
           </div>
           <ul className="divide-y divide-slate-100 px-5 sm:px-6">

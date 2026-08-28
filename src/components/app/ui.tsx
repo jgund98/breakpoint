@@ -14,13 +14,24 @@ import { cn } from "@/lib/cn";
 
 export type Tone = "open" | "watch" | "brass" | "clay" | "muted" | "petrol";
 
+/**
+ * THE PILL LAW: states are solid, facts are quiet.
+ *
+ * "Claimable" set the standard — a saturated fill with bold dark text
+ * that reads across the room. Every SEMANTIC tone now follows it:
+ * emerald for satisfied, the vibrant amber for attention and money,
+ * rose for exposure, indigo for information. `muted` stays deliberately
+ * soft, on purpose: neutral facts ("Signal", "inherits") must not
+ * compete with states, and secondary evidence should LOOK weaker than
+ * verified. One geometry, one weight, no variants beyond the tones.
+ */
 export const toneChip: Record<Tone, string> = {
-  open: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
-  watch: "bg-amber-50 text-amber-700 ring-amber-600/10",
-  brass: "bg-amber-400 text-slate-900 ring-amber-400",
-  clay: "bg-rose-50 text-rose-700 ring-rose-600/10",
-  muted: "bg-slate-100 text-slate-600 ring-slate-600/10",
-  petrol: "bg-indigo-50 text-indigo-700 ring-indigo-600/10",
+  open: "bg-emerald-600 text-white shadow-sm",
+  watch: "bg-amber-400 text-slate-900 shadow-sm",
+  brass: "bg-amber-400 text-slate-900 shadow-sm",
+  clay: "bg-rose-600 text-white shadow-sm",
+  muted: "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-600/10",
+  petrol: "bg-indigo-600 text-white shadow-sm",
 };
 
 export const toneDot: Record<Tone, string> = {
@@ -32,16 +43,15 @@ export const toneDot: Record<Tone, string> = {
   petrol: "bg-indigo-500",
 };
 
-/**
- * Dot color when the dot sits INSIDE a chip. The brass chip is the one
- * filled state in the set, so an amber dot on it is invisible: it needs
- * to invert. Every other tone has a soft background and can use its own
- * color. Without this, "Claimable" renders as the only status pill
- * with no dot at all, which reads as a different component.
- */
+/** Dot color INSIDE a chip: white on dark fills, near-black on amber,
+    its own color on the quiet neutral. */
 export const chipDot: Record<Tone, string> = {
-  ...toneDot,
+  open: "bg-white/90",
+  watch: "bg-slate-900",
   brass: "bg-slate-900",
+  clay: "bg-white/90",
+  muted: "bg-slate-400",
+  petrol: "bg-white/90",
 };
 
 export const toneBar: Record<Tone, string> = {
@@ -67,7 +77,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold whitespace-nowrap ring-1 ring-inset",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-bold whitespace-nowrap",
         toneChip[tone],
         className,
       )}

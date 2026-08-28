@@ -3,7 +3,6 @@ import { ENTITLEMENT_META, prettyDate, shortDate } from "@/lib/clause";
 import { SOURCE_INFO, type SourceId, coverage } from "@/lib/coverage";
 import { TODAY, pendingMatches, rows } from "@/lib/portfolio";
 import { MatchQueue } from "@/components/app/MatchQueue";
-import { PendingAction } from "@/components/app/PendingAction";
 import { Building2, FileText, Radar, Store } from "lucide-react";
 import { StatCard } from "@/components/admin/ui";
 import {
@@ -165,11 +164,10 @@ export default function CoveragePage() {
                 </span>
               </div>
               {label === "Ready to send" && n > 0 && (
-                <PendingAction
-                  className="mt-3"
-                  label={`Draft ${n} requests`}
-                  confirmation="Drafted for your signatory"
-                />
+                <p className="mt-2 text-[0.75rem] leading-snug text-slate-500">
+                  Your team drafts and batches these with us when a
+                  denominator needs the landlord&#8217;s figures.
+                </p>
               )}
               {label === "Awaiting landlord" && n > 0 && (
                 <p className="mt-2 text-[0.75rem] text-slate-500">

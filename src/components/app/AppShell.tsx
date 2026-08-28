@@ -9,17 +9,14 @@ import {
   Activity,
   CalendarClock,
   ChevronRight,
-  ClipboardCheck,
   FileBarChart2,
   FileSignature,
   FileText,
   LayoutDashboard,
   Radar,
-  Scale,
   Search,
   Settings2,
   SlidersHorizontal,
-  Sparkles,
   Store,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -44,18 +41,10 @@ const NAV = [
     heading: "Monitor",
     items: [
       { href: "/app", label: "Overview", sub: "The whole portfolio", exact: true, Icon: LayoutDashboard },
-      { href: "/app/theo", label: "Ask Theo", sub: "Answers with sources", Icon: Sparkles },
       { href: "/app/locations", label: "Locations", sub: "Every watched door", Icon: Store },
+      { href: "/app/clauses", label: "Clause library", sub: "What your leases say", Icon: FileText },
       { href: "/app/coverage", label: "Coverage", sub: "Where we look", Icon: Radar },
-      { href: "/app/check", label: "Weekly check", sub: "Paste a directory", Icon: ClipboardCheck },
-      { href: "/app/activity", label: "Activity", sub: "Scans and reports", Icon: Activity },
-    ],
-  },
-  {
-    heading: "Analyze",
-    items: [
-      { href: "/app/clauses", label: "Clause library", sub: "Graded provisions", Icon: FileText },
-      { href: "/app/clause-value", label: "Clause value", sub: "What each would pay", Icon: Scale },
+      { href: "/app/activity", label: "Activity", sub: "Scans and alerts", Icon: Activity },
     ],
   },
   {
@@ -64,6 +53,11 @@ const NAV = [
       { href: "/app/deadlines", label: "Deadlines", sub: "Clocks and elections", Icon: CalendarClock },
       { href: "/app/notices", label: "Notice packages", sub: "Assembled for counsel", Icon: FileSignature },
       { href: "/app/report", label: "Portfolio report", sub: "The period, printable", Icon: FileBarChart2 },
+    ],
+  },
+  {
+    heading: "Account",
+    items: [
       { href: "/app/setup", label: "Portfolio setup", sub: "Papers to live", Icon: Settings2 },
       { href: "/app/settings", label: "Settings", sub: "Team and alerts", Icon: SlidersHorizontal },
     ],

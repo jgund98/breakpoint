@@ -14,7 +14,6 @@ import {
   sweeps,
 } from "@/lib/activity";
 import { signalFeed } from "@/lib/portfolio";
-import { PendingAction } from "@/components/app/PendingAction";
 import {
   EmptyState,
   LinkButton,
@@ -247,12 +246,9 @@ export default function ActivityPage() {
                       Sent {shortDate(r.generatedOn)} to {r.recipients.join(", ")}
                     </p>
                   </div>
-                  <PendingAction
-                    className="shrink-0"
-                    variant="quiet"
-                    label="Download"
-                    confirmation="Preparing"
-                  />
+                  <LinkButton href="/app/report" className="shrink-0">
+                    Open the report
+                  </LinkButton>
                 </li>
               );
             })}

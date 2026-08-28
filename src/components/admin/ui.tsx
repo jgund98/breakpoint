@@ -267,22 +267,25 @@ export const textareaCls =
 
 export type BadgeTone = "emerald" | "amber" | "rose" | "slate" | "indigo" | "sky";
 
+/* The pill law, same as the workspace: states are solid saturated
+   fills with bold text; slate stays quiet because neutral facts must
+   not compete with states. */
 const BADGE: Record<BadgeTone, string> = {
-  emerald: "bg-emerald-50 text-emerald-700 ring-emerald-600/10",
-  amber: "bg-amber-50 text-amber-700 ring-amber-600/10",
-  rose: "bg-rose-50 text-rose-700 ring-rose-600/10",
-  slate: "bg-slate-100 text-slate-600 ring-slate-600/10",
-  indigo: "bg-indigo-50 text-indigo-700 ring-indigo-600/10",
-  sky: "bg-sky-50 text-sky-700 ring-sky-600/10",
+  emerald: "bg-emerald-600 text-white shadow-sm",
+  amber: "bg-amber-400 text-slate-900 shadow-sm",
+  rose: "bg-rose-600 text-white shadow-sm",
+  slate: "bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-600/10",
+  indigo: "bg-indigo-600 text-white shadow-sm",
+  sky: "bg-sky-600 text-white shadow-sm",
 };
 
 const BADGE_DOT: Record<BadgeTone, string> = {
-  emerald: "bg-emerald-500",
-  amber: "bg-amber-500",
-  rose: "bg-rose-500",
+  emerald: "bg-white/90",
+  amber: "bg-slate-900",
+  rose: "bg-white/90",
   slate: "bg-slate-400",
-  indigo: "bg-indigo-500",
-  sky: "bg-sky-500",
+  indigo: "bg-white/90",
+  sky: "bg-white/90",
 };
 
 export function Badge({
@@ -297,7 +300,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold ring-1 ring-inset",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-bold",
         BADGE[tone],
       )}
     >
