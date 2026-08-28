@@ -91,9 +91,16 @@ await pause(600);
 const t0 = await body();
 check("estoppel check shows a live position", /Position live/.test(t0));
 
+/* First interactive click of the run: on a cold production function
+   hydration and the POST can outlast a fixed pause, so wait for the
+   confirmation instead. */
 await clickText("Request");
-await pause(900);
-check("scan request confirmed", /Requested/.test(await body()));
+let requested = false;
+for (let i = 0; i < 20 && !requested; i++) {
+  await pause(400);
+  requested = /Requested/.test(await body());
+}
+check("scan request confirmed", requested);
 
 await clickText("Report");
 await pause(400);
