@@ -150,10 +150,10 @@ export function Overview({
             <div className="hidden flex-col justify-end rounded-2xl bg-white/10 p-5 backdrop-blur-sm lg:flex">
               <div className="mb-3 flex items-center justify-between">
                 <p className="text-[0.75rem] font-semibold text-indigo-100">
-                  Twelve weeks of scans
+                  Scan activity
                 </p>
-                <p className="text-[0.6875rem] text-indigo-200">
-                  amber&nbsp;=&nbsp;changes found
+                <p className="tnum text-[0.6875rem] text-indigo-200">
+                  {weeks.length} passes · {quarterChanges} changes
                 </p>
               </div>
               <BarSpark
