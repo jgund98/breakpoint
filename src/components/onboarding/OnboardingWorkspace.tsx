@@ -864,7 +864,7 @@ function Mapping({
                         "min-w-[11rem] rounded-md border px-2 py-1.5 text-[0.75rem] font-medium focus:outline-none",
                         value === "ignore"
                           ? "border-slate-200 bg-slate-100 text-slate-500"
-                          : "border-petrol-200 bg-indigo-50 text-indigo-800",
+                          : "border-indigo-200 bg-indigo-50 text-indigo-800",
                       )}
                     >
                       <option value="ignore">Ignore</option>

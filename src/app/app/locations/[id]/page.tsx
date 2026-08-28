@@ -256,7 +256,7 @@ export default async function LocationPage({
                     return (
                       <li key={e.id} className="relative flex gap-4 pb-5">
                         {i < arr.length - 1 && (
-                          <span className="absolute left-[9px] top-5 h-full w-px bg-line" />
+                          <span className="absolute left-[9px] top-5 h-full w-px bg-slate-200" />
                         )}
                         <span
                           className={`relative mt-1 h-[18px] w-[18px] shrink-0 rounded-full border-2 ${

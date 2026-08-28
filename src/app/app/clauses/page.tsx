@@ -91,7 +91,7 @@ export default function ClausesPage() {
                   <span
                     className={`h-2 w-2 shrink-0 rounded-full ${
                       n === 0
-                        ? "bg-line"
+                        ? "bg-slate-200"
                         : GRADE_TONE[letter] === "open"
                           ? "bg-emerald-600"
                           : GRADE_TONE[letter] === "watch"

@@ -82,36 +82,41 @@ export function SettingsBoard() {
         lede="Who can do what, who hears about it, and how to reach us."
       />
 
-      {/* tabs */}
-      <div className="scroll-x-clean flex gap-1 overflow-x-auto border-b border-slate-200">
-        {TABS.map((t) => {
-          const active = tab === t.id;
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "relative flex items-center gap-2 rounded-t-lg px-3.5 py-2.5 text-[0.8125rem] font-medium whitespace-nowrap transition-colors duration-250",
-                active ? "text-indigo-800" : "text-slate-500 hover:text-slate-900",
-              )}
-            >
-              <t.Icon className="h-3.5 w-3.5" />
-              {t.label}
-              {t.id === "messages" && openThreads > 0 && (
-                <span className="tnum rounded bg-amber-500 px-1.5 py-0.5 text-[0.625rem] font-bold text-petrol-950">
-                  {openThreads}
-                </span>
-              )}
-              {active && (
-                <motion.span
-                  layoutId="settings-tab"
-                  className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-indigo-700"
-                />
-              )}
-            </button>
-          );
-        })}
+      {/* tabs: the one Segmented idiom, same as every table's views */}
+      <div className="scroll-x-clean overflow-x-auto">
+        <div className="flex w-fit rounded-xl bg-slate-100 p-1">
+          {TABS.map((t) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[0.75rem] font-semibold transition-all duration-200",
+                  active
+                    ? "bg-white text-slate-900 shadow-sm"
+                    : "text-slate-500 hover:text-slate-700",
+                )}
+              >
+                <t.Icon className="h-3.5 w-3.5" />
+                {t.label}
+                {t.id === "messages" && openThreads > 0 && (
+                  <span
+                    className={cn(
+                      "tnum rounded-full px-1.5 py-0.5 text-[0.625rem] font-bold",
+                      active
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-slate-200/70 text-slate-500",
+                    )}
+                  >
+                    {openThreads}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
