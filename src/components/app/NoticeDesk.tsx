@@ -170,9 +170,9 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                   ) : (
                     <>
                       {blocked ? (
-                        <span className="text-[0.75rem] text-slate-500">
+                        <Pill tone="watch" dot>
                           Awaiting primary evidence
-                        </span>
+                        </Pill>
                       ) : meta.next ? (
                         <ActionButton
                           variant={stage === "approved" ? "brass" : "primary"}
@@ -203,7 +203,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
               </div>
 
               {/* stage rail */}
-              <ol className="mt-3 flex flex-wrap items-center gap-1.5">
+              <ol className="mt-3 flex w-full max-w-xs items-center gap-1.5">
                 {(
                   [
                     "not_started",
@@ -216,10 +216,10 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                   const idx = arr.indexOf(stage);
                   const done = idx >= 0 && i <= idx;
                   return (
-                    <li key={s} className="flex items-center gap-1.5">
+                    <li key={s} className="flex-1">
                       <span
                         className={cn(
-                          "h-1.5 w-8 rounded-full transition-colors",
+                          "block h-1.5 w-full rounded-full transition-colors",
                           done ? "bg-indigo-600" : "bg-slate-100",
                         )}
                         title={NOTICE_META[s].label}
@@ -227,7 +227,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                     </li>
                   );
                 })}
-                <li className="ml-1 text-[0.6875rem] text-slate-400">
+                <li className="ml-2 shrink-0 whitespace-nowrap text-[0.6875rem] font-medium text-slate-400">
                   {NOTICE_META[stage].label}
                 </li>
               </ol>

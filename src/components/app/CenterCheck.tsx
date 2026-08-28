@@ -251,9 +251,11 @@ export function CenterCheck({
       {/* ---- which center ---- */}
       <Panel flush className="h-fit">
         <div className="px-4 pt-4">
-          <p className="label text-slate-500">Centers</p>
+          <p className="text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
+            Centers
+          </p>
         </div>
-        <ul className="mt-2 max-h-[28rem] overflow-y-auto">
+        <ul className="mt-2 max-h-[28rem] space-y-0.5 overflow-y-auto px-2 pb-2">
           {centers.map((c) => {
             const on = c.locationId === active.locationId;
             return (
@@ -266,14 +268,33 @@ export function CenterCheck({
                     setAccepted({});
                   }}
                   className={cn(
-                    "flex w-full items-center gap-2 px-4 py-2 text-left text-[0.8125rem] transition-colors",
+                    "flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-left text-[0.8125rem] font-medium transition-all duration-200",
                     on
-                      ? "bg-indigo-50 font-semibold text-indigo-800"
-                      : "text-slate-700 hover:bg-slate-100",
+                      ? "bg-slate-100 text-slate-900 shadow-sm"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
                   )}
                 >
-                  <Store className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                  <span
+                    className={cn(
+                      "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-200",
+                      on
+                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30"
+                        : "bg-slate-100 text-slate-500",
+                    )}
+                  >
+                    <Store className="h-3.5 w-3.5" />
+                  </span>
                   <span className="min-w-0 flex-1 truncate">{c.center.name}</span>
+                  {c.watched.length > 0 && (
+                    <span
+                      className={cn(
+                        "tnum shrink-0 rounded-full px-1.5 py-0.5 text-[0.625rem] font-bold",
+                        on ? "bg-indigo-50 text-indigo-700" : "bg-slate-100 text-slate-400",
+                      )}
+                    >
+                      {c.watched.length}
+                    </span>
+                  )}
                 </button>
               </li>
             );
@@ -299,7 +320,7 @@ export function CenterCheck({
             rows={5}
             spellCheck={false}
             placeholder="Macy&#39;s, Nordstrom, Sephora&#10;Zara&#10;Apple Computer"
-            className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-100 p-3 font-mono text-[0.75rem] leading-relaxed text-slate-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15"
+            className="mt-3 w-full rounded-xl border border-slate-200 bg-white p-3.5 font-mono text-[0.75rem] leading-relaxed text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15"
           />
           <p className="mt-2 text-[0.75rem] text-slate-500">
             One per line, or separated by commas or pipes. Case and

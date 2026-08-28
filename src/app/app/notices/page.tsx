@@ -67,7 +67,7 @@ export default function NoticesPage() {
         lede="We assemble the file. Your authorized signatory serves it."
       />
 
-      <Note tone="clay" title="How this works">
+      <Note tone="petrol" title="How this works">
         Every package below carries the clause extract with its section cite,
         the evidence chain with timestamps and source tiers, the occupancy
         computation with its denominator shown, and the money math. It goes to

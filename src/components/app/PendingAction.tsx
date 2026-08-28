@@ -44,7 +44,7 @@ export function PendingAction({
           <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <ActionButton
               variant={variant}
-              className="w-full px-3 py-2"
+              className="w-full"
               onClick={() => setDone(true)}
             >
               {label}

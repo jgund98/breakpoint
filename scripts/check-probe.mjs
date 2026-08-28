@@ -94,10 +94,12 @@ for (const l of file.locations) {
 }
 if (!loc) throw new Error("no location has an open store its clause names");
 
-/* The screen defaults to the first center, so select the one under test. */
+/* The screen defaults to the first center, so select the one under test.
+   The rail rows carry a watched-count badge after the name, so match on
+   inclusion rather than equality. */
 await page.evaluate((name) => {
-  const btn = [...document.querySelectorAll("button")].find(
-    (b) => b.textContent?.trim() === name,
+  const btn = [...document.querySelectorAll("button")].find((b) =>
+    b.textContent?.includes(name),
   );
   btn?.click();
 }, loc.center.name);

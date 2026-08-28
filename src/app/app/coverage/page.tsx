@@ -4,11 +4,12 @@ import { SOURCE_INFO, type SourceId, coverage } from "@/lib/coverage";
 import { TODAY, pendingMatches, rows } from "@/lib/portfolio";
 import { MatchQueue } from "@/components/app/MatchQueue";
 import { PendingAction } from "@/components/app/PendingAction";
+import { Building2, FileText, Radar, Store } from "lucide-react";
+import { StatCard } from "@/components/admin/ui";
 import {
   EmptyState,
   LinkButton,
   PageHead,
-  Stat,
   Panel,
   PanelHead,
   Pill,
@@ -95,28 +96,42 @@ export default function CoveragePage() {
         right={<LinkButton href="/app/activity">Activity</LinkButton>}
       />
 
-      <MatchQueue items={pendingMatches} />
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        {[
-          ["Centers watched", String(byCenter.length), "Where you hold a lease"],
-          [
-            "Named tenants tracked",
-            c.storesWatched.toLocaleString("en-US"),
-            "Stores your clauses depend on",
-          ],
-          ["Next scan", shortDate(c.nextSweepISO), "Runs automatically"],
-        ].map(([k, v, hint], i) => (
-          <Stat
-            key={k as string}
-            label={k as string}
-            value={v as string}
-            sub={hint as string}
-            tone={"petrol" as Tone}
-            className={`card-enter d-${i + 1}`}
-          />
-        ))}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          label="Centers watched"
+          value={byCenter.length}
+          sub="Where you hold a lease"
+          icon={<Building2 className="h-5 w-5" />}
+          color="indigo"
+        />
+        <StatCard
+          label="Named tenants tracked"
+          value={c.storesWatched.toLocaleString("en-US")}
+          sub="Stores your clauses depend on"
+          icon={<Store className="h-5 w-5" />}
+          color="violet"
+          delay={50}
+        />
+        <StatCard
+          label="Reporting rights ready"
+          value={available.length}
+          sub="Occupancy figures you can demand"
+          icon={<FileText className="h-5 w-5" />}
+          color="amber"
+          hot={available.length > 0}
+          delay={100}
+        />
+        <StatCard
+          label="Next scan"
+          value={shortDate(c.nextSweepISO)}
+          sub="Runs automatically"
+          icon={<Radar className="h-5 w-5" />}
+          color="sky"
+          delay={150}
+        />
       </div>
+
+      <MatchQueue items={pendingMatches} />
 
       {/* ---- reporting rights ---- */}
       <Panel className="card-enter d-2">
@@ -139,7 +154,7 @@ export default function CoveragePage() {
           ).map(([label, n, tone]) => (
             <div
               key={label}
-              className="rounded-xl border border-slate-200 bg-slate-100 p-4"
+              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-[0.8125rem] font-medium text-slate-900">
@@ -280,8 +295,20 @@ export default function CoveragePage() {
           {(Object.keys(SOURCE_INFO) as SourceId[]).map((id) => {
             const s = SOURCE_INFO[id];
             return (
-              <div key={id} className="rounded-xl border border-slate-200 bg-slate-100 p-3.5">
-                <div className="flex items-center gap-2">
+              <div
+                key={id}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                      s.weight === "primary"
+                        ? "bg-emerald-50 text-emerald-600"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <Radar className="h-4 w-4" />
+                  </span>
                   <span className="text-[0.8125rem] font-semibold text-slate-900">
                     {s.label}
                   </span>
@@ -292,7 +319,7 @@ export default function CoveragePage() {
                     {s.weight}
                   </Pill>
                 </div>
-                <p className="mt-1.5 text-[0.75rem] leading-snug text-slate-700">
+                <p className="mt-2 text-[0.75rem] leading-snug text-slate-600">
                   {s.covers}
                 </p>
                 <p className="mt-1.5 text-[0.6875rem] text-slate-400">{s.cadence}</p>
@@ -302,7 +329,7 @@ export default function CoveragePage() {
         </div>
       </Panel>
 
-      <p className="rounded-xl border border-slate-200 bg-slate-100 p-4 text-[0.75rem] leading-relaxed text-slate-500">
+      <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-[0.75rem] leading-relaxed text-slate-500">
         Next scan {prettyDate(c.nextSweepISO)}. Illustrative sample data.
       </p>
     </div>

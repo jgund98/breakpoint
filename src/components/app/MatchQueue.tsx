@@ -93,8 +93,8 @@ export function MatchQueue({ items }: Props) {
                               /* Two lines of text need more than 12px of
                                  side padding, or the reason line runs
                                  into the rounded corner. */
-                              "rounded-xl border border-slate-200 bg-white px-4 py-3 text-left",
-                              "transition-colors duration-200 hover:border-indigo-300 hover:bg-slate-100",
+                              "rounded-xl border border-slate-200 bg-white px-4 py-3 text-left shadow-sm",
+                              "transition-all duration-200 hover:border-indigo-300 hover:shadow-md active:scale-[0.98]",
                             )}
                           >
                             <span className="block text-[0.8125rem] font-medium text-slate-900">
@@ -118,8 +118,7 @@ export function MatchQueue({ items }: Props) {
       {Object.keys(resolved).length > 0 && (
         <div className="border-t border-slate-200 px-5 py-3 sm:px-6">
           <p className="text-[0.75rem] text-slate-500">
-            {Object.keys(resolved).length} confirmed this session. Saving is
-            wired to the account once the database is connected.
+            {Object.keys(resolved).length} confirmed this session.
           </p>
         </div>
       )}
