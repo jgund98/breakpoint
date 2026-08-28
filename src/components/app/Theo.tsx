@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, Download, FileText, Info } from "lucide-react";
+import { ArrowUp, Download, FileText, Info, Sparkles } from "lucide-react";
 import {
   type AnswerBlock,
   type TheoAnswer,
-  ask,
   greeting,
   suggestedQuestions,
   theo,
@@ -19,7 +18,6 @@ import {
 } from "@/lib/theo-export";
 import { org, TODAY } from "@/lib/portfolio";
 import { prettyDate } from "@/lib/clause";
-import { BrandMark } from "@/components/brand/BrandMark";
 import { cn } from "@/lib/cn";
 import { ActionButton, Panel, Pill } from "./ui";
 
@@ -43,6 +41,7 @@ export function Theo() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
+  const [engine, setEngine] = useState<"model" | "index" | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
   const suggestions = suggestedQuestions();
 
@@ -50,18 +49,53 @@ export function Theo() {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [turns, thinking]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const q = text.trim();
     if (!q || thinking) return;
     setInput("");
     setTurns((t) => [...t, { role: "user", text: q }]);
     setThinking(true);
 
-    // A beat, so the answer reads as considered rather than canned.
-    window.setTimeout(() => {
-      setTurns((t) => [...t, { role: "theo", answer: ask(q) }]);
+    /* The last few exchanges travel with the question so the brain can
+       follow "what about the second one". */
+    const history = turns
+      .reduce<{ q: string; a: string }[]>((acc, t) => {
+        if (t.role === "user") acc.push({ q: t.text, a: "" });
+        else if (acc.length) acc[acc.length - 1].a = t.answer.lead ?? t.answer.interpreted;
+        return acc;
+      }, [])
+      .slice(-6);
+
+    try {
+      const res = await fetch("/app/api/theo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, history }),
+      });
+      if (!res.ok) throw new Error();
+      const data = (await res.json()) as {
+        engine: "model" | "index";
+        answer: TheoAnswer;
+      };
+      setEngine(data.engine);
+      setTurns((t) => [...t, { role: "theo", answer: data.answer }]);
+    } catch {
+      setTurns((t) => [
+        ...t,
+        {
+          role: "theo",
+          answer: {
+            interpreted: q,
+            lead: "I could not reach the portfolio just now. Try again in a moment.",
+            provenance: "",
+            blocks: [],
+            followUps: [],
+          },
+        },
+      ]);
+    } finally {
       setThinking(false);
-    }, 520);
+    }
   };
 
   return (
@@ -72,8 +106,8 @@ export function Theo() {
           {turns.length === 0 && (
             <div className="py-6">
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-petrol-900">
-                  <BrandMark size={30} tone="light" sweep={false} />
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
+                  <Sparkles className="h-5 w-5 text-white" />
                 </span>
                 <div>
                   <p className="text-[0.9375rem] font-semibold text-slate-900">
@@ -94,7 +128,7 @@ export function Theo() {
                   <button
                     key={s}
                     type="button"
-                    onClick={() => send(s)}
+                    onClick={() => void send(s)}
                     className="rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-2 text-left text-[0.8125rem] text-slate-700 transition-colors duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-800"
                   >
                     {s}
@@ -192,7 +226,7 @@ export function Theo() {
                         <button
                           key={f}
                           type="button"
-                          onClick={() => send(f)}
+                          onClick={() => void send(f)}
                           className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[0.75rem] text-slate-500 transition-colors hover:border-indigo-300 hover:text-indigo-700"
                         >
                           {f}
@@ -218,7 +252,7 @@ export function Theo() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            send(input);
+            void send(input);
           }}
           className="flex items-center gap-2 border-t border-slate-200 p-3"
         >
@@ -255,6 +289,20 @@ export function Theo() {
               </li>
             ))}
           </ul>
+        </Panel>
+
+        <Panel>
+          <p className="text-[0.8125rem] font-semibold text-slate-900">Engine</p>
+          <p className="mt-2 text-[0.8125rem] leading-relaxed text-slate-500">
+            {engine === "model"
+              ? "Reasoning model over your portfolio index and the operations canon. Figures always come from the index."
+              : "Portfolio index. Every figure is computed from your leases and our observations. The reasoning model joins when connected."}
+          </p>
+          {engine && (
+            <Pill tone={engine === "model" ? "petrol" : "muted"} className="mt-2.5">
+              {engine === "model" ? "Model + index" : "Index"}
+            </Pill>
+          )}
         </Panel>
 
         <Panel>

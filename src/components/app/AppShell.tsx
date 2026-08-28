@@ -16,6 +16,7 @@ import {
   Radar,
   Search,
   Settings2,
+  Sparkles,
   SlidersHorizontal,
   Store,
 } from "lucide-react";
@@ -41,6 +42,7 @@ const NAV = [
     heading: "Monitor",
     items: [
       { href: "/app", label: "Overview", sub: "The whole portfolio", exact: true, Icon: LayoutDashboard },
+      { href: "/app/theo", label: "Ask Theo", sub: "Answers from your portfolio", Icon: Sparkles },
       { href: "/app/locations", label: "Locations", sub: "Every watched door", Icon: Store },
       { href: "/app/clauses", label: "Clause library", sub: "What your leases say", Icon: FileText },
       { href: "/app/coverage", label: "Coverage", sub: "Where we look", Icon: Radar },

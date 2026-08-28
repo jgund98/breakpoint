@@ -9,7 +9,6 @@ import {
   Mail,
   MessageSquare,
   Plus,
-  Send,
   ShieldCheck,
   Smartphone,
   Users,
@@ -20,12 +19,9 @@ import {
   type Member,
   type RoleId,
   type RoutingRule,
-  type Thread,
   ROLES,
-  THREAD_META,
   defaultRouting,
   members as seedMembers,
-  threads as seedThreads,
 } from "@/lib/team";
 import { PERMISSION_LABEL } from "@/lib/team";
 import { prettyDate, shortDate } from "@/lib/clause";
@@ -46,7 +42,6 @@ import {
 const TABS = [
   { id: "team", label: "Team and roles", Icon: Users },
   { id: "alerts", label: "Alerts", Icon: Mail },
-  { id: "messages", label: "Messages", Icon: MessageSquare },
   { id: "account", label: "Account", Icon: Building2 },
   { id: "security", label: "Data and security", Icon: Lock },
 ] as const;
@@ -69,10 +64,8 @@ export function SettingsBoard() {
   const [tab, setTab] = useState<TabId>("team");
   const [members, setMembers] = useState<Member[]>(seedMembers);
   const [routing, setRouting] = useState<RoutingRule[]>(defaultRouting);
-  const [threads, setThreads] = useState<Thread[]>(seedThreads);
   const [inviting, setInviting] = useState(false);
 
-  const openThreads = threads.filter((t) => t.status !== "resolved").length;
 
   return (
     <div className="space-y-5">
@@ -101,18 +94,6 @@ export function SettingsBoard() {
               >
                 <t.Icon className="h-3.5 w-3.5" />
                 {t.label}
-                {t.id === "messages" && openThreads > 0 && (
-                  <span
-                    className={cn(
-                      "tnum rounded-full px-1.5 py-0.5 text-[0.625rem] font-bold",
-                      active
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-slate-200/70 text-slate-500",
-                    )}
-                  >
-                    {openThreads}
-                  </span>
-                )}
               </button>
             );
           })}
@@ -142,9 +123,6 @@ export function SettingsBoard() {
           )}
           {tab === "alerts" && (
             <AlertsTab routing={routing} onChange={setRouting} members={members} />
-          )}
-          {tab === "messages" && (
-            <MessagesTab threads={threads} onThreads={setThreads} />
           )}
           {tab === "account" && <AccountTab />}
           {tab === "security" && <SecurityTab />}
@@ -466,180 +444,6 @@ function AlertsTab({
           })}
         </div>
       </Panel>
-    </>
-  );
-}
-
-/* ==================================================================
-   messages
-   ================================================================== */
-
-function MessagesTab({
-  threads,
-  onThreads,
-}: {
-  threads: Thread[];
-  onThreads: (t: Thread[]) => void;
-}) {
-  const [activeId, setActiveId] = useState(threads[0]?.id ?? "");
-  const [draft, setDraft] = useState("");
-  const active = threads.find((t) => t.id === activeId) ?? threads[0];
-
-  const send = () => {
-    if (!draft.trim() || !active) return;
-    onThreads(
-      threads.map((t) =>
-        t.id === active.id
-          ? {
-              ...t,
-              status: "with_breakpoint",
-              messages: [
-                ...t.messages,
-                {
-                  id: `m${t.messages.length + 1}`,
-                  from: "client",
-                  author: "S. Aggarwal",
-                  at: "2026-08-04",
-                  body: draft.trim(),
-                },
-              ],
-            }
-          : t,
-      ),
-    );
-    setDraft("");
-  };
-
-  return (
-    <>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        {(Object.keys(THREAD_META) as (keyof typeof THREAD_META)[]).map((k) => (
-          <button
-            key={k}
-            type="button"
-            className="rounded-xl border border-slate-200 bg-white p-3.5 text-left transition-colors duration-200 hover:border-indigo-300 hover:bg-indigo-50/40"
-          >
-            <p className="text-[0.8125rem] font-semibold text-slate-900">
-              {THREAD_META[k].label}
-            </p>
-            <p className="mt-1 text-[0.75rem] leading-snug text-slate-500">
-              {THREAD_META[k].blurb}
-            </p>
-            <p className="mt-1.5 text-[0.6875rem] font-medium text-indigo-700">
-              {THREAD_META[k].sla}
-            </p>
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-3 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <Panel flush className="overflow-hidden">
-          <div className="border-b border-slate-200 px-4 py-3">
-            <p className="text-[0.8125rem] font-semibold text-slate-900">Threads</p>
-          </div>
-          <ul className="divide-y divide-slate-100">
-            {threads.map((t) => (
-              <li key={t.id}>
-                <button
-                  type="button"
-                  onClick={() => setActiveId(t.id)}
-                  className={cn(
-                    "w-full px-4 py-3 text-left transition-colors duration-200",
-                    t.id === active?.id ? "bg-indigo-50" : "hover:bg-slate-100",
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <Pill
-                      tone={
-                        (t.status === "resolved"
-                          ? "open"
-                          : t.status === "with_client"
-                            ? "clay"
-                            : "watch") as Tone
-                      }
-                    >
-                      {t.status === "with_client"
-                        ? "Needs you"
-                        : t.status === "with_breakpoint"
-                          ? "With us"
-                          : t.status}
-                    </Pill>
-                    <span className="text-[0.6875rem] text-slate-400">{t.id}</span>
-                  </div>
-                  <p className="mt-1.5 text-[0.8125rem] leading-snug font-medium text-slate-900">
-                    {t.subject}
-                  </p>
-                  <p className="mt-0.5 text-[0.75rem] text-slate-500">
-                    {THREAD_META[t.kind].label} · {shortDate(t.opened)}
-                  </p>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-
-        <Panel flush className="flex min-h-[440px] flex-col">
-          {active ? (
-            <>
-              <div className="border-b border-slate-200 px-5 py-4">
-                <p className="text-[0.9375rem] font-semibold text-slate-900">
-                  {active.subject}
-                </p>
-                <p className="mt-0.5 text-[0.75rem] text-slate-500">
-                  Opened {prettyDate(active.opened)} ·{" "}
-                  {THREAD_META[active.kind].label} · target response{" "}
-                  {THREAD_META[active.kind].sla.toLowerCase()}
-                </p>
-              </div>
-
-              <div className="flex-1 space-y-4 overflow-y-auto p-5">
-                {active.messages.map((m) => (
-                  <div
-                    key={m.id}
-                    className={cn(
-                      "flex",
-                      m.from === "client" ? "justify-end" : "justify-start",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[80%] rounded-xl px-3.5 py-2.5",
-                        m.from === "client"
-                          ? "rounded-br-sm bg-indigo-800 text-white"
-                          : "rounded-bl-sm border border-slate-200 bg-slate-100 text-slate-700",
-                      )}
-                    >
-                      <p className="text-[0.6875rem] font-semibold opacity-70">
-                        {m.author} · {shortDate(m.at)}
-                      </p>
-                      <p className="mt-1 text-[0.8125rem] leading-relaxed">
-                        {m.body}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-end gap-2 border-t border-slate-200 p-3">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  rows={2}
-                  placeholder="Reply to your account team"
-                  className="flex-1 resize-none rounded-xl border border-slate-200 bg-white shadow-sm px-3.5 py-2.5 text-[0.875rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
-                />
-                <ActionButton onClick={send} disabled={!draft.trim()}>
-                  <Send className="h-4 w-4" />
-                </ActionButton>
-              </div>
-            </>
-          ) : (
-            <p className="p-10 text-center text-[0.875rem] text-slate-500">
-              No threads yet.
-            </p>
-          )}
-        </Panel>
-      </div>
     </>
   );
 }

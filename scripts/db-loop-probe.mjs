@@ -481,6 +481,29 @@ const { rows: ns } = await sql.query(
 );
 check("notice status persisted", ns.length === 1 && ns[0].stage === "acknowledged");
 
+/* Theo answers from the portfolio, server-side */
+const theo = await page.evaluate(async () => {
+  const res = await fetch("/app/api/theo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      question: "Which locations qualify for co-tenancy rent?",
+    }),
+  });
+  if (!res.ok) return { status: res.status };
+  const d = await res.json();
+  return {
+    status: res.status,
+    engine: d.engine,
+    hasBlocks: (d.answer?.blocks ?? []).length > 0,
+    lead: String(d.answer?.lead ?? ""),
+  };
+});
+check(
+  `theo answered from the ${theo.engine} engine with real blocks`,
+  theo.status === 200 && theo.hasBlocks,
+);
+
 /* the console kept its own record */
 const { rows: auditRows } = await sql.query(
   `select count(*)::int as n from audit_log

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Download } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Segmented } from "@/components/admin/ui";
 import { EmptyState, Pill, type Tone } from "./ui";
@@ -136,6 +137,57 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
         <span className="ml-auto text-[0.75rem] whitespace-nowrap text-slate-500">
           {filtered.length} of {rows.length}
         </span>
+
+        <button
+          type="button"
+          onClick={() => {
+            /* The register as their lease admin actually works: a
+               spreadsheet of exactly what is filtered on screen. */
+            const esc = (v: unknown) =>
+              '"' + String(v ?? "").replace(/"/g, '""') + '"';
+            const head = [
+              "Location",
+              "Store",
+              "Center",
+              "City",
+              "State",
+              "Status",
+              "Failing test",
+              "Evidence",
+              "Clock (days)",
+              "Potential per month",
+            ];
+            const lines = filtered.map((r) =>
+              [
+                r.id,
+                r.storeNumber,
+                r.centerName,
+                r.city,
+                r.state,
+                r.stateLabel,
+                r.failing || "None",
+                r.evidence,
+                r.clockDays ?? "",
+                r.monthly ?? "",
+              ]
+                .map(esc)
+                .join(","),
+            );
+            const blob = new Blob(
+              [[head.map(esc).join(","), ...lines].join("\r\n")],
+              { type: "text/csv;charset=utf-8" },
+            );
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "breakpoint-locations.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-[0.8125rem] font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300 active:scale-95"
+        >
+          <Download className="h-4 w-4" /> CSV
+        </button>
       </div>
 
       {/* ---- table ---- */}

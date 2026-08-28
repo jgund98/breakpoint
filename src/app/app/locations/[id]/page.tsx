@@ -18,6 +18,7 @@ import { TODAY, rowById, rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
 import { ScanHistory } from "@/components/app/ScanHistory";
+import { PrintButton } from "@/components/app/PrintButton";
 import { PapersOnFile } from "@/components/app/PapersOnFile";
 import { Rise } from "@/components/app/Motion";
 import {
@@ -91,6 +92,7 @@ export default async function LocationPage({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <PrintButton />
           <LinkButton href="/app/locations">Back to list</LinkButton>
           {canNotice ? (
             <LinkButton href="/app/notices" variant="brass">

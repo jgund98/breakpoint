@@ -119,8 +119,8 @@ export default async function SystemPage() {
       color: "emerald",
       title: "Extraction model key",
       detail: hasAnthropicKey
-        ? "ANTHROPIC_API_KEY is present. The clause-extraction runner can call the model and score itself against the gold set."
-        : "ANTHROPIC_API_KEY is not set. The extraction runner builds and scores prompts but cannot call the model.",
+        ? "ANTHROPIC_API_KEY is present. The clause-extraction runner can call the model, and Ask Theo reasons with it over the portfolio index."
+        : "ANTHROPIC_API_KEY is not set. The extraction runner builds and scores prompts but cannot call the model, and Ask Theo answers from the portfolio index alone.",
       state: hasAnthropicKey
         ? { label: "Present", tone: "emerald" }
         : { label: "Missing", tone: "amber" },
