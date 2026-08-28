@@ -38,30 +38,30 @@ export function Choice<T extends string>({
             className={cn(
               "flex items-start gap-3 rounded-xl border p-4 text-left transition-colors duration-200",
               on
-                ? "border-petrol-500 bg-petrol-50"
-                : "border-line bg-surface hover:border-petrol-300",
+                ? "border-indigo-500 bg-indigo-50"
+                : "border-slate-200 bg-white hover:border-indigo-300",
             )}
           >
             <span
               className={cn(
                 "mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border",
-                on ? "border-petrol-600 bg-petrol-600 text-cream" : "border-line",
+                on ? "border-indigo-600 bg-indigo-600 text-white" : "border-slate-200",
               )}
             >
               {on && <Check className="h-3 w-3" />}
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-center gap-2">
-                <span className="text-[0.9375rem] font-semibold text-ink">
+                <span className="text-[0.9375rem] font-semibold text-slate-900">
                   {o.title}
                 </span>
                 {o.tag && (
-                  <span className="rounded-md bg-brass-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-brass-700 ring-1 ring-inset ring-brass-200">
+                  <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-200">
                     {o.tag}
                   </span>
                 )}
               </span>
-              <span className="mt-1 block text-[0.8125rem] leading-relaxed text-muted">
+              <span className="mt-1 block text-[0.8125rem] leading-relaxed text-slate-500">
                 {o.blurb}
               </span>
             </span>
@@ -88,8 +88,8 @@ function HeldRow({
   return (
     <li className="flex flex-wrap items-start gap-4 px-5 py-4">
       <div className="min-w-0 flex-1">
-        <p className="text-[0.875rem] font-medium text-ink">{title}</p>
-        <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-muted">{why}</p>
+        <p className="text-[0.875rem] font-medium text-slate-900">{title}</p>
+        <p className="mt-0.5 text-[0.8125rem] leading-relaxed text-slate-500">{why}</p>
       </div>
       <div className="flex shrink-0 gap-1.5">
         {(
@@ -106,8 +106,8 @@ function HeldRow({
             className={cn(
               "rounded-lg border px-3 py-1.5 text-[0.75rem] font-semibold transition-colors duration-200",
               value === id
-                ? "border-petrol-500 bg-petrol-50 text-petrol-800"
-                : "border-line bg-surface text-muted hover:border-petrol-300",
+                ? "border-indigo-500 bg-indigo-50 text-indigo-800"
+                : "border-slate-200 bg-white text-slate-500 hover:border-indigo-300",
             )}
           >
             {label}
@@ -141,7 +141,7 @@ export function RecordStep({
   return (
     <div>
       <Panel flush>
-        <ul className="divide-y divide-line">
+        <ul className="divide-y divide-slate-100">
           <HeldRow
             title="Occupancy statements or certified leasing plans"
             why="Anything a landlord has already issued to you. A certified statement is primary evidence and can verify a condition without us demanding one."
@@ -226,7 +226,7 @@ export function TriageStep({
 
       {mode === "priority" && (
         <div className="mt-5">
-          <label className="label text-muted">
+          <label className="label text-slate-500">
             Which centers, or which stores
           </label>
           <textarea
@@ -234,9 +234,9 @@ export function TriageStep({
             onChange={(e) => onNote(e.target.value)}
             rows={4}
             placeholder={"Store numbers, center names, or just a description.\n4417, 4422\nAnything in a Centennial or Washington Prime center"}
-            className="mt-2 w-full rounded-xl border border-line bg-surface-sunk p-3.5 text-[0.8125rem] leading-relaxed text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-100 p-3.5 text-[0.8125rem] leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
           />
-          <p className="mt-2 text-[0.75rem] text-muted">
+          <p className="mt-2 text-[0.75rem] text-slate-500">
             Rough is fine. We will confirm the list against the roster you
             uploaded and come back to you with it.
           </p>

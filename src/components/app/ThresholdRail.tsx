@@ -91,7 +91,7 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
         />
       </div>
 
-      <div className="mt-5 grid grid-cols-3 gap-px bg-line">
+      <div className="mt-5 grid grid-cols-3 gap-px bg-slate-200">
         {BANDS.map((band, i) => {
           const list = grouped[i];
           return (

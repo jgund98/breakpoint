@@ -128,7 +128,7 @@ export function DeliveryPicker({
   const list = ALL.filter((c) => only.includes(c.id));
   return (
     <div>
-      <div className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2">
+      <div className="grid gap-px overflow-hidden rounded-xl border border-slate-200 bg-slate-200 sm:grid-cols-2">
         {list.map((c) => {
           const on = value === c.id;
           return (
@@ -137,14 +137,14 @@ export function DeliveryPicker({
               type="button"
               onClick={() => onChange(c.id)}
               className={cn(
-                "flex items-start gap-3 bg-surface px-4 py-3 text-left transition-colors duration-150",
-                on ? "bg-petrol-50" : "hover:bg-surface-sunk",
+                "flex items-start gap-3 bg-white px-4 py-3 text-left transition-colors duration-150",
+                on ? "bg-indigo-50" : "hover:bg-slate-100",
               )}
             >
               <c.Icon
                 className={cn(
                   "mt-0.5 h-4 w-4 shrink-0",
-                  on ? "text-petrol-700" : "text-faint",
+                  on ? "text-indigo-700" : "text-slate-400",
                 )}
               />
               <span className="min-w-0 flex-1">
@@ -152,16 +152,16 @@ export function DeliveryPicker({
                   <span
                     className={cn(
                       "text-[0.8125rem]",
-                      on ? "font-semibold text-petrol-800" : "font-medium text-ink",
+                      on ? "font-semibold text-indigo-800" : "font-medium text-slate-900",
                     )}
                   >
                     {c.label}
                   </span>
-                  <span className="text-[0.6875rem] text-faint">
+                  <span className="text-[0.6875rem] text-slate-400">
                     {EFFORT_LABEL[c.effort]}
                   </span>
                 </span>
-                <span className="mt-0.5 block text-[0.75rem] leading-snug text-muted">
+                <span className="mt-0.5 block text-[0.75rem] leading-snug text-slate-500">
                   {c.detail}
                 </span>
               </span>
@@ -200,12 +200,12 @@ export function ChannelDetail({
   };
 
   const Row = ({ k, v }: { k: string; v: string }) => (
-    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line py-2 last:border-0">
-      <span className="text-[0.75rem] text-muted">{k}</span>
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 py-2 last:border-0">
+      <span className="text-[0.75rem] text-slate-500">{k}</span>
       <button
         type="button"
         onClick={() => copy(v)}
-        className="font-mono text-[0.75rem] text-ink underline decoration-line underline-offset-2 hover:text-petrol-700"
+        className="font-mono text-[0.75rem] text-slate-900 underline decoration-line underline-offset-2 hover:text-indigo-700"
       >
         {copied === v ? "copied" : v}
       </button>
@@ -216,15 +216,15 @@ export function ChannelDetail({
 
   if (channel === "sftp")
     return (
-      <div className="rounded-xl border border-line bg-surface-sunk p-4">
-        <p className="text-[0.8125rem] font-medium text-ink">Transfer details</p>
+      <div className="rounded-xl border border-slate-200 bg-slate-100 p-4">
+        <p className="text-[0.8125rem] font-medium text-slate-900">Transfer details</p>
         <div className="mt-2">
           <Row k="Host" v="sftp.breakpoint.re" />
           <Row k="User" v={`${account}`} />
           <Row k="Key" v="issued by your account manager" />
           <Row k="Path" v={`/${account}/inbound`} />
         </div>
-        <p className="mt-3 text-[0.75rem] leading-relaxed text-muted">
+        <p className="mt-3 text-[0.75rem] leading-relaxed text-slate-500">
           Anything dropped here is logged against this onboarding within the
           hour. Scheduled exports are welcome; we reconcile each run against
           the last.
@@ -234,12 +234,12 @@ export function ChannelDetail({
 
   if (channel === "email")
     return (
-      <div className="rounded-xl border border-line bg-surface-sunk p-4">
-        <p className="text-[0.8125rem] font-medium text-ink">Send to</p>
+      <div className="rounded-xl border border-slate-200 bg-slate-100 p-4">
+        <p className="text-[0.8125rem] font-medium text-slate-900">Send to</p>
         <div className="mt-2">
           <Row k="Address" v={`${account}@intake.breakpoint.re`} />
         </div>
-        <p className="mt-3 text-[0.75rem] leading-relaxed text-muted">
+        <p className="mt-3 text-[0.75rem] leading-relaxed text-slate-500">
           Attachments are filed against this account and the sender is
           recorded. Forwarded threads are fine; we read the attachments, not
           the thread.
@@ -249,9 +249,9 @@ export function ChannelDetail({
 
   if (channel === "session")
     return (
-      <div className="rounded-xl border border-line bg-surface-sunk p-4">
-        <p className="text-[0.8125rem] font-medium text-ink">Working session</p>
-        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-soft">
+      <div className="rounded-xl border border-slate-200 bg-slate-100 p-4">
+        <p className="text-[0.8125rem] font-medium text-slate-900">Working session</p>
+        <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-slate-700">
           Sixty minutes, screen shared, our analyst driving. Bring whoever has
           access to the system and nobody needs to prepare anything.
         </p>
@@ -260,7 +260,7 @@ export function ChannelDetail({
           onChange={(e) => onNote(e.target.value)}
           rows={2}
           placeholder="Times that suit, and who should be on it."
-          className="mt-3 w-full rounded-lg border border-line bg-surface p-3 text-[0.8125rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+          className="mt-3 w-full rounded-xl border border-slate-200 bg-white shadow-sm p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
         />
       </div>
     );
@@ -273,16 +273,16 @@ export function ChannelDetail({
   };
   return (
     <div>
-      <label className="label text-muted">Details</label>
+      <label className="label text-slate-500">Details</label>
       <textarea
         value={note}
         onChange={(e) => onNote(e.target.value)}
         rows={3}
         placeholder={prompt[channel] ?? ""}
-        className="mt-2 w-full rounded-xl border border-line bg-surface-sunk p-3.5 text-[0.8125rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+        className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-100 p-3.5 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
       />
       {channel === "courier" && (
-        <p className="mt-2 text-[0.75rem] leading-relaxed text-muted">
+        <p className="mt-2 text-[0.75rem] leading-relaxed text-slate-500">
           Records address is issued with the shipping label. Originals are
           returned inside ten business days.
         </p>

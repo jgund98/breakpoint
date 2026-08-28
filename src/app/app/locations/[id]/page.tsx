@@ -17,6 +17,7 @@ import { GRADE_TONE, gradeClause } from "@/lib/grade";
 import { TODAY, rowById, rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
+import { ScanHistory } from "@/components/app/ScanHistory";
 import { Rise } from "@/components/app/Motion";
 import {
   ActionButton,
@@ -303,6 +304,9 @@ export default async function LocationPage({
         </div>
 
         <div className="space-y-4">
+          {/* ---- the watch, on this door ---- */}
+          <ScanHistory centerName={center.name} />
+
           {/* ---- clause strength ---- */}
           <Panel>
             <PanelHead

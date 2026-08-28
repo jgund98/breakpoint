@@ -27,6 +27,7 @@ import { FileDrop, type LoadedFile } from "./FileDrop";
 import { IntakeReview } from "./IntakeReview";
 import { RecordStep, TriageStep } from "./ExtraSteps";
 import { ChannelDetail, DeliveryPicker, type ChannelId } from "./Delivery";
+import { Monogram } from "@/components/admin/ui";
 
 /**
  * THE ONBOARDING CONSOLE
@@ -206,14 +207,17 @@ export function OnboardingWorkspace({
   };
 
   return (
-    <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line">
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-[74rem] flex-wrap items-end justify-between gap-x-8 gap-y-4 px-6 py-5">
-          <div className="min-w-0">
-            <p className="label text-faint">Onboarding</p>
-            <h1 className="mt-1 truncate text-[1.25rem] font-semibold text-ink">
-              {clientName}
-            </h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <Monogram name={clientName} size="lg" />
+            <div className="min-w-0">
+              <p className="label text-slate-400">Onboarding</p>
+              <h1 className="mt-0.5 truncate text-[1.25rem] font-bold tracking-tight text-slate-900">
+                {clientName}
+              </h1>
+            </div>
           </div>
           <dl className="flex flex-wrap items-end gap-x-8 gap-y-3">
             <Figure k="Stores expected" v={storeEstimate.toLocaleString("en-US")} />
@@ -238,7 +242,7 @@ export function OnboardingWorkspace({
             <div className="pb-0.5">
               {s.submittedAt ? (
                 <div className="text-right">
-                  <p className="text-[0.75rem] font-semibold text-open-700">
+                  <p className="text-[0.75rem] font-semibold text-emerald-700">
                     Sent{" "}
                     {new Date(s.submittedAt).toLocaleDateString("en-US", {
                       month: "short",
@@ -249,7 +253,7 @@ export function OnboardingWorkspace({
                     type="button"
                     onClick={() => void submit()}
                     disabled={submitting}
-                    className="text-[0.6875rem] text-muted underline underline-offset-2 hover:text-petrol-700"
+                    className="text-[0.6875rem] text-slate-500 underline underline-offset-2 hover:text-indigo-700"
                   >
                     Send updates
                   </button>
@@ -264,7 +268,7 @@ export function OnboardingWorkspace({
                       ? "Finish the required tasks first"
                       : undefined
                   }
-                  className="rounded-lg bg-petrol-800 px-4 py-2 text-[0.8125rem] font-semibold text-cream transition-colors hover:bg-petrol-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-10 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100"
                 >
                   {submitting ? "Sending" : "Send to Breakpoint"}
                 </button>
@@ -273,21 +277,21 @@ export function OnboardingWorkspace({
           </dl>
         </div>
         {submitError && (
-          <p className="mx-auto max-w-[74rem] px-6 pb-2 text-[0.75rem] text-clay-700">
+          <p className="mx-auto max-w-[74rem] px-6 pb-2 text-[0.75rem] text-rose-700">
             {submitError}
           </p>
         )}
-        <div className="h-0.5 w-full bg-surface-sunk">
+        <div className="h-0.5 w-full bg-slate-100">
           <div
-            className="h-full bg-brass-500 transition-[width] duration-500"
+            className="h-full bg-amber-500 transition-[width] duration-500"
             style={{ width: `${progress.pct}%` }}
           />
         </div>
       </header>
 
       <div className="mx-auto grid max-w-[74rem] gap-6 px-6 py-6 lg:grid-cols-[17.5rem_1fr]">
-        <aside>
-          <ul>
+        <aside className="self-start">
+          <ul className="overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-xl shadow-slate-200/50">
             {TASKS.map((t) => {
               const st = statusOf(s, t.id);
               const on = open === t.id;
@@ -297,30 +301,30 @@ export function OnboardingWorkspace({
                     type="button"
                     onClick={() => setOpen(t.id)}
                     className={cn(
-                      "flex w-full items-start gap-2.5 border-b border-line px-3 py-2.5 text-left transition-colors duration-150",
-                      on ? "bg-petrol-50" : "hover:bg-surface-sunk",
+                      "flex w-full items-start gap-2.5 border-b border-slate-100 px-3.5 py-3 text-left transition-colors duration-150 last:border-b-0",
+                      on ? "bg-indigo-50" : "hover:bg-slate-50",
                     )}
                   >
                     <span
                       className={cn(
                         "mt-1 h-2 w-2 shrink-0 rounded-full",
                         st === "complete"
-                          ? "bg-open-600"
+                          ? "bg-emerald-600"
                           : st === "in_progress"
-                            ? "bg-brass-500"
-                            : "bg-line",
+                            ? "bg-amber-500"
+                            : "bg-slate-200",
                       )}
                     />
                     <span className="min-w-0 flex-1">
                       <span
                         className={cn(
                           "block truncate text-[0.8125rem]",
-                          on ? "font-semibold text-petrol-800" : "font-medium text-ink",
+                          on ? "font-semibold text-indigo-800" : "font-medium text-slate-900",
                         )}
                       >
                         {t.title}
                       </span>
-                      <span className="mt-0.5 block truncate text-[0.75rem] text-muted">
+                      <span className="mt-0.5 block truncate text-[0.75rem] text-slate-500">
                         {held(t.id)}
                       </span>
                     </span>
@@ -331,7 +335,7 @@ export function OnboardingWorkspace({
           </ul>
 
           <div className="mt-4 px-3">
-            <p className="text-[0.75rem] leading-relaxed text-muted">
+            <p className="text-[0.75rem] leading-relaxed text-slate-500">
               Any order. Saved in this browser as you type
               {savedAt ? `, last at ${savedAt}` : ""}.
             </p>
@@ -343,7 +347,7 @@ export function OnboardingWorkspace({
                 setNote(null);
                 setSavedAt(null);
               }}
-              className="mt-2 inline-flex items-center gap-1.5 text-[0.75rem] text-faint transition-colors hover:text-clay-700"
+              className="mt-2 inline-flex items-center gap-1.5 text-[0.75rem] text-slate-400 transition-colors hover:text-rose-700"
             >
               <RotateCcw className="h-3 w-3" />
               Clear
@@ -355,8 +359,8 @@ export function OnboardingWorkspace({
             checklist carried it and a client filling this in should not
             have to ask which side of the line a job sits on.
           */}
-          <div className="mt-6 border-t border-line px-3 pt-4">
-            <p className="label text-faint">We handle</p>
+          <div className="mt-6 border-t border-slate-200 px-3 pt-4">
+            <p className="label text-slate-400">We handle</p>
             <ul className="mt-2 space-y-1.5">
               {[
                 "Weekly sweep of every center, from published directories and the field",
@@ -365,8 +369,8 @@ export function OnboardingWorkspace({
                 "Calendaring and serving those requests",
                 "Occupancy math, credit calculation, and the notice package",
               ].map((x) => (
-                <li key={x} className="flex gap-2 text-[0.75rem] leading-snug text-muted">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-line" />
+                <li key={x} className="flex gap-2 text-[0.75rem] leading-snug text-slate-500">
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-200" />
                   {x}
                 </li>
               ))}
@@ -374,15 +378,15 @@ export function OnboardingWorkspace({
           </div>
         </aside>
 
-        <main className="min-w-0">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-line pb-3">
-            <h2 className="text-[1.0625rem] font-semibold text-ink">{task.title}</h2>
-            <p className="text-[0.75rem] text-muted">
+        <main className="min-w-0 self-start rounded-2xl border border-slate-200/60 bg-white p-6 shadow-xl shadow-slate-200/50">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-slate-200 pb-3">
+            <h2 className="text-[1.0625rem] font-semibold text-slate-900">{task.title}</h2>
+            <p className="text-[0.75rem] text-slate-500">
               {task.owner}
               {!task.required && " · optional"}
             </p>
           </div>
-          <p className="mt-2 max-w-3xl text-[0.8125rem] leading-relaxed text-muted">
+          <p className="mt-2 max-w-3xl text-[0.8125rem] leading-relaxed text-slate-500">
             {task.why}
           </p>
 
@@ -402,7 +406,7 @@ export function OnboardingWorkspace({
                       onNote={(v) => setChanNote("portfolio", v)}
                       upload={
                         <div className="space-y-3">
-                          <p className="text-[0.8125rem] leading-relaxed text-muted">
+                          <p className="text-[0.8125rem] leading-relaxed text-slate-500">
                             Any columns, in any order. We map them and take
                             whatever is missing off the leases.
                           </p>
@@ -425,13 +429,13 @@ export function OnboardingWorkspace({
                                 rows={6}
                                 spellCheck={false}
                                 placeholder={"Store #,Address,City,ST,Center,Rentable SF\n4417,7007 Friars Road,San Diego,CA,Fashion Valley,8302"}
-                                className="w-full rounded-lg border border-line bg-surface-sunk p-3 font-mono text-[0.75rem] leading-relaxed text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                                className="w-full rounded-xl border border-slate-200 bg-slate-50 shadow-sm p-3 font-mono text-[0.75rem] leading-relaxed text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                               />
                               <button
                                 type="button"
                                 onClick={() => s.raw.trim() && loadRoster(s.raw)}
                                 disabled={!s.raw.trim()}
-                                className="rounded-lg bg-petrol-800 px-4 py-2 text-[0.8125rem] font-semibold text-cream transition-colors hover:bg-petrol-700 disabled:opacity-40"
+                                className="rounded-lg bg-indigo-800 px-4 py-2 text-[0.8125rem] font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-40"
                               >
                                 Read the roster
                               </button>
@@ -441,7 +445,7 @@ export function OnboardingWorkspace({
                             <p
                               className={cn(
                                 "text-[0.8125rem]",
-                                note.kind === "ok" ? "text-open-700" : "text-clay-700",
+                                note.kind === "ok" ? "text-emerald-700" : "text-rose-700",
                               )}
                             >
                               {note.message}
@@ -499,15 +503,15 @@ export function OnboardingWorkspace({
                   )}
                 </DeliveryPicker>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
                   <input
                     type="checkbox"
                     checked={s.leasesConfirmed}
                     onChange={(e) => set("leasesConfirmed", e.target.checked)}
-                    className="mt-0.5 h-4 w-4 accent-petrol-600"
+                    className="mt-0.5 h-4 w-4 accent-indigo-600"
                   />
-                  <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
-                    <span className="font-medium text-ink">
+                  <span className="text-[0.8125rem] leading-relaxed text-slate-700">
+                    <span className="font-medium text-slate-900">
                       Amendments are included.
                     </span>{" "}
                     We begin abstracting once this is ticked, and come back only
@@ -527,8 +531,8 @@ export function OnboardingWorkspace({
                 />
                 {s.record.noticeLog === "yes" && (
                   <div>
-                    <p className="text-[0.8125rem] font-medium text-ink">Notice log</p>
-                    <p className="mt-1 mb-3 text-[0.8125rem] leading-relaxed text-muted">
+                    <p className="text-[0.8125rem] font-medium text-slate-900">Notice log</p>
+                    <p className="mt-1 mb-3 text-[0.8125rem] leading-relaxed text-slate-500">
                       Store, date sent, date received, subject.
                     </p>
                     <FileDrop
@@ -543,7 +547,7 @@ export function OnboardingWorkspace({
                       }}
                     />
                     {s.noticeFileName && (
-                      <p className="mt-2 text-[0.75rem] text-open-700">
+                      <p className="mt-2 text-[0.75rem] text-emerald-700">
                         {s.noticeFileName} on file.
                       </p>
                     )}
@@ -554,15 +558,15 @@ export function OnboardingWorkspace({
 
             {open === "sales" && (
               <>
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
                   <input
                     type="checkbox"
                     checked={s.salesDeferred}
                     onChange={(e) => set("salesDeferred", e.target.checked)}
-                    className="mt-0.5 h-4 w-4 accent-petrol-600"
+                    className="mt-0.5 h-4 w-4 accent-indigo-600"
                   />
-                  <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
-                    <span className="font-medium text-ink">
+                  <span className="text-[0.8125rem] leading-relaxed text-slate-700">
+                    <span className="font-medium text-slate-900">
                       Send per store, only when a right arises.
                     </span>{" "}
                     We request the months we need for the stores that trigger.
@@ -603,7 +607,7 @@ export function OnboardingWorkspace({
                   </DeliveryPicker>
                 )}
 
-                <p className="text-[0.75rem] leading-relaxed text-muted">
+                <p className="text-[0.75rem] leading-relaxed text-slate-500">
                   One row per store per month: store number, month, gross sales.
                   Monthly figures, not a total, because the remedy is computed
                   on each month&#8217;s own sales.
@@ -663,7 +667,7 @@ export function OnboardingWorkspace({
 
             {open === "watch" && (
               <div className="space-y-4">
-                <div className="overflow-hidden rounded-xl border border-line">
+                <div className="overflow-hidden rounded-xl border border-slate-200">
                   {(
                     [
                       ["weekly", "Weekly", "Cure periods run in months. A week keeps the clock honest."],
@@ -676,25 +680,25 @@ export function OnboardingWorkspace({
                       type="button"
                       onClick={() => set("cadence", id)}
                       className={cn(
-                        "flex w-full items-start gap-3 border-b border-line px-4 py-3 text-left transition-colors last:border-0",
-                        s.cadence === id ? "bg-petrol-50" : "hover:bg-surface-sunk",
+                        "flex w-full items-start gap-3 border-b border-slate-200 px-4 py-3 text-left transition-colors last:border-0",
+                        s.cadence === id ? "bg-indigo-50" : "hover:bg-slate-100",
                       )}
                     >
                       <span
                         className={cn(
                           "mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border",
                           s.cadence === id
-                            ? "border-petrol-600 bg-petrol-600 text-cream"
-                            : "border-line",
+                            ? "border-indigo-600 bg-indigo-600 text-white"
+                            : "border-slate-200",
                         )}
                       >
                         {s.cadence === id && <Check className="h-2.5 w-2.5" />}
                       </span>
                       <span className="min-w-0">
-                        <span className="block text-[0.8125rem] font-medium text-ink">
+                        <span className="block text-[0.8125rem] font-medium text-slate-900">
                           {label}
                         </span>
-                        <span className="mt-0.5 block text-[0.75rem] text-muted">
+                        <span className="mt-0.5 block text-[0.75rem] text-slate-500">
                           {why}
                         </span>
                       </span>
@@ -702,15 +706,15 @@ export function OnboardingWorkspace({
                   ))}
                 </div>
 
-                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-surface p-4">
+                <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
                   <input
                     type="checkbox"
                     checked={s.fieldVisits}
                     onChange={(e) => set("fieldVisits", e.target.checked)}
-                    className="mt-0.5 h-4 w-4 accent-petrol-600"
+                    className="mt-0.5 h-4 w-4 accent-indigo-600"
                   />
-                  <span className="text-[0.8125rem] leading-relaxed text-ink-soft">
-                    <span className="font-medium text-ink">
+                  <span className="text-[0.8125rem] leading-relaxed text-slate-700">
+                    <span className="font-medium text-slate-900">
                       Send someone to the premises before a notice.
                     </span>{" "}
                     A dated photograph of the premises, filed with the package.
@@ -732,15 +736,15 @@ export function OnboardingWorkspace({
 function Figure({ k, v, tone }: { k: string; v: string; tone?: "open" | "watch" }) {
   return (
     <div>
-      <dt className="label text-faint">{k}</dt>
+      <dt className="label text-slate-400">{k}</dt>
       <dd
         className={cn(
           "tnum mt-0.5 text-[1.0625rem] font-semibold",
           tone === "open"
-            ? "text-open-700"
+            ? "text-emerald-700"
             : tone === "watch"
-              ? "text-brass-700"
-              : "text-ink",
+              ? "text-amber-700"
+              : "text-slate-900",
         )}
       >
         {v}
@@ -764,14 +768,14 @@ function Field({
 }) {
   return (
     <div>
-      <label className="label text-muted">{label}</label>
+      <label className="label text-slate-500">{label}</label>
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3 py-2 text-[0.875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+        className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-2 text-[0.875rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
       />
-      {hint && <p className="mt-1 text-[0.75rem] text-muted">{hint}</p>}
+      {hint && <p className="mt-1 text-[0.75rem] text-slate-500">{hint}</p>}
     </div>
   );
 }
@@ -779,25 +783,25 @@ function Field({
 function Centers({ centers }: { centers: ReturnType<typeof resolveAll> }) {
   const review = centers.rows.filter((r) => r.result.status === "review");
   return (
-    <div className="overflow-hidden rounded-xl border border-line">
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3">
-        <h3 className="text-[0.875rem] font-semibold text-ink">Centers</h3>
-        <p className="tnum text-[0.75rem] text-muted">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-slate-200 px-4 py-3">
+        <h3 className="text-[0.875rem] font-semibold text-slate-900">Centers</h3>
+        <p className="tnum text-[0.75rem] text-slate-500">
           {centers.matched} matched · {centers.review} to confirm · {centers.fresh} new
         </p>
       </div>
       {review.length > 0 && (
-        <ul className="divide-y divide-line">
+        <ul className="divide-y divide-slate-100">
           {review.slice(0, 6).map((r) => (
             <li key={r.row} className="px-4 py-2.5">
-              <p className="text-[0.8125rem] text-ink">
+              <p className="text-[0.8125rem] text-slate-900">
                 <span className="font-medium">Row {r.row}</span> &#8220;{r.supplied}&#8221;
               </p>
-              <p className="mt-0.5 text-[0.75rem] leading-snug text-muted">
+              <p className="mt-0.5 text-[0.75rem] leading-snug text-slate-500">
                 {r.result.why}
               </p>
               {r.result.status === "review" && (
-                <p className="mt-1 text-[0.75rem] text-ink-soft">
+                <p className="mt-1 text-[0.75rem] text-slate-700">
                   {r.result.candidates
                     .map((c) => `${c.name} (${c.city}, ${c.state})`)
                     .join(" · ")}
@@ -808,7 +812,7 @@ function Centers({ centers }: { centers: ReturnType<typeof resolveAll> }) {
         </ul>
       )}
       {centers.fresh > 0 && (
-        <p className="border-t border-line px-4 py-2.5 text-[0.75rem] leading-relaxed text-muted">
+        <p className="border-t border-slate-200 px-4 py-2.5 text-[0.75rem] leading-relaxed text-slate-500">
           {centers.fresh} not in our index. We add them and begin watching.
           Nothing for you to do.
         </p>
@@ -830,25 +834,25 @@ function Mapping({
 }) {
   const matched = Object.values(mapping).filter((v) => v !== "ignore").length;
   return (
-    <div className="overflow-hidden rounded-xl border border-line">
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3">
-        <h3 className="text-[0.875rem] font-semibold text-ink">Columns</h3>
-        <p className="tnum text-[0.75rem] text-muted">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-slate-200 px-4 py-3">
+        <h3 className="text-[0.875rem] font-semibold text-slate-900">Columns</h3>
+        <p className="tnum text-[0.75rem] text-slate-500">
           {matched} of {headers.length} mapped
         </p>
       </div>
       <div className="max-h-72 overflow-y-auto">
         <table className="w-full border-collapse text-left">
-          <tbody className="divide-y divide-line">
+          <tbody className="divide-y divide-slate-100">
             {headers.map((h) => {
               const value = mapping[h] ?? "ignore";
               return (
                 <tr key={h}>
                   <td className="px-4 py-2 align-middle">
-                    <p className="font-mono text-[0.75rem] font-medium text-ink">
+                    <p className="font-mono text-[0.75rem] font-medium text-slate-900">
                       {h}
                     </p>
-                    <p className="truncate text-[0.6875rem] text-muted">
+                    <p className="truncate text-[0.6875rem] text-slate-500">
                       {sample?.[h] || "empty"}
                     </p>
                   </td>
@@ -859,8 +863,8 @@ function Mapping({
                       className={cn(
                         "min-w-[11rem] rounded-md border px-2 py-1.5 text-[0.75rem] font-medium focus:outline-none",
                         value === "ignore"
-                          ? "border-line bg-surface-sunk text-muted"
-                          : "border-petrol-200 bg-petrol-50 text-petrol-800",
+                          ? "border-slate-200 bg-slate-100 text-slate-500"
+                          : "border-petrol-200 bg-indigo-50 text-indigo-800",
                       )}
                     >
                       <option value="ignore">Ignore</option>

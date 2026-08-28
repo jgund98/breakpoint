@@ -235,7 +235,7 @@ export function LocationActions({
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 placeholder="Anything else worth knowing. Signage down, papered windows, a posted notice."
-                className="w-full rounded-xl border border-slate-200 bg-white shadow-sm-sunk p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 shadow-sm p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
               />
               <div className="flex flex-wrap items-center gap-3">
                 <ActionButton onClick={fileReport} disabled={!store || busy === "report"}>
@@ -392,7 +392,7 @@ export function EstoppelCheck({
               onChange={(e) => setNote(e.target.value)}
               rows={2}
               placeholder="Who asked, the deadline, and anything already sent."
-              className="w-full rounded-xl border border-slate-200 bg-white shadow-sm-sunk p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 shadow-sm p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
             />
             <div className="flex flex-wrap items-center gap-3">
               <ActionButton onClick={record} disabled={busy}>

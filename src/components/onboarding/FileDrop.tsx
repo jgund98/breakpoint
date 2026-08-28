@@ -129,8 +129,8 @@ export function FileDrop({
       className={cn(
         "rounded-xl border-2 border-dashed p-6 text-center transition-colors duration-200",
         over
-          ? "border-petrol-500 bg-petrol-50"
-          : "border-line bg-surface-sunk hover:border-petrol-300",
+          ? "border-indigo-500 bg-indigo-50"
+          : "border-slate-200 bg-slate-100 hover:border-indigo-300",
         className,
       )}
     >
@@ -147,17 +147,17 @@ export function FileDrop({
       />
 
       <div className="flex flex-col items-center gap-2">
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-surface text-petrol-700 ring-1 ring-line">
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-indigo-700 ring-1 ring-slate-200">
           {busy ? (
             <FileSpreadsheet className="h-4 w-4 animate-pulse" />
           ) : (
             <Upload className="h-4 w-4" />
           )}
         </span>
-        <p className="text-[0.875rem] font-medium text-ink">
+        <p className="text-[0.875rem] font-medium text-slate-900">
           {busy ? "Reading the file" : "Drop your export here"}
         </p>
-        <p className="max-w-sm text-[0.75rem] leading-relaxed text-muted">
+        <p className="max-w-sm text-[0.75rem] leading-relaxed text-slate-500">
           Excel, CSV or TSV. Straight out of Yardi, MRI, Tango, Visual Lease or
           a spreadsheet. It is read in your browser and nothing is uploaded at
           this step.
@@ -165,7 +165,7 @@ export function FileDrop({
         <button
           type="button"
           onClick={() => input.current?.click()}
-          className="mt-1 rounded-lg border border-line bg-surface px-4 py-2 text-[0.8125rem] font-semibold text-ink transition-colors duration-250 hover:border-petrol-300 hover:bg-petrol-50"
+          className="mt-1 rounded-xl border border-slate-200 bg-white shadow-sm px-4 py-2 text-[0.8125rem] font-semibold text-slate-900 transition-colors duration-250 hover:border-indigo-300 hover:bg-indigo-50"
         >
           Choose a file
         </button>

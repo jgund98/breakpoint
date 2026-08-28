@@ -75,31 +75,31 @@ export function IntakeReview({
   return (
     <div className="space-y-3">
       {/* ---- the three counts, as one line ---- */}
-      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 rounded-xl border border-line px-4 py-3">
+      <div className="flex flex-wrap items-baseline gap-x-6 gap-y-2 rounded-xl border border-slate-200 px-4 py-3">
         {(
           [
-            ["Ready", report.ready, "text-open-700"],
-            ["Noted", report.withWarnings, "text-brass-700"],
-            ["Held", report.held, report.held > 0 ? "text-clay-700" : "text-faint"],
+            ["Ready", report.ready, "text-emerald-700"],
+            ["Noted", report.withWarnings, "text-amber-700"],
+            ["Held", report.held, report.held > 0 ? "text-rose-700" : "text-slate-400"],
           ] as const
         ).map(([label, n, tone]) => (
           <div key={label} className="flex items-baseline gap-2">
-            <span className="label text-faint">{label}</span>
+            <span className="label text-slate-400">{label}</span>
             <span className={cn("tnum text-[0.9375rem] font-semibold", tone)}>
               {n.toLocaleString("en-US")}
             </span>
           </div>
         ))}
-        <span className="text-[0.75rem] text-muted">
+        <span className="text-[0.75rem] text-slate-500">
           of {report.totalRows.toLocaleString("en-US")} rows
         </span>
       </div>
 
       {/* ---- what to fix ---- */}
       {grouped.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-line">
-          <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line px-4 py-3">
-            <h3 className="text-[0.875rem] font-semibold text-ink">
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-slate-200 px-4 py-3">
+            <h3 className="text-[0.875rem] font-semibold text-slate-900">
               {grouped.length} to look at
             </h3>
             {report.held > 0 && (
@@ -114,8 +114,8 @@ export function IntakeReview({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.75rem] font-semibold whitespace-nowrap transition-colors duration-250",
                   report.held > 20
-                    ? "bg-petrol-800 text-cream hover:bg-petrol-700"
-                    : "border border-line text-ink hover:border-petrol-300 hover:bg-petrol-50",
+                    ? "bg-indigo-800 text-white hover:bg-indigo-700"
+                    : "border border-slate-200 text-slate-900 hover:border-indigo-300 hover:bg-indigo-50",
                 )}
               >
                 <Download className="h-3 w-3" />
@@ -124,7 +124,7 @@ export function IntakeReview({
             )}
           </div>
 
-          <ul className="divide-y divide-line">
+          <ul className="divide-y divide-slate-100">
             {grouped.map(({ issue, count, rows: where }) => (
               <li
                 key={`${issue.field}-${issue.message}`}
@@ -133,15 +133,15 @@ export function IntakeReview({
                 <span
                   className={cn(
                     "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                    issue.severity === "error" ? "bg-clay-500" : "bg-brass-500",
+                    issue.severity === "error" ? "bg-rose-500" : "bg-amber-500",
                   )}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.8125rem] leading-snug text-ink">
+                  <p className="text-[0.8125rem] leading-snug text-slate-900">
                     <span className="font-medium">{labelOf(issue.field)}.</span>{" "}
                     {issue.message}
                   </p>
-                  <p className="mt-0.5 text-[0.6875rem] text-muted">
+                  <p className="mt-0.5 text-[0.6875rem] text-slate-500">
                     {count === 1
                       ? `Row ${where[0]}`
                       : `${count.toLocaleString("en-US")} rows, including ${where.slice(0, 4).join(", ")}`}
@@ -151,8 +151,8 @@ export function IntakeReview({
                   className={cn(
                     "shrink-0 rounded px-1.5 py-0.5 text-[0.625rem] font-semibold ring-1 ring-inset",
                     issue.severity === "error"
-                      ? "bg-clay-50 text-clay-700 ring-clay-100"
-                      : "bg-brass-50 text-brass-700 ring-brass-200",
+                      ? "bg-rose-50 text-rose-700 ring-rose-100"
+                      : "bg-amber-50 text-amber-700 ring-amber-200",
                   )}
                 >
                   {issue.severity === "error" ? "Held" : "Noted"}
@@ -165,11 +165,11 @@ export function IntakeReview({
 
       {/* ---- what we fixed ourselves ---- */}
       {report.repairs.length > 0 && (
-        <div className="rounded-xl border border-line px-4 py-3">
-          <p className="text-[0.8125rem] font-semibold text-open-700">
+        <div className="rounded-xl border border-slate-200 px-4 py-3">
+          <p className="text-[0.8125rem] font-semibold text-emerald-700">
             {report.repairs.length} corrected on the way in
           </p>
-          <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+          <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
             {[...new Set(report.repairs.map((r) => `${r.from} to ${r.to}`))]
               .slice(0, 6)
               .join(", ")}
@@ -182,8 +182,8 @@ export function IntakeReview({
 
       {/* ---- columns we never saw, and who solves each ---- */}
       {report.missingFields.length > 0 && (
-        <div className="rounded-xl border border-line px-4 py-3">
-          <p className="text-[0.8125rem] font-semibold text-ink">
+        <div className="rounded-xl border border-slate-200 px-4 py-3">
+          <p className="text-[0.8125rem] font-semibold text-slate-900">
             Not in this file
           </p>
           <ul className="mt-2 space-y-1.5">
@@ -192,10 +192,10 @@ export function IntakeReview({
               if (!list.length) return null;
               return (
                 <li key={src} className="text-[0.8125rem] leading-relaxed">
-                  <span className="font-medium text-ink">
+                  <span className="font-medium text-slate-900">
                     {list.map((f) => f.label).join(", ")}.
                   </span>{" "}
-                  <span className="text-ink-soft">
+                  <span className="text-slate-700">
                     {src === "lease"
                       ? "We take these from the leases you are sending. Do not retype them."
                       : src === "observed"
