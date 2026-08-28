@@ -58,10 +58,10 @@ const BANDS = [
 const bandOf = (m: number) => BANDS.findIndex((b) => m < b.max);
 
 const DOT: Record<string, string> = {
-  clay: "bg-clay-500",
-  brass: "bg-brass-500",
-  watch: "bg-brass-400",
-  open: "bg-open-600",
+  clay: "bg-rose-500",
+  brass: "bg-amber-500",
+  watch: "bg-amber-400",
+  open: "bg-emerald-600",
 };
 
 export function ThresholdRail({ points }: { points: RailPoint[] }) {
@@ -83,8 +83,8 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
           title="Margin to threshold"
           hint="Each door by the margin left on its tightest test."
           right={
-            <span className="text-[0.75rem] text-muted">
-              <span className="tnum font-semibold text-ink">{atRisk}</span> of{" "}
+            <span className="text-[0.75rem] text-slate-500">
+              <span className="tnum font-semibold text-slate-900">{atRisk}</span> of{" "}
               {points.length} with no margin left
             </span>
           }
@@ -95,28 +95,28 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
         {BANDS.map((band, i) => {
           const list = grouped[i];
           return (
-            <div key={band.key} className="bg-surface px-3 pt-3 pb-4">
+            <div key={band.key} className="bg-white px-3 pt-3 pb-4">
               <div className="flex items-baseline justify-between gap-2">
                 <span
                   className={cn(
                     "text-[0.6875rem] font-semibold tracking-wide uppercase",
                     band.tone === "clay"
-                      ? "text-clay-600"
+                      ? "text-rose-600"
                       : band.tone === "brass"
-                        ? "text-brass-700"
+                        ? "text-amber-700"
                         : band.tone === "watch"
-                          ? "text-brass-600"
-                          : "text-open-700",
+                          ? "text-amber-600"
+                          : "text-emerald-700",
                   )}
                 >
                   {band.label}
                 </span>
-                <span className="tnum text-[0.8125rem] font-semibold text-ink">
+                <span className="tnum text-[0.8125rem] font-semibold text-slate-900">
                   {list.length}
                 </span>
               </div>
 
-              <p className="mt-0.5 text-[0.6875rem] text-faint">
+              <p className="mt-0.5 text-[0.6875rem] text-slate-400">
                 {i === 0
                   ? "test not met today"
                   : i === 1
@@ -146,13 +146,13 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
                       className={cn(
                         "block h-3 w-3 rounded-[3px] transition-transform duration-150 hover:scale-150",
                         DOT[p.tone],
-                        hover && hover.id === p.id && "scale-150 ring-2 ring-petrol-600 ring-offset-1",
+                        hover && hover.id === p.id && "scale-150 ring-2 ring-indigo-600 ring-offset-1",
                       )}
                     />
                   </motion.span>
                 ))}
                 {list.length === 0 && (
-                  <span className="text-[0.75rem] text-faint">None</span>
+                  <span className="text-[0.75rem] text-slate-400">None</span>
                 )}
               </div>
             </div>
@@ -161,22 +161,22 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
       </div>
 
       {/* readout: one row, always present, so the panel never jumps */}
-      <div className="flex min-h-[54px] items-center border-t border-line px-5 py-3 sm:px-6">
+      <div className="flex min-h-[54px] items-center border-t border-slate-200 px-5 py-3 sm:px-6">
         {hover ? (
-          <p className="text-[0.8125rem] text-ink-soft">
+          <p className="text-[0.8125rem] text-slate-700">
             <Link
               href={`/app/locations/${hover.id}`}
-              className="font-semibold text-petrol-800 hover:underline"
+              className="font-semibold text-indigo-800 hover:underline"
             >
               {hover.center}
             </Link>{" "}
-            <span className="text-muted">{hover.city}</span>
+            <span className="text-slate-500">{hover.city}</span>
             {" · "}
-            {hover.test}: <span className="font-medium text-ink">{hover.label}</span>
+            {hover.test}: <span className="font-medium text-slate-900">{hover.label}</span>
             {hover.monthly ? (
               <>
                 {" · "}
-                <span className="tnum font-semibold text-brass-600">
+                <span className="tnum font-semibold text-amber-600">
                   ${Math.round(hover.monthly).toLocaleString("en-US")}/mo
                 </span>{" "}
                 if claimed
@@ -184,7 +184,7 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
             ) : null}
           </p>
         ) : (
-          <p className="text-[0.8125rem] text-muted">
+          <p className="text-[0.8125rem] text-slate-500">
             Hover any door for its tightest test. Each square is one location.
           </p>
         )}

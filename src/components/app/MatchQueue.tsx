@@ -48,7 +48,7 @@ export function MatchQueue({ items }: Props) {
           body="Each tenant named in a co-tenancy clause has been tied to a store in that center's directory."
         />
       ) : (
-        <ul className="mt-4 divide-y divide-line border-t border-line">
+        <ul className="mt-4 divide-y divide-slate-100 border-t border-slate-200">
           <AnimatePresence initial={false}>
             {open.map((m) => (
               <motion.li
@@ -59,24 +59,24 @@ export function MatchQueue({ items }: Props) {
                 className="px-5 py-4 sm:px-6"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <p className="text-[0.875rem] font-medium text-ink">
-                    <span className="text-muted">Lease says</span>{" "}
+                  <p className="text-[0.875rem] font-medium text-slate-900">
+                    <span className="text-slate-500">Lease says</span>{" "}
                     &#8220;{m.leaseName}&#8221;
                   </p>
-                  <p className="text-[0.75rem] text-faint">
+                  <p className="text-[0.75rem] text-slate-400">
                     {m.centerName} · {m.cite}
                   </p>
                 </div>
 
                 {m.candidates.length === 0 ? (
-                  <p className="mt-2 flex items-center gap-2 text-[0.8125rem] text-muted">
+                  <p className="mt-2 flex items-center gap-2 text-[0.8125rem] text-slate-500">
                     <Link2Off className="h-3.5 w-3.5 shrink-0" />
                     Nothing in this center&#8217;s directory resembles the name.
                     Confirm by field visit or request the roster from ownership.
                   </p>
                 ) : (
                   <>
-                    <p className="mt-1 text-[0.75rem] text-muted">
+                    <p className="mt-1 text-[0.75rem] text-slate-500">
                       {m.candidates.length === 1
                         ? "One possible store in the directory."
                         : `${m.candidates.length} possible stores in the directory.`}
@@ -93,14 +93,14 @@ export function MatchQueue({ items }: Props) {
                               /* Two lines of text need more than 12px of
                                  side padding, or the reason line runs
                                  into the rounded corner. */
-                              "rounded-xl border border-line bg-surface px-4 py-3 text-left",
-                              "transition-colors duration-200 hover:border-petrol-300 hover:bg-surface-sunk",
+                              "rounded-xl border border-slate-200 bg-white px-4 py-3 text-left",
+                              "transition-colors duration-200 hover:border-indigo-300 hover:bg-slate-100",
                             )}
                           >
-                            <span className="block text-[0.8125rem] font-medium text-ink">
+                            <span className="block text-[0.8125rem] font-medium text-slate-900">
                               {c.name}
                             </span>
-                            <span className="mt-0.5 block text-[0.6875rem] leading-snug text-muted">
+                            <span className="mt-0.5 block text-[0.6875rem] leading-snug text-slate-500">
                               {c.reason}
                             </span>
                           </button>
@@ -116,8 +116,8 @@ export function MatchQueue({ items }: Props) {
       )}
 
       {Object.keys(resolved).length > 0 && (
-        <div className="border-t border-line px-5 py-3 sm:px-6">
-          <p className="text-[0.75rem] text-muted">
+        <div className="border-t border-slate-200 px-5 py-3 sm:px-6">
+          <p className="text-[0.75rem] text-slate-500">
             {Object.keys(resolved).length} confirmed this session. Saving is
             wired to the account once the database is connected.
           </p>

@@ -43,7 +43,7 @@ export function Verdict({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
       className={`relative overflow-hidden rounded-2xl border ${
-        live ? "border-brass-200 bg-petrol-900" : "border-line bg-petrol-900"
+        live ? "border-amber-200 bg-petrol-900" : "border-slate-200 bg-petrol-900"
       }`}
     >
       {/* glow, radial gradient only, never a filter blur */}
@@ -59,18 +59,18 @@ export function Verdict({
 
       <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
         <div>
-          <p className="label text-brass-400">
+          <p className="label text-amber-400">
             {live ? "Action required" : "Nothing to claim today"}
           </p>
 
           {live ? (
             <>
-              <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-cream">
+              <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-white">
                 {decisions} location{decisions === 1 ? "" : "s"}{" "}
                 {decisions === 1 ? "qualifies" : "qualify"} for{" "}
                 <span className="whitespace-nowrap">
                   co-tenancy{" "}
-                  <span className="display-em text-brass-400">rent.</span>
+                  <span className="display-em text-amber-400">rent.</span>
                 </span>
               </h2>
               <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
@@ -98,13 +98,13 @@ export function Verdict({
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link
                   href="/app/notices"
-                  className="inline-flex items-center rounded-lg bg-brass-500 px-5 py-3 text-[0.875rem] font-semibold whitespace-nowrap text-petrol-950 transition-colors duration-250 hover:bg-brass-400"
+                  className="inline-flex items-center rounded-lg bg-amber-500 px-5 py-3 text-[0.875rem] font-semibold whitespace-nowrap text-petrol-950 transition-colors duration-250 hover:bg-amber-400"
                 >
                   Assemble notice packages
                 </Link>
                 <Link
                   href="/app/locations"
-                  className="inline-flex items-center rounded-lg border border-white/20 px-5 py-3 text-[0.875rem] font-semibold whitespace-nowrap text-cream transition-colors duration-250 hover:bg-white/10"
+                  className="inline-flex items-center rounded-lg border border-white/20 px-5 py-3 text-[0.875rem] font-semibold whitespace-nowrap text-white transition-colors duration-250 hover:bg-white/10"
                 >
                   Review the evidence
                 </Link>
@@ -112,9 +112,9 @@ export function Verdict({
             </>
           ) : (
             <>
-              <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-cream">
+              <h2 className="mt-3 text-[clamp(1.75rem,3.6vw,2.75rem)] text-white">
                 Every test in your portfolio is{" "}
-                <span className="display-em text-brass-400">satisfied.</span>
+                <span className="display-em text-amber-400">satisfied.</span>
               </h2>
               <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-3">
                 <Fact k="Failing tests" v="0" />
@@ -127,7 +127,7 @@ export function Verdict({
 
         {/* the watch record, always shown */}
         <div className="rounded-xl border border-white/12 bg-white/5 p-5">
-          <p className="label text-cream-faint">Watch record</p>
+          <p className="label text-indigo-200/70">Watch record</p>
           <dl className="mt-4 space-y-3.5">
             {/*
               Deliberately "named tenants", not "storefronts". We check
@@ -165,7 +165,7 @@ export function Verdict({
               hint={soonestLabel ?? undefined}
             />
           </dl>
-          <p className="mt-4 border-t border-white/12 pt-3 text-[0.75rem] leading-relaxed text-cream-faint">
+          <p className="mt-4 border-t border-white/12 pt-3 text-[0.75rem] leading-relaxed text-indigo-200/70">
             Last full sweep {lastSweep}. Recurring evaluation as verified
             conditions change.
           </p>
@@ -179,13 +179,13 @@ export function Verdict({
 function Fact({ k, v, sub }: { k: string; v: string; sub?: string }) {
   return (
     <div>
-      <dt className="text-[0.6875rem] font-medium tracking-wide text-cream-faint uppercase">
+      <dt className="text-[0.6875rem] font-medium tracking-wide text-indigo-200/70 uppercase">
         {k}
       </dt>
-      <dd className="tnum mt-0.5 text-[0.9375rem] font-semibold text-cream">
+      <dd className="tnum mt-0.5 text-[0.9375rem] font-semibold text-white">
         {v}
         {sub && (
-          <span className="ml-1.5 text-[0.75rem] font-normal text-cream-faint">
+          <span className="ml-1.5 text-[0.75rem] font-normal text-indigo-200/70">
             {sub}
           </span>
         )}
@@ -207,15 +207,15 @@ function Row({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-[0.8125rem] text-cream-soft">{k}</dt>
+      <dt className="text-[0.8125rem] text-indigo-200">{k}</dt>
       <dd
         className={`tnum text-right text-[0.9375rem] font-semibold ${
-          muted ? "text-cream-faint" : "text-cream"
+          muted ? "text-indigo-200/70" : "text-white"
         }`}
       >
         {v}
         {hint && (
-          <span className="block text-[0.6875rem] font-normal text-cream-faint">
+          <span className="block text-[0.6875rem] font-normal text-indigo-200/70">
             {hint}
           </span>
         )}

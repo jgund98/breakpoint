@@ -35,7 +35,7 @@ export function PendingAction({
             key="done"
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-1.5 text-[0.75rem] font-medium text-open-700"
+            className="flex items-center gap-1.5 text-[0.75rem] font-medium text-emerald-700"
           >
             <Check className="h-3.5 w-3.5" />
             {confirmation}

@@ -137,6 +137,7 @@ export function ClientsTable() {
         <StatCard
           label="Clients"
           value={data.orgs.length}
+          sub="Under management"
           icon={<Building2 className="h-5 w-5" />}
           color="indigo"
           delay={0}
@@ -428,7 +429,7 @@ function NewClientPanel({
             <div className="flex gap-2">
               <Link
                 href={`/admin/clients/${createdSlug}`}
-                className="inline-flex h-9 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-medium text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-500 active:scale-95"
+                className="inline-flex h-10 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:bg-indigo-500 active:scale-95"
               >
                 Open their board <ArrowRight className="ml-1.5 h-4 w-4" />
               </Link>

@@ -251,7 +251,7 @@ export function CenterCheck({
       {/* ---- which center ---- */}
       <Panel flush className="h-fit">
         <div className="px-4 pt-4">
-          <p className="label text-muted">Centers</p>
+          <p className="label text-slate-500">Centers</p>
         </div>
         <ul className="mt-2 max-h-[28rem] overflow-y-auto">
           {centers.map((c) => {
@@ -268,11 +268,11 @@ export function CenterCheck({
                   className={cn(
                     "flex w-full items-center gap-2 px-4 py-2 text-left text-[0.8125rem] transition-colors",
                     on
-                      ? "bg-petrol-50 font-semibold text-petrol-800"
-                      : "text-ink-soft hover:bg-surface-sunk",
+                      ? "bg-indigo-50 font-semibold text-indigo-800"
+                      : "text-slate-700 hover:bg-slate-100",
                   )}
                 >
-                  <Store className="h-3.5 w-3.5 shrink-0 text-faint" />
+                  <Store className="h-3.5 w-3.5 shrink-0 text-slate-400" />
                   <span className="min-w-0 flex-1 truncate">{c.center.name}</span>
                 </button>
               </li>
@@ -299,9 +299,9 @@ export function CenterCheck({
             rows={5}
             spellCheck={false}
             placeholder="Macy&#39;s, Nordstrom, Sephora&#10;Zara&#10;Apple Computer"
-            className="mt-3 w-full rounded-xl border border-line bg-surface-sunk p-3 font-mono text-[0.75rem] leading-relaxed text-ink outline-none focus:border-petrol-300"
+            className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-100 p-3 font-mono text-[0.75rem] leading-relaxed text-slate-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15"
           />
-          <p className="mt-2 text-[0.75rem] text-muted">
+          <p className="mt-2 text-[0.75rem] text-slate-500">
             One per line, or separated by commas or pipes. Case and
             punctuation are ignored when matching.
           </p>
@@ -319,11 +319,11 @@ export function CenterCheck({
 
             {diff.coverage < COVERAGE_FLOOR ? (
               <div className="px-5 py-5">
-                <div className="rounded-xl border border-clay-100 bg-clay-50 p-4">
-                  <p className="text-[0.8125rem] font-semibold text-clay-700">
+                <div className="rounded-xl border border-rose-100 bg-rose-50 p-4">
+                  <p className="text-[0.8125rem] font-semibold text-rose-700">
                     This listing looks incomplete
                   </p>
-                  <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-soft">
+                  <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-slate-700">
                     It accounts for {diff.matched} of{" "}
                     {active.center.suites.length} stores on file, which is{" "}
                     {Math.round(diff.coverage * 100)}% of the roster. That is
@@ -335,12 +335,12 @@ export function CenterCheck({
                 </div>
               </div>
             ) : diff.gone.length === 0 && diff.returned.length === 0 ? (
-              <p className="px-5 py-6 text-[0.8125rem] text-muted">
+              <p className="px-5 py-6 text-[0.8125rem] text-slate-500">
                 Nothing changed against the roster on file. That is still a
                 result and worth recording.
               </p>
             ) : (
-              <ul className="mt-4 divide-y divide-line border-t border-line">
+              <ul className="mt-4 divide-y divide-slate-100 border-t border-slate-200">
                 {[...diff.gone, ...diff.returned].map((s) => {
                   const isGone = diff.gone.some((g) => g.id === s.id);
                   return (
@@ -356,8 +356,8 @@ export function CenterCheck({
                         className={cn(
                           "grid h-6 w-6 shrink-0 place-items-center rounded-md border transition-colors",
                           accepted[s.id]
-                            ? "border-petrol-600 bg-petrol-600 text-cream"
-                            : "border-line bg-surface hover:border-petrol-300",
+                            ? "border-indigo-600 bg-indigo-600 text-white"
+                            : "border-slate-200 bg-white hover:border-indigo-300",
                         )}
                         aria-pressed={Boolean(accepted[s.id])}
                         aria-label={`Confirm ${s.name}`}
@@ -366,10 +366,10 @@ export function CenterCheck({
                       </button>
 
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[0.875rem] font-medium text-ink">
+                        <span className="block text-[0.875rem] font-medium text-slate-900">
                           {s.name}
                         </span>
-                        <span className="block text-[0.75rem] text-muted">
+                        <span className="block text-[0.75rem] text-slate-500">
                           {isGone
                             ? "On file as open, not in this listing"
                             : "On file as closed, listed again"}
@@ -388,8 +388,8 @@ export function CenterCheck({
             )}
 
             {diff.ambiguous.length > 0 && (
-              <div className="border-t border-line px-5 py-3">
-                <p className="text-[0.75rem] leading-relaxed text-muted">
+              <div className="border-t border-slate-200 px-5 py-3">
+                <p className="text-[0.75rem] leading-relaxed text-slate-500">
                   {diff.ambiguous.map((a) => a.name).join(", ")} share a name
                   with another store in this center and cannot be told apart
                   from a listing. Confirm those on site.
@@ -398,8 +398,8 @@ export function CenterCheck({
             )}
 
             {diff.fresh.length > 0 && (
-              <div className="border-t border-line px-5 py-3">
-                <p className="text-[0.75rem] text-muted">
+              <div className="border-t border-slate-200 px-5 py-3">
+                <p className="text-[0.75rem] text-slate-500">
                   {diff.fresh.length} listed{" "}
                   {diff.fresh.length === 1 ? "name is" : "names are"} not on the
                   roster at all. New tenants are recorded during setup, not
@@ -428,35 +428,35 @@ export function CenterCheck({
                   <Pill tone={STATE_META[impact.before.state].tone as Tone} dot>
                     {STATE_META[impact.before.state].label}
                   </Pill>
-                  <ArrowRight className="h-4 w-4 text-faint" />
+                  <ArrowRight className="h-4 w-4 text-slate-400" />
                   <Pill tone={STATE_META[impact.after.state].tone as Tone} dot>
                     {STATE_META[impact.after.state].label}
                   </Pill>
                   {!impact.changed && (
-                    <span className="text-[0.8125rem] text-muted">
+                    <span className="text-[0.8125rem] text-slate-500">
                       No change of state.
                     </span>
                   )}
                 </div>
 
-                <ul className="mt-4 space-y-2 border-t border-line pt-3">
+                <ul className="mt-4 space-y-2 border-t border-slate-200 pt-3">
                   {impact.after.triggers.map((t) => (
                     <li key={t.id} className="flex items-start gap-2.5">
                       <span
                         className={cn(
                           "mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full",
-                          t.failing ? "bg-clay-500" : "bg-open-600",
+                          t.failing ? "bg-rose-500" : "bg-emerald-600",
                         )}
                       />
-                      <p className="text-[0.8125rem] text-ink-soft">
-                        <span className="font-medium text-ink">{t.label}</span>{" "}
+                      <p className="text-[0.8125rem] text-slate-700">
+                        <span className="font-medium text-slate-900">{t.label}</span>{" "}
                         {t.observed}
                       </p>
                     </li>
                   ))}
                 </ul>
 
-                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-line pt-3">
+                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-200 pt-3">
                   <ActionButton
                     variant="primary"
                     onClick={() => void record()}
@@ -465,13 +465,13 @@ export function CenterCheck({
                     {recording ? "Filing" : "Record this check"}
                   </ActionButton>
                   {recorded && (
-                    <p className="text-[0.75rem] text-open-700">{recorded}.</p>
+                    <p className="text-[0.75rem] text-emerald-700">{recorded}.</p>
                   )}
                   {recordError && (
-                    <p className="text-[0.75rem] text-clay-700">{recordError}</p>
+                    <p className="text-[0.75rem] text-rose-700">{recordError}</p>
                   )}
                   {!recorded && !recordError && (
-                    <p className="text-[0.75rem] text-muted">
+                    <p className="text-[0.75rem] text-slate-500">
                       Files each confirmed change as a store report.
                     </p>
                   )}

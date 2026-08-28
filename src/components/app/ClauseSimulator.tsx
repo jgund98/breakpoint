@@ -97,16 +97,16 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
     });
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-line bg-surface">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
         <div>
-          <p className="text-[0.75rem] font-medium text-muted">
+          <p className="text-[0.75rem] font-medium text-slate-500">
             Co-tenancy requirement
           </p>
-          <h2 className="mt-0.5 text-[1.0625rem] font-semibold text-ink">
+          <h2 className="mt-0.5 text-[1.0625rem] font-semibold text-slate-900">
             {clause.locations[0]}
           </h2>
-          <p className="mt-1 text-[0.8125rem] text-muted">
+          <p className="mt-1 text-[0.8125rem] text-slate-500">
             {live.requirementText}
           </p>
         </div>
@@ -125,11 +125,11 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
 
       <div className="grid lg:grid-cols-[1.15fr_1fr]">
         {/* ---- the named tenants ---- */}
-        <div className="border-b border-line p-5 lg:border-b-0 lg:border-r sm:p-6">
-          <p className="text-[0.8125rem] font-medium text-ink">
+        <div className="border-b border-slate-200 p-5 lg:border-b-0 lg:border-r sm:p-6">
+          <p className="text-[0.8125rem] font-medium text-slate-900">
             Named in this lease
           </p>
-          <p className="mt-1 text-[0.75rem] text-muted">
+          <p className="mt-1 text-[0.75rem] text-slate-500">
             Click any to model it closing.
           </p>
 
@@ -146,16 +146,16 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-colors duration-200",
                       open
-                        ? "border-line bg-surface hover:border-petrol-300"
-                        : "border-clay-100 bg-clay-50",
+                        ? "border-slate-200 bg-white hover:border-indigo-300"
+                        : "border-rose-100 bg-rose-50",
                     )}
                   >
                     <span
                       className={cn(
                         "grid h-8 w-8 shrink-0 place-items-center rounded-lg",
                         open
-                          ? "bg-open-50 text-open-700"
-                          : "bg-clay-100 text-clay-700",
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-rose-100 text-rose-700",
                       )}
                     >
                       {open ? (
@@ -165,13 +165,13 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
                       )}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[0.875rem] font-medium text-ink">
+                      <span className="block text-[0.875rem] font-medium text-slate-900">
                         {s.name}
                       </span>
-                      <span className="block text-[0.75rem] text-muted capitalize">
+                      <span className="block text-[0.75rem] text-slate-500 capitalize">
                         {s.kind} · {open ? "open and operating" : "closed"}
                         {changed && (
-                          <span className="ml-1.5 text-petrol-700">modeled</span>
+                          <span className="ml-1.5 text-indigo-700">modeled</span>
                         )}
                       </span>
                     </span>
@@ -182,7 +182,7 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
           </ul>
 
           {watched.length === 0 && (
-            <p className="mt-4 rounded-xl border border-line bg-surface-sunk p-4 text-[0.8125rem] text-muted">
+            <p className="mt-4 rounded-xl border border-slate-200 bg-slate-100 p-4 text-[0.8125rem] text-slate-500">
               This clause names no specific tenants. It turns on an occupancy
               threshold alone, which requires the landlord&#8217;s report.
             </p>
@@ -191,27 +191,27 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
 
         {/* ---- what it does ---- */}
         <div className="p-5 sm:p-6">
-          <p className="text-[0.8125rem] font-medium text-ink">Result</p>
+          <p className="text-[0.8125rem] font-medium text-slate-900">Result</p>
 
           <div
             className={cn(
               "mt-3 rounded-xl border p-4",
               live.requirementMet
-                ? "border-open-100 bg-open-50"
-                : "border-clay-100 bg-clay-50",
+                ? "border-emerald-100 bg-emerald-50"
+                : "border-rose-100 bg-rose-50",
             )}
           >
             <p
               className={cn(
                 "text-[0.9375rem] font-semibold",
-                live.requirementMet ? "text-open-700" : "text-clay-700",
+                live.requirementMet ? "text-emerald-700" : "text-rose-700",
               )}
             >
               {live.requirementMet
                 ? "Requirement met"
                 : "Requirement not met"}
             </p>
-            <p className="mt-1 text-[0.8125rem] leading-snug text-ink-soft">
+            <p className="mt-1 text-[0.8125rem] leading-snug text-slate-700">
               {live.requirementMet
                 ? "No co-tenancy right arises on these conditions."
                 : STATE_META[live.state].blurb}
@@ -223,24 +223,24 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
             {live.triggers.map((t) => (
               <li
                 key={t.id}
-                className="flex items-start gap-2.5 border-b border-line pb-2.5 last:border-0"
+                className="flex items-start gap-2.5 border-b border-slate-200 pb-2.5 last:border-0"
               >
                 <span
                   className={cn(
                     "mt-1 h-1.5 w-1.5 shrink-0 rounded-full",
-                    t.failing ? "bg-clay-500" : "bg-open-600",
+                    t.failing ? "bg-rose-500" : "bg-emerald-600",
                   )}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.8125rem] font-medium text-ink">
+                  <p className="text-[0.8125rem] font-medium text-slate-900">
                     {t.label}
-                    <span className="ml-1.5 font-normal text-faint">{t.cite}</span>
+                    <span className="ml-1.5 font-normal text-slate-400">{t.cite}</span>
                   </p>
-                  <p className="text-[0.75rem] text-muted">{t.requirement}</p>
+                  <p className="text-[0.75rem] text-slate-500">{t.requirement}</p>
                   <p
                     className={cn(
                       "text-[0.75rem] font-medium",
-                      t.failing ? "text-clay-600" : "text-ink-soft",
+                      t.failing ? "text-rose-600" : "text-slate-700",
                     )}
                   >
                     {t.computability === "observable"
@@ -258,7 +258,7 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
-              className="mt-4 space-y-2 rounded-xl border border-line bg-surface-sunk p-4"
+              className="mt-4 space-y-2 rounded-xl border border-slate-200 bg-slate-100 p-4"
             >
               <Row
                 k="Landlord's window"
@@ -286,7 +286,7 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
           )}
 
           {dirty && (
-            <p className="mt-3 text-[0.75rem] leading-relaxed text-petrol-700">
+            <p className="mt-3 text-[0.75rem] leading-relaxed text-indigo-700">
               Modeled, not observed. As observed today this lease is{" "}
               {STATE_META[baseline.state].label.toLowerCase()}.
             </p>
@@ -300,8 +300,8 @@ export function ClauseSimulator({ center, clause, econ, claim, asOf }: Props) {
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-[0.75rem] text-muted">{k}</dt>
-      <dd className="tnum text-[0.8125rem] font-medium text-ink">{v}</dd>
+      <dt className="text-[0.75rem] text-slate-500">{k}</dt>
+      <dd className="tnum text-[0.8125rem] font-medium text-slate-900">{v}</dd>
     </div>
   );
 }

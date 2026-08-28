@@ -101,17 +101,17 @@ export default function NoticesPage() {
       {/* ---- the package ---- */}
       {lead && (
         <Panel flush>
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 px-5 py-4 sm:px-6">
             <div>
-              <p className="label text-petrol-600">Package preview</p>
-              <h2 className="mt-1.5 text-[1.0625rem] font-semibold text-ink">
+              <p className="label text-indigo-600">Package preview</p>
+              <h2 className="mt-1.5 text-[1.0625rem] font-semibold text-slate-900">
                 {lead.center.name}
               </h2>
-              <p className="mt-1 text-[0.8125rem] text-muted">
+              <p className="mt-1 text-[0.8125rem] text-slate-500">
                 {lead.id} · prepared for {org.name}. Awaiting counsel review.
               </p>
             </div>
-            <p className="text-[0.75rem] text-muted">
+            <p className="text-[0.75rem] text-slate-500">
               Move it through review below.
             </p>
           </div>
@@ -125,19 +125,19 @@ export default function NoticesPage() {
                     .map((t) => (
                       <li
                         key={t.id}
-                        className="rounded-xl border border-clay-100 bg-clay-50 p-3.5"
+                        className="rounded-xl border border-rose-100 bg-rose-50 p-3.5"
                       >
-                        <p className="text-[0.8125rem] font-semibold text-ink">
-                          {t.label} <span className="text-faint">{t.cite}</span>
+                        <p className="text-[0.8125rem] font-semibold text-slate-900">
+                          {t.label} <span className="text-slate-400">{t.cite}</span>
                         </p>
-                        <p className="mt-1 text-[0.8125rem] text-ink-soft">
+                        <p className="mt-1 text-[0.8125rem] text-slate-700">
                           Required: {t.requirement}
                         </p>
-                        <p className="text-[0.8125rem] text-clay-700">
+                        <p className="text-[0.8125rem] text-rose-700">
                           Observed: {t.observed}
                         </p>
                         {t.culprits.length > 0 && (
-                          <p className="mt-1 text-[0.75rem] text-muted">
+                          <p className="mt-1 text-[0.75rem] text-slate-500">
                             Not open: {t.culprits.slice(0, 4).join(", ")}
                           </p>
                         )}
@@ -152,9 +152,9 @@ export default function NoticesPage() {
                     .filter((e) => SOURCE_META[e.source].tier === "primary")
                     .map((e) => (
                       <li key={e.id} className="flex items-start gap-2.5">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-open-600" />
-                        <p className="text-[0.8125rem] leading-relaxed text-ink-soft">
-                          <span className="font-medium text-ink">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-600" />
+                        <p className="text-[0.8125rem] leading-relaxed text-slate-700">
+                          <span className="font-medium text-slate-900">
                             {SOURCE_META[e.source].label}
                           </span>
                           , observed {prettyDate(e.observedAt)}. {e.statement}
@@ -165,7 +165,7 @@ export default function NoticesPage() {
               </Section>
 
               <Section n="03" title="The computation">
-                <p className="text-[0.8125rem] leading-relaxed text-ink-soft">
+                <p className="text-[0.8125rem] leading-relaxed text-slate-700">
                   Occupancy for this clause is measured on{" "}
                   {lead.center.suites.filter((s) => s.kind !== "anchor" && s.kind !== "outparcel").length}{" "}
                   suites, excluding anchor premises and outparcels, on an open
@@ -208,7 +208,7 @@ export default function NoticesPage() {
               </Section>
 
               <Section n="05" title="Draft notice">
-                <div className="rounded-xl border border-line bg-surface-sunk p-4 text-[0.8125rem] leading-[1.8] text-ink-soft">
+                <div className="rounded-xl border border-slate-200 bg-slate-100 p-4 text-[0.8125rem] leading-[1.8] text-slate-700">
                   <p>
                     Re: Co-Tenancy, {lead.center.name}, Store {lead.storeNumber}
                   </p>
@@ -229,7 +229,7 @@ export default function NoticesPage() {
                     first day of the calendar month following delivery of this
                     notice, and reserves all rights.
                   </p>
-                  <p className="mt-3 text-muted">
+                  <p className="mt-3 text-slate-500">
                     Draft for counsel review. Not legal advice.
                   </p>
                 </div>
@@ -256,8 +256,8 @@ function Section({
   return (
     <div>
       <div className="flex items-baseline gap-2.5">
-        <span className="font-display text-[0.8125rem] text-brass-500">{n}</span>
-        <h3 className="text-[0.875rem] font-semibold text-ink">{title}</h3>
+        <span className="font-display text-[0.8125rem] text-amber-500">{n}</span>
+        <h3 className="text-[0.875rem] font-semibold text-slate-900">{title}</h3>
       </div>
       <div className="mt-2.5">{children}</div>
     </div>

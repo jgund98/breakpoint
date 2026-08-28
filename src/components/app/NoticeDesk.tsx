@@ -72,13 +72,13 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
     return (
       <Panel className="text-center">
         <div className="mx-auto max-w-md py-12">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-open-50 text-open-700">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-emerald-50 text-emerald-700">
             <Check className="h-5 w-5" />
           </span>
-          <h2 className="mt-4 text-[1.0625rem] font-semibold text-ink">
+          <h2 className="mt-4 text-[1.0625rem] font-semibold text-slate-900">
             Nothing to serve
           </h2>
-          <p className="mt-2 text-[0.875rem] leading-relaxed text-muted">
+          <p className="mt-2 text-[0.875rem] leading-relaxed text-slate-500">
             No location has a failing test that has cleared its cure period with
             preconditions met. Packages appear here automatically when one does.
           </p>
@@ -96,7 +96,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
         />
       </div>
 
-      <ul className="mt-4 divide-y divide-line">
+      <ul className="mt-4 divide-y divide-slate-100">
         {candidates.map((c) => {
           const stage = stageOf(c.id);
           const meta = NOTICE_META[stage];
@@ -112,7 +112,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <Link
                       href={`/app/locations/${c.id}`}
-                      className="text-[0.9375rem] font-semibold text-petrol-800 hover:underline"
+                      className="text-[0.9375rem] font-semibold text-indigo-800 hover:underline"
                     >
                       {c.center}
                     </Link>
@@ -121,19 +121,19 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                     </Pill>
                     {!c.verified && <Pill tone="muted">Unverified</Pill>}
                   </div>
-                  <p className="mt-1 text-[0.8125rem] text-muted">
+                  <p className="mt-1 text-[0.8125rem] text-slate-500">
                     {c.id} · {c.city} · {c.failing} · {c.monthly}
                   </p>
-                  <p className="mt-1 text-[0.8125rem] text-ink-soft">
+                  <p className="mt-1 text-[0.8125rem] text-slate-700">
                     {meta.blurb}
                   </p>
                   {record?.servedOn && (
-                    <p className="mt-1 text-[0.75rem] font-medium text-open-700">
+                    <p className="mt-1 text-[0.75rem] font-medium text-emerald-700">
                       Served {prettyDate(record.servedOn)}
                     </p>
                   )}
                   {record?.reason && (
-                    <p className="mt-1 text-[0.75rem] text-muted">
+                    <p className="mt-1 text-[0.75rem] text-slate-500">
                       Reason: {record.reason}
                     </p>
                   )}
@@ -150,7 +150,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                   ) : (
                     <>
                       {blocked ? (
-                        <span className="text-[0.75rem] text-muted">
+                        <span className="text-[0.75rem] text-slate-500">
                           Awaiting primary evidence
                         </span>
                       ) : meta.next ? (
@@ -200,14 +200,14 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                       <span
                         className={cn(
                           "h-1.5 w-8 rounded-full transition-colors",
-                          done ? "bg-petrol-600" : "bg-surface-sunk",
+                          done ? "bg-indigo-600" : "bg-slate-100",
                         )}
                         title={NOTICE_META[s].label}
                       />
                     </li>
                   );
                 })}
-                <li className="ml-1 text-[0.6875rem] text-faint">
+                <li className="ml-1 text-[0.6875rem] text-slate-400">
                   {NOTICE_META[stage].label}
                 </li>
               </ol>
@@ -220,12 +220,12 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                     exit={{ opacity: 0, height: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface-sunk p-3">
+                    <div className="mt-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 p-3">
                       <input
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         placeholder="Why are you not pursuing this?"
-                        className="min-w-[220px] flex-1 rounded-lg border border-line bg-surface px-3 py-2 text-[0.8125rem] focus:border-petrol-500 focus:outline-none"
+                        className="min-w-[220px] flex-1 rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-2 text-[0.8125rem] focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                       />
                       <ActionButton
                         onClick={() => {
@@ -250,7 +250,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
         })}
       </ul>
 
-      <p className="border-t border-line px-5 py-3 text-[0.75rem] leading-relaxed text-muted">
+      <p className="border-t border-slate-200 px-5 py-3 text-[0.75rem] leading-relaxed text-slate-500">
         Recording a package as served does not send anything. It records that
         your signatory served it, so the date the co-tenancy rent runs from is
         on file with the evidence behind it.

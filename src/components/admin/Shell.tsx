@@ -16,7 +16,7 @@ import {
   Search,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { CountBubble, Monogram } from "@/components/admin/ui";
+import { CountBubble, Monogram, PovToggle } from "@/components/admin/ui";
 
 /**
  * The console shell, in QuoteTurbo2's portal language: white icon-chip
@@ -279,9 +279,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              <div className="hidden md:block">
+                <PovToggle current="admin" />
+              </div>
               <Link
                 href="/admin/clients?new=1"
-                className="hidden h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
+                className="hidden h-10 items-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
               >
                 <Plus className="h-4 w-4" /> New client
               </Link>

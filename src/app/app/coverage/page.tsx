@@ -139,13 +139,13 @@ export default function CoveragePage() {
           ).map(([label, n, tone]) => (
             <div
               key={label}
-              className="rounded-xl border border-line bg-surface-sunk p-4"
+              className="rounded-xl border border-slate-200 bg-slate-100 p-4"
             >
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-[0.8125rem] font-medium text-ink">
+                <span className="text-[0.8125rem] font-medium text-slate-900">
                   {label}
                 </span>
-                <span className="tnum font-display text-[1.25rem] leading-none text-ink">
+                <span className="tnum font-display text-[1.25rem] leading-none text-slate-900">
                   {n}
                 </span>
               </div>
@@ -157,7 +157,7 @@ export default function CoveragePage() {
                 />
               )}
               {label === "Awaiting landlord" && n > 0 && (
-                <p className="mt-2 text-[0.75rem] text-muted">
+                <p className="mt-2 text-[0.75rem] text-slate-500">
                   Response due within{" "}
                   {awaiting[0]?.entitlement.responseDays ?? 30} days of the
                   request.
@@ -167,7 +167,7 @@ export default function CoveragePage() {
           ))}
         </div>
 
-        <p className="mt-4 border-t border-line pt-3 text-[0.75rem] leading-relaxed text-muted">
+        <p className="mt-4 border-t border-slate-200 pt-3 text-[0.75rem] leading-relaxed text-slate-500">
           {available[0]
             ? `Example, ${ENTITLEMENT_META[available[0].entitlement.kind].label} at ${available[0].centerName}: ${available[0].entitlement.cite}.`
             : "No rights currently available to exercise."}{" "}
@@ -193,7 +193,7 @@ export default function CoveragePage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-left">
             <thead>
-              <tr className="border-y border-line bg-surface-sunk/50">
+              <tr className="border-y border-slate-200 bg-slate-100/50">
                 {[
                   "Center",
                   "Your stores",
@@ -202,32 +202,32 @@ export default function CoveragePage() {
                   "Last check",
                   "Status",
                 ].map((h) => (
-                  <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
+                  <th key={h} className="px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-slate-100">
               {byCenter.map((row) => (
-                <tr key={row.center} className="hover:bg-petrol-50/40">
+                <tr key={row.center} className="hover:bg-indigo-50/40">
                   <td className="px-4 py-3">
-                    <p className="text-[0.875rem] font-medium text-ink">
+                    <p className="text-[0.875rem] font-medium text-slate-900">
                       {row.center}
                     </p>
-                    <p className="text-[0.75rem] text-muted">{row.city}</p>
+                    <p className="text-[0.75rem] text-slate-500">{row.city}</p>
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {row.locationIds.size}
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {/* A clause with no named tenant is watched on the
                         occupancy percentage instead, so say that rather
                         than print a zero that reads as unmonitored. */}
                     {row.watched > 0 ? (
                       row.watched
                     ) : (
-                      <span className="text-muted">Occupancy only</span>
+                      <span className="text-slate-500">Occupancy only</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
@@ -236,14 +236,14 @@ export default function CoveragePage() {
                         <span
                           key={s}
                           title={SOURCE_INFO[s].covers}
-                          className="rounded bg-surface-sunk px-1.5 py-0.5 text-[0.6875rem] text-muted"
+                          className="rounded bg-slate-100 px-1.5 py-0.5 text-[0.6875rem] text-slate-500"
                         >
                           {SOURCE_INFO[s].label}
                         </span>
                       ))}
                     </div>
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-muted">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-500">
                     {shortDate(row.lastChecked)}
                   </td>
                   <td className="px-4 py-3">
@@ -280,9 +280,9 @@ export default function CoveragePage() {
           {(Object.keys(SOURCE_INFO) as SourceId[]).map((id) => {
             const s = SOURCE_INFO[id];
             return (
-              <div key={id} className="rounded-xl border border-line bg-surface-sunk p-3.5">
+              <div key={id} className="rounded-xl border border-slate-200 bg-slate-100 p-3.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[0.8125rem] font-semibold text-ink">
+                  <span className="text-[0.8125rem] font-semibold text-slate-900">
                     {s.label}
                   </span>
                   <Pill
@@ -292,17 +292,17 @@ export default function CoveragePage() {
                     {s.weight}
                   </Pill>
                 </div>
-                <p className="mt-1.5 text-[0.75rem] leading-snug text-ink-soft">
+                <p className="mt-1.5 text-[0.75rem] leading-snug text-slate-700">
                   {s.covers}
                 </p>
-                <p className="mt-1.5 text-[0.6875rem] text-faint">{s.cadence}</p>
+                <p className="mt-1.5 text-[0.6875rem] text-slate-400">{s.cadence}</p>
               </div>
             );
           })}
         </div>
       </Panel>
 
-      <p className="rounded-xl border border-line bg-surface-sunk p-4 text-[0.75rem] leading-relaxed text-muted">
+      <p className="rounded-xl border border-slate-200 bg-slate-100 p-4 text-[0.75rem] leading-relaxed text-slate-500">
         Next scan {prettyDate(c.nextSweepISO)}. Illustrative sample data.
       </p>
     </div>

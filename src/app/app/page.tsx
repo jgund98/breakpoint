@@ -247,12 +247,12 @@ export default function OverviewPage() {
                 <span
                   className={`w-full rounded-t-sm transition-colors ${
                     s.changes > 0
-                      ? "bg-brass-500 group-hover:bg-brass-600"
-                      : "bg-open-600/35 group-hover:bg-open-600/60"
+                      ? "bg-amber-500 group-hover:bg-amber-600"
+                      : "bg-emerald-600/35 group-hover:bg-emerald-600/60"
                   }`}
                   style={{ height }}
                 />
-                <span className="h-1 w-full rounded-b-sm bg-surface-sunk" />
+                <span className="h-1 w-full rounded-b-sm bg-slate-100" />
               </div>
             );
           })}
@@ -272,12 +272,12 @@ export default function OverviewPage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[880px] border-collapse text-left">
             <thead>
-              <tr className="border-y border-line bg-surface-sunk/50">
+              <tr className="border-y border-slate-200 bg-slate-100/50">
                 {["Location", "Center", "State", "Failing test", "Evidence", "Per month", ""].map(
                   (h) => (
                     <th
                       key={h}
-                      className="label px-4 py-2.5 font-semibold text-faint"
+                      className="px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400"
                     >
                       {h}
                     </th>
@@ -285,25 +285,25 @@ export default function OverviewPage() {
                 )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-slate-100">
               {decisions.slice(0, 8).map((r) => {
                 const failing = r.evaluation.triggers.filter((t) => t.failing);
                 const v = verificationOf(r.evidence);
                 const tone = STATE_META[r.evaluation.state].tone as Tone;
                 return (
-                  <tr key={r.id} className="transition-colors hover:bg-petrol-50/40">
+                  <tr key={r.id} className="transition-colors hover:bg-indigo-50/40">
                     <td className="px-4 py-3">
                       <Link
                         href={`/app/locations/${r.id}`}
-                        className="text-[0.875rem] font-semibold text-petrol-800 hover:underline"
+                        className="text-[0.875rem] font-semibold text-indigo-800 hover:underline"
                       >
                         {r.id}
                       </Link>
-                      <p className="text-[0.75rem] text-muted">Store {r.storeNumber}</p>
+                      <p className="text-[0.75rem] text-slate-500">Store {r.storeNumber}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-[0.875rem] text-ink">{r.center.name}</p>
-                      <p className="text-[0.75rem] text-muted">
+                      <p className="text-[0.875rem] text-slate-900">{r.center.name}</p>
+                      <p className="text-[0.75rem] text-slate-500">
                         {r.center.city}, {r.center.state}
                       </p>
                     </td>
@@ -313,10 +313,10 @@ export default function OverviewPage() {
                       </Pill>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-[0.8125rem] text-ink-soft">
+                      <p className="text-[0.8125rem] text-slate-700">
                         {failing.map((t) => t.label).join(", ") || "None"}
                       </p>
-                      <p className="text-[0.75rem] text-muted">
+                      <p className="text-[0.75rem] text-slate-500">
                         {failing[0]?.culprits.slice(0, 2).join(", ")}
                       </p>
                     </td>
@@ -333,13 +333,13 @@ export default function OverviewPage() {
                         {TIER_META[v.tier].label}
                       </Pill>
                     </td>
-                    <td className="tnum px-4 py-3 text-[0.9375rem] font-semibold text-brass-600">
+                    <td className="tnum px-4 py-3 text-[0.9375rem] font-semibold text-amber-600">
                       {formatCoTenancyRent(r.evaluation.monthlyDelta)}
                     </td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/app/locations/${r.id}`}
-                        className="text-[0.8125rem] font-semibold whitespace-nowrap text-petrol-700 hover:underline"
+                        className="text-[0.8125rem] font-semibold whitespace-nowrap text-indigo-700 hover:underline"
                       >
                         Open
                       </Link>
@@ -351,7 +351,7 @@ export default function OverviewPage() {
           </table>
         </div>
         {decisions.length > 8 && (
-          <p className="border-t border-line px-5 py-3 text-[0.75rem] text-muted">
+          <p className="border-t border-slate-200 px-5 py-3 text-[0.75rem] text-slate-500">
             Showing the 8 highest by value. {decisions.length - 8} more on the
             notice desk.
           </p>
@@ -365,7 +365,7 @@ export default function OverviewPage() {
             title="Clocks running"
             hint="Cure windows and election deadlines."
           />
-          <ul className="mt-4 divide-y divide-line">
+          <ul className="mt-4 divide-y divide-slate-100">
             {clocks.map((r) => {
               const election = r.evaluation.daysUntilElection;
               const cure = r.evaluation.daysUntilCureEnds;
@@ -376,11 +376,11 @@ export default function OverviewPage() {
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/app/locations/${r.id}`}
-                      className="text-[0.875rem] font-semibold text-ink hover:text-petrol-700"
+                      className="text-[0.875rem] font-semibold text-slate-900 hover:text-indigo-700"
                     >
                       {r.center.name}
                     </Link>
-                    <p className="text-[0.75rem] text-muted">
+                    <p className="text-[0.75rem] text-slate-500">
                       {isElection
                         ? `Election lapses ${shortDate(r.evaluation.electionDeadline!)}`
                         : `Cure ends ${shortDate(r.evaluation.cureEndsOn!)}`}
@@ -389,18 +389,18 @@ export default function OverviewPage() {
                   <div className="shrink-0 text-right">
                     <p
                       className={`tnum font-display text-[1.125rem] leading-none ${
-                        (days ?? 99) < 30 ? "text-clay-600" : "text-ink"
+                        (days ?? 99) < 30 ? "text-rose-600" : "text-slate-900"
                       }`}
                     >
                       {days}
                     </p>
-                    <p className="text-[0.6875rem] text-muted">days</p>
+                    <p className="text-[0.6875rem] text-slate-500">days</p>
                   </div>
                 </li>
               );
             })}
             {clocks.length === 0 && (
-              <li className="py-6 text-center text-[0.8125rem] text-muted">
+              <li className="py-6 text-center text-[0.8125rem] text-slate-500">
                 No clocks running.
               </li>
             )}
@@ -414,20 +414,20 @@ export default function OverviewPage() {
             hint="Recent observations."
             right={<LinkButton href="/app/signals">All signals</LinkButton>}
           />
-          <ul className="mt-4 divide-y divide-line">
+          <ul className="mt-4 divide-y divide-slate-100">
             {signalFeed.slice(0, 6).map((s) => (
               <li key={s.id} className="flex items-start gap-3 py-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-petrol-600" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-600" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.8125rem] text-ink">
+                  <p className="text-[0.8125rem] text-slate-900">
                     <span className="font-semibold">{s.unitName}</span> at{" "}
                     {s.centerName}
                   </p>
-                  <p className="no-orphan text-[0.75rem] leading-snug text-muted">
+                  <p className="no-orphan text-[0.75rem] leading-snug text-slate-500">
                     {s.statement}
                   </p>
                 </div>
-                <span className="tnum shrink-0 text-[0.75rem] whitespace-nowrap text-faint">
+                <span className="tnum shrink-0 text-[0.75rem] whitespace-nowrap text-slate-400">
                   {shortDate(s.observedAt)}
                 </span>
               </li>
@@ -448,15 +448,15 @@ export default function OverviewPage() {
               {blocked.slice(0, 4).map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-xl border border-clay-100 bg-clay-50 p-3.5"
+                  className="rounded-xl border border-rose-100 bg-rose-50 p-3.5"
                 >
                   <Link
                     href={`/app/locations/${r.id}`}
-                    className="text-[0.875rem] font-semibold text-ink hover:text-petrol-700"
+                    className="text-[0.875rem] font-semibold text-slate-900 hover:text-indigo-700"
                   >
                     {r.center.name}
                   </Link>
-                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
                     {r.claim.failedPreconditions
                       .map((p) => PRECONDITION_META[p].label)
                       .join(", ")}{" "}
@@ -471,19 +471,19 @@ export default function OverviewPage() {
               {unverified.slice(0, 3).map((r) => (
                 <li
                   key={r.id}
-                  className="rounded-xl border border-line bg-surface-sunk p-3.5"
+                  className="rounded-xl border border-slate-200 bg-slate-100 p-3.5"
                 >
                   <Link
                     href={`/app/locations/${r.id}`}
-                    className="text-[0.875rem] font-semibold text-ink hover:text-petrol-700"
+                    className="text-[0.875rem] font-semibold text-slate-900 hover:text-indigo-700"
                   >
                     {r.center.name}
                   </Link>
-                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
                     We could not find your store in this center&#8217;s
                     directory, so we cannot confirm you are open and operating.
                     Confirm it on{" "}
-                    <Link href="/app/coverage" className="text-petrol-700 underline underline-offset-2">
+                    <Link href="/app/coverage" className="text-indigo-700 underline underline-offset-2">
                       Coverage
                     </Link>{" "}
                     and this location will be scored.
@@ -492,7 +492,7 @@ export default function OverviewPage() {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-[0.8125rem] text-muted">
+            <p className="mt-4 text-[0.8125rem] text-slate-500">
               Nothing currently blocked on a precondition.
             </p>
           )}
@@ -506,11 +506,11 @@ export default function OverviewPage() {
           {needsRentRoll.length ? (
             <ul className="mt-4 space-y-3">
               {needsRentRoll.slice(0, 4).map((r) => (
-                <li key={r.id} className="rounded-xl border border-line bg-surface-sunk p-3.5">
+                <li key={r.id} className="rounded-xl border border-slate-200 bg-slate-100 p-3.5">
                   <div className="flex items-center justify-between gap-3">
                     <Link
                       href={`/app/locations/${r.id}`}
-                      className="text-[0.875rem] font-semibold text-ink hover:text-petrol-700"
+                      className="text-[0.875rem] font-semibold text-slate-900 hover:text-indigo-700"
                     >
                       {r.center.name}
                     </Link>
@@ -518,7 +518,7 @@ export default function OverviewPage() {
                       {COMPUTABILITY_META[r.evaluation.evidenceCeiling].label}
                     </Pill>
                   </div>
-                  <p className="mt-1.5 text-[0.75rem] leading-relaxed text-muted">
+                  <p className="mt-1.5 text-[0.75rem] leading-relaxed text-slate-500">
                     Rent roll {Math.round(r.center.rentRollCoverage * 100)}%
                     complete as of {shortDate(r.center.rentRollAsOf)}. Named
                     tenant tests here remain fully observable.
@@ -527,7 +527,7 @@ export default function OverviewPage() {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-[0.8125rem] text-muted">
+            <p className="mt-4 text-[0.8125rem] text-slate-500">
               Every failing test currently rests on an observable denominator.
             </p>
           )}

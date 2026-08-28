@@ -109,10 +109,10 @@ export function BootScreen() {
               className="flex flex-col items-center"
             >
               <BrandMark size={84} tone="light" />
-              <div className="mt-6 text-cream">
+              <div className="mt-6 text-white">
                 <LogoWord className="text-[1.75rem]" />
               </div>
-              <p className="mt-2 text-[0.8125rem] text-cream-faint">
+              <p className="mt-2 text-[0.8125rem] text-indigo-200/70">
                 Retail Lease Intelligence
               </p>
             </motion.div>
@@ -120,7 +120,7 @@ export function BootScreen() {
             {/* progress */}
             <div className="mt-10 h-0.5 w-full overflow-hidden rounded-full bg-white/12">
               <motion.div
-                className="h-full rounded-full bg-brass-500"
+                className="h-full rounded-full bg-amber-500"
                 initial={{ width: "0%" }}
                 animate={{ width: `${(step / steps.length) * 100}%` }}
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -152,28 +152,28 @@ export function BootScreen() {
                             r="7"
                             className="mark-ring"
                             fill="none"
-                            stroke="var(--color-brass-500)"
+                            stroke="var(--color-amber-500)"
                             strokeWidth="1.5"
                           />
                           <path
                             d="M4.6 8.2 7 10.6l4.4-5"
                             className="mark-draw"
                             fill="none"
-                            stroke="var(--color-brass-400)"
+                            stroke="var(--color-amber-400)"
                             strokeWidth="1.8"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           />
                         </svg>
                       ) : state === "active" ? (
-                        <span className="h-1.5 w-1.5 rounded-full bg-brass-400 anim-pulse-dot" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-400 anim-pulse-dot" />
                       ) : (
                         <span className="h-1.5 w-1.5 rounded-full bg-white/25" />
                       )}
                     </span>
                     <span
                       className={
-                        state === "pending" ? "text-cream-faint" : "text-cream-soft"
+                        state === "pending" ? "text-indigo-200/70" : "text-indigo-200"
                       }
                     >
                       {line}
@@ -188,7 +188,7 @@ export function BootScreen() {
                 <motion.p
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 text-center text-[0.8125rem] font-semibold text-brass-400"
+                  className="mt-8 text-center text-[0.8125rem] font-semibold text-amber-400"
                 >
                   Workspace ready
                 </motion.p>

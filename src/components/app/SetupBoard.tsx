@@ -117,13 +117,13 @@ export function SetupBoard() {
         />
         <Panel className="text-center">
           <div className="mx-auto max-w-md py-10">
-            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-petrol-50 text-petrol-700">
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-indigo-50 text-indigo-700">
               <Building2 className="h-6 w-6" />
             </span>
-            <h2 className="mt-5 text-[1.125rem] font-semibold text-ink">
+            <h2 className="mt-5 text-[1.125rem] font-semibold text-slate-900">
               Bring your portfolio in
             </h2>
-            <p className="no-orphan mt-2 text-[0.875rem] leading-relaxed text-muted">
+            <p className="no-orphan mt-2 text-[0.875rem] leading-relaxed text-slate-500">
               Send whatever export you already have. We map the columns, resolve
               each store to its shopping center, and tell you exactly what we
               could not settle.
@@ -172,29 +172,29 @@ export function SetupBoard() {
       {/* progress */}
       <Panel className="card-enter d-1">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <p className="text-[0.9375rem] font-semibold text-ink">
+          <p className="text-[0.9375rem] font-semibold text-slate-900">
             Rollout progress
           </p>
-          <p className="tnum text-[0.875rem] text-muted">
+          <p className="tnum text-[0.875rem] text-slate-500">
             {pct}% monitoring
             {state.onboardedAt && ` · imported ${prettyDate(state.onboardedAt)}`}
           </p>
         </div>
-        <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-surface-sunk">
+        <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
           {ORDER.map((stage) => {
             const n = counts.get(stage) ?? 0;
             if (!n) return null;
             const w = (n / total) * 100;
             const bg =
               stage === "watched"
-                ? "bg-open-600"
+                ? "bg-emerald-600"
                 : stage === "clause_review"
-                  ? "bg-brass-500"
+                  ? "bg-amber-500"
                   : stage === "abstracting"
-                    ? "bg-petrol-600"
+                    ? "bg-indigo-600"
                     : stage === "no_clause"
-                      ? "bg-faint"
-                      : "bg-clay-500";
+                      ? "bg-slate-400"
+                      : "bg-rose-500";
             return (
               <div
                 key={stage}
@@ -218,17 +218,17 @@ export function SetupBoard() {
                 className={cn(
                   "rounded-xl border p-3 text-left transition-colors duration-250",
                   filter === stage
-                    ? "border-petrol-600 bg-petrol-50"
-                    : "border-line bg-surface hover:border-petrol-300",
+                    ? "border-indigo-600 bg-indigo-50"
+                    : "border-slate-200 bg-white hover:border-indigo-300",
                 )}
               >
                 <span className="flex items-center gap-2">
-                  <Icon className="h-3.5 w-3.5 text-muted" />
-                  <span className="tnum font-display text-[1.125rem] leading-none text-ink">
+                  <Icon className="h-3.5 w-3.5 text-slate-500" />
+                  <span className="tnum font-display text-[1.125rem] leading-none text-slate-900">
                     {n}
                   </span>
                 </span>
-                <span className="mt-1.5 block text-[0.75rem] leading-snug text-muted">
+                <span className="mt-1.5 block text-[0.75rem] leading-snug text-slate-500">
                   {SETUP_META[stage].label}
                 </span>
               </button>
@@ -246,7 +246,7 @@ export function SetupBoard() {
 
       {/* the queue */}
       <Panel flush className="card-enter d-2">
-        <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-5 py-3">
           {(
             [
               ["yours", `Waiting on you (${yours.length})`],
@@ -260,15 +260,15 @@ export function SetupBoard() {
               className={cn(
                 "rounded-lg px-3 py-2 text-[0.8125rem] font-medium transition-colors duration-250",
                 filter === id
-                  ? "bg-petrol-50 text-petrol-800"
-                  : "text-muted hover:text-ink",
+                  ? "bg-indigo-50 text-indigo-800"
+                  : "text-slate-500 hover:text-slate-900",
               )}
             >
               {label}
             </button>
           ))}
           {filter !== "yours" && filter !== "all" && (
-            <span className="rounded-lg bg-petrol-50 px-3 py-2 text-[0.8125rem] font-medium text-petrol-800">
+            <span className="rounded-lg bg-indigo-50 px-3 py-2 text-[0.8125rem] font-medium text-indigo-800">
               {SETUP_META[filter].label}
             </span>
           )}
@@ -276,16 +276,16 @@ export function SetupBoard() {
 
         <div className="max-h-[560px] overflow-y-auto">
           <table className="w-full border-collapse text-left">
-            <thead className="sticky top-0 z-10 bg-surface-sunk">
+            <thead className="sticky top-0 z-10 bg-slate-100">
               <tr>
                 {["Store", "Address", "Center", "Stage", "Owner", ""].map((h) => (
-                  <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
+                  <th key={h} className="px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-slate-100">
               {visible.slice(0, 120).map((l) => (
                 <SetupRow
                   key={l.id}
@@ -300,12 +300,12 @@ export function SetupBoard() {
         </div>
 
         {visible.length > 120 && (
-          <p className="border-t border-line px-5 py-3 text-[0.75rem] text-muted">
+          <p className="border-t border-slate-200 px-5 py-3 text-[0.75rem] text-slate-500">
             Showing the first 120 of {visible.length}. Filter to narrow.
           </p>
         )}
         {visible.length === 0 && (
-          <p className="px-5 py-14 text-center text-[0.875rem] text-muted">
+          <p className="px-5 py-14 text-center text-[0.875rem] text-slate-500">
             Nothing in this stage. That is the good outcome.
           </p>
         )}
@@ -318,19 +318,19 @@ export function SetupBoard() {
             title="Change history"
             hint="Every edit is recorded. An evidence chain that supports a notice has to show who changed what, and when."
           />
-          <ul className="mt-4 divide-y divide-line">
+          <ul className="mt-4 divide-y divide-slate-100">
             {state.audit.slice(0, 8).map((a) => (
               <li key={a.id} className="flex items-baseline gap-3 py-2.5">
-                <span className="text-[0.8125rem] font-medium text-ink">
+                <span className="text-[0.8125rem] font-medium text-slate-900">
                   {a.action}
                 </span>
-                <span className="text-[0.8125rem] text-muted">{a.target}</span>
+                <span className="text-[0.8125rem] text-slate-500">{a.target}</span>
                 {a.detail && (
-                  <span className="truncate text-[0.75rem] text-faint">
+                  <span className="truncate text-[0.75rem] text-slate-400">
                     {a.detail}
                   </span>
                 )}
-                <span className="tnum ml-auto shrink-0 text-[0.75rem] text-faint">
+                <span className="tnum ml-auto shrink-0 text-[0.75rem] text-slate-400">
                   {a.actor}
                 </span>
               </li>
@@ -371,16 +371,16 @@ function SetupRow({
   const meta = SETUP_META[location.stage];
 
   return (
-    <tr className="align-top transition-colors hover:bg-petrol-50/40">
+    <tr className="align-top transition-colors hover:bg-indigo-50/40">
       <td className="px-4 py-3">
-        <p className="text-[0.875rem] font-semibold text-ink">
+        <p className="text-[0.875rem] font-semibold text-slate-900">
           {location.storeNumber}
         </p>
-        <p className="text-[0.75rem] text-muted">{location.id}</p>
+        <p className="text-[0.75rem] text-slate-500">{location.id}</p>
       </td>
-      <td className="px-4 py-3 text-[0.8125rem] text-ink-soft">
-        {location.address || <span className="text-clay-600">Missing</span>}
-        <span className="block text-[0.75rem] text-muted">
+      <td className="px-4 py-3 text-[0.8125rem] text-slate-700">
+        {location.address || <span className="text-rose-600">Missing</span>}
+        <span className="block text-[0.75rem] text-slate-500">
           {location.city}
           {location.state && `, ${location.state}`}
         </span>
@@ -392,7 +392,7 @@ function SetupRow({
               value={center}
               onChange={(e) => setCenter(e.target.value)}
               placeholder="Shopping center name"
-              className="w-44 rounded-lg border border-petrol-300 bg-surface px-2.5 py-1.5 text-[0.8125rem] focus:outline-none"
+              className="w-44 rounded-xl border border-indigo-300 bg-white shadow-sm px-2.5 py-1.5 text-[0.8125rem] focus:outline-none"
             />
             <ActionButton
               className="px-2.5 py-1.5"
@@ -410,10 +410,10 @@ function SetupRow({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-left text-[0.8125rem] text-ink-soft hover:text-petrol-700"
+            className="text-left text-[0.8125rem] text-slate-700 hover:text-indigo-700"
           >
             {location.centerName || (
-              <span className="text-clay-600 underline decoration-dotted">
+              <span className="text-rose-600 underline decoration-dotted">
                 Confirm center
               </span>
             )}
@@ -429,7 +429,7 @@ function SetupRow({
         <span
           className={cn(
             "text-[0.75rem] font-semibold uppercase tracking-wider",
-            meta.who === "you" ? "text-clay-600" : "text-muted",
+            meta.who === "you" ? "text-rose-600" : "text-slate-500",
           )}
         >
           {meta.who === "you" ? "You" : "Breakpoint"}
@@ -459,7 +459,7 @@ function SetupRow({
             type="button"
             onClick={() => onRemove(location.id)}
             aria-label={`Remove ${location.storeNumber}`}
-            className="grid h-8 w-8 place-items-center rounded-lg text-faint transition-colors hover:bg-clay-50 hover:text-clay-600"
+            className="grid h-8 w-8 place-items-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -517,12 +517,12 @@ function AddPanel({
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 40, opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="relative h-full w-full max-w-md overflow-y-auto border-l border-line bg-canvas p-6"
+            className="relative h-full w-full max-w-md overflow-y-auto border-l border-slate-200 bg-white p-6"
           >
-            <h2 className="text-[1.125rem] font-semibold text-ink">
+            <h2 className="text-[1.125rem] font-semibold text-slate-900">
               Add a location
             </h2>
-            <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted">
+            <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-slate-500">
               Enter what you know. We resolve the shopping center and start the
               lease request. Nothing else is required to get it into the queue.
             </p>
@@ -540,15 +540,15 @@ function AddPanel({
                 ] as const
               ).map(([key, label, placeholder, required]) => (
                 <label key={key} className="block">
-                  <span className="text-[0.8125rem] font-medium text-ink">
+                  <span className="text-[0.8125rem] font-medium text-slate-900">
                     {label}
-                    {required && <span className="text-clay-500"> *</span>}
+                    {required && <span className="text-rose-500"> *</span>}
                   </span>
                   <input
                     value={f[key]}
                     onChange={(e) => set(key, e.target.value)}
                     placeholder={placeholder}
-                    className="mt-1.5 w-full rounded-lg border border-line bg-surface px-3.5 py-2.5 text-[0.875rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-sm px-3.5 py-2.5 text-[0.875rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                   />
                 </label>
               ))}
@@ -578,7 +578,7 @@ function AddPanel({
               </ActionButton>
             </div>
 
-            <p className="mt-5 text-[0.75rem] leading-relaxed text-muted">
+            <p className="mt-5 text-[0.75rem] leading-relaxed text-slate-500">
               Adding a store here does not start monitoring on its own. A lease
               has to be read before there is a clause to watch, and we will ask
               you for it.

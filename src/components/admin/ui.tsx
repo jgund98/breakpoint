@@ -163,9 +163,11 @@ export function StatCard({
   hot?: boolean;
   delay?: number;
 }) {
+  /* h-full at every layer: a card with no sub-line must still stand as
+     tall as its siblings in the row. Uneven stat cards read as broken. */
   return (
-    <Rise delay={delay}>
-      <Card className="px-5 py-4 transition-shadow duration-300 hover:shadow-2xl hover:shadow-slate-300/50">
+    <Rise delay={delay} className="h-full">
+      <Card className="h-full px-5 py-4 transition-shadow duration-300 hover:shadow-2xl hover:shadow-slate-300/50">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[0.75rem] font-medium text-slate-500">{label}</p>
@@ -209,7 +211,7 @@ export function Btn({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 text-[0.8125rem] font-medium transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-40",
+        "inline-flex h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-4 text-[0.8125rem] font-semibold transition-all duration-200 active:scale-95 disabled:pointer-events-none disabled:opacity-40",
         variant === "primary" &&
           "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-500",
         variant === "secondary" &&
@@ -242,7 +244,7 @@ export function SearchInput({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       className={cn(
-        "h-9 w-56 rounded-xl border border-slate-200 bg-white px-3.5 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15",
+        "h-10 w-56 rounded-xl border border-slate-200 bg-white px-3.5 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15",
         className,
       )}
     />
@@ -250,10 +252,14 @@ export function SearchInput({
 }
 
 export const inputCls =
-  "rounded-xl border border-slate-200 bg-white px-3 py-2 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
+  "h-10 rounded-xl border border-slate-200 bg-white px-3 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
 
 export const selectCls =
-  "rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[0.8125rem] text-slate-700 shadow-sm transition-colors hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
+  "h-10 rounded-xl border border-slate-200 bg-white px-2.5 text-[0.8125rem] text-slate-700 shadow-sm transition-colors hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
+
+/** Multi-line sibling of inputCls: same skin, natural height. */
+export const textareaCls =
+  "rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[0.8125rem] text-slate-800 shadow-sm transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/15";
 
 /* ------------------------------------------------------------------
    badges
@@ -291,7 +297,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold ring-1 ring-inset",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[0.6875rem] font-semibold ring-1 ring-inset",
         BADGE[tone],
       )}
     >
@@ -494,6 +500,43 @@ export function Segmented<T extends string>({
           )}
         </button>
       ))}
+    </div>
+  );
+}
+
+/**
+ * The POV switch: one product, two seats. Blatant by design — it sits
+ * in both topbars so anyone demoing can flip between what the client
+ * sees and what operations sees. Rides the demo session; staff auth
+ * scopes it later.
+ */
+export function PovToggle({ current }: { current: "client" | "admin" }) {
+  const base =
+    "flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[0.75rem] font-semibold transition-all duration-200";
+  return (
+    <div className="flex shrink-0 rounded-xl bg-slate-100 p-1">
+      <a
+        href="/app"
+        className={cn(
+          base,
+          current === "client"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700",
+        )}
+      >
+        Client view
+      </a>
+      <a
+        href="/admin"
+        className={cn(
+          base,
+          current === "admin"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700",
+        )}
+      >
+        Admin
+      </a>
     </div>
   );
 }

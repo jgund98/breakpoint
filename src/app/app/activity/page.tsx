@@ -78,28 +78,28 @@ export default function ActivityPage() {
             body="The first scan runs once your locations are live. Every pass is recorded here, including the ones that find nothing."
           />
         ) : (
-        <ul className="mt-4 divide-y divide-line">
+        <ul className="mt-4 divide-y divide-slate-100">
           {sweeps.map((s) => (
             <li key={s.id} className="flex flex-wrap items-center gap-4 px-5 py-3">
               <span
                 className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${
-                  s.changes ? "bg-brass-50 text-brass-700" : "bg-open-50 text-open-700"
+                  s.changes ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"
                 }`}
               >
                 <RefreshCw className="h-3.5 w-3.5" />
               </span>
 
               <div className="min-w-0 flex-1">
-                <p className="text-[0.875rem] font-medium text-ink">
+                <p className="text-[0.875rem] font-medium text-slate-900">
                   {prettyDate(s.ranOn)}
-                  <span className="ml-2 font-normal text-faint">{s.id}</span>
+                  <span className="ml-2 font-normal text-slate-400">{s.id}</span>
                 </p>
-                <p className="text-[0.75rem] text-muted">
+                <p className="text-[0.75rem] text-slate-500">
                   {s.targetsChecked} stores checked
                   {s.moved.length > 0 && (
                     <>
                       {" · "}
-                      <span className="text-clay-600">
+                      <span className="text-rose-600">
                         {s.moved.map((m) => m.store).join(", ")} closed
                       </span>
                     </>
@@ -110,7 +110,7 @@ export default function ActivityPage() {
               <div className="shrink-0 text-right">
                 <p
                   className={`tnum text-[0.875rem] font-semibold ${
-                    s.changes ? "text-brass-600" : "text-muted"
+                    s.changes ? "text-amber-600" : "text-slate-500"
                   }`}
                 >
                   {s.changes === 0 ? "No change" : `${s.changes} changed`}
@@ -136,7 +136,7 @@ export default function ActivityPage() {
             body="Every named tenant we check was open on the last pass. Observations appear here when one changes."
           />
         )}
-        <ul className="max-h-[520px] divide-y divide-line overflow-y-auto">
+        <ul className="max-h-[520px] divide-y divide-slate-100 overflow-y-auto">
           {signalFeed.slice(0, 24).map((s) => {
             const meta = SOURCE_META[s.source];
             return (
@@ -144,24 +144,24 @@ export default function ActivityPage() {
                 <span
                   className={`mt-1 h-[14px] w-[14px] shrink-0 rounded-full border-2 ${
                     meta.tier === "primary"
-                      ? "border-open-600 bg-open-50"
-                      : "border-faint bg-surface"
+                      ? "border-emerald-600 bg-emerald-50"
+                      : "border-faint bg-white"
                   }`}
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-x-2.5">
-                    <p className="text-[0.875rem] font-semibold text-ink">
+                    <p className="text-[0.875rem] font-semibold text-slate-900">
                       {s.unitName}
                     </p>
                     <Link
                       href={`/app/locations/${s.locationId}`}
-                      className="text-[0.8125rem] text-petrol-700 hover:underline"
+                      className="text-[0.8125rem] text-indigo-700 hover:underline"
                     >
                       {s.centerName}
                     </Link>
-                    <span className="text-[0.75rem] text-faint">{s.city}</span>
+                    <span className="text-[0.75rem] text-slate-400">{s.city}</span>
                   </div>
-                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                  <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
                     {s.statement}
                   </p>
                 </div>
@@ -169,7 +169,7 @@ export default function ActivityPage() {
                   <Pill tone={meta.tier === "primary" ? "open" : "muted"}>
                     {meta.label}
                   </Pill>
-                  <p className="tnum mt-1.5 text-[0.75rem] text-faint">
+                  <p className="tnum mt-1.5 text-[0.75rem] text-slate-400">
                     {prettyDate(s.observedAt)}
                   </p>
                 </div>
@@ -185,26 +185,26 @@ export default function ActivityPage() {
           <div className="px-5 pt-5">
             <PanelHead title="Alerts sent" hint="What we told you, and who received it." />
           </div>
-          <ul className="max-h-[480px] divide-y divide-line overflow-y-auto">
+          <ul className="max-h-[480px] divide-y divide-slate-100 overflow-y-auto">
             {notifications.map((n) => {
               const sev = SEVERITY[n.severity];
               return (
                 <li key={n.id} className="flex items-start gap-3 px-5 py-3.5">
-                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-sunk text-muted">
+                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-500">
                     <Bell className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Pill tone={sev.tone}>{sev.label}</Pill>
-                      <span className="text-[0.75rem] text-faint">
+                      <span className="text-[0.75rem] text-slate-400">
                         {shortDate(n.sentOn)} · {n.channel.replace("_", " ")}
                       </span>
                     </div>
-                    <p className="mt-1 text-[0.8125rem] font-medium text-ink">
+                    <p className="mt-1 text-[0.8125rem] font-medium text-slate-900">
                       {n.locationId ? (
                         <Link
                           href={`/app/locations/${n.locationId}`}
-                          className="hover:text-petrol-700"
+                          className="hover:text-indigo-700"
                         >
                           {n.subject}
                         </Link>
@@ -212,10 +212,10 @@ export default function ActivityPage() {
                         n.subject
                       )}
                     </p>
-                    <p className="mt-0.5 text-[0.75rem] leading-snug text-muted">
+                    <p className="mt-0.5 text-[0.75rem] leading-snug text-slate-500">
                       {n.detail}
                     </p>
-                    <p className="mt-0.5 text-[0.75rem] text-faint">
+                    <p className="mt-0.5 text-[0.75rem] text-slate-400">
                       To {n.recipients.join(", ")}
                     </p>
                   </div>
@@ -230,20 +230,20 @@ export default function ActivityPage() {
           <div className="px-5 pt-5">
             <PanelHead title="Reports" hint="Sent on schedule." />
           </div>
-          <ul className="mt-4 divide-y divide-line">
+          <ul className="mt-4 divide-y divide-slate-100">
             {reports.map((r) => {
               const meta = REPORT_META[r.kind];
               return (
                 <li key={r.id} className="flex items-start gap-3 px-5 py-3.5">
-                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-petrol-50 text-petrol-700">
+                  <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-700">
                     <FileBarChart className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[0.875rem] font-medium text-ink">
+                    <p className="text-[0.875rem] font-medium text-slate-900">
                       {meta.label}
-                      <span className="ml-2 font-normal text-muted">{r.period}</span>
+                      <span className="ml-2 font-normal text-slate-500">{r.period}</span>
                     </p>
-                    <p className="text-[0.75rem] text-muted">
+                    <p className="text-[0.75rem] text-slate-500">
                       Sent {shortDate(r.generatedOn)} to {r.recipients.join(", ")}
                     </p>
                   </div>

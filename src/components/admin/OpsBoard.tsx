@@ -23,6 +23,7 @@ import {
   EmptyNote,
   inputCls,
   selectCls,
+  textareaCls,
   EVAL_BADGE,
 } from "@/components/admin/ui";
 import { KIND_LABEL } from "@/components/admin/useConsole";
@@ -508,7 +509,7 @@ export function OpsBoard({
                   type="button"
                   onClick={() => setExceptionsOnly((v) => !v)}
                   className={cn(
-                    "h-9 rounded-xl border px-3 text-[0.8125rem] font-medium transition-all duration-200 active:scale-95",
+                    "h-10 rounded-xl border px-3 text-[0.8125rem] font-semibold transition-all duration-200 active:scale-95",
                     exceptionsOnly
                       ? "border-indigo-200 bg-indigo-50 text-indigo-700"
                       : "border-slate-200 bg-white text-slate-500 shadow-sm hover:border-slate-300 hover:text-slate-800",
@@ -810,7 +811,7 @@ function RowEditor({
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   placeholder="Ops notes for this location."
-                  className={cn(inputCls, "w-full")}
+                  className={cn(textareaCls, "w-full")}
                 />
 
                 <div className="flex items-center gap-3">
@@ -925,7 +926,7 @@ function RowEditor({
                         href={`/admin/api/documents?id=${d.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[0.6875rem] font-semibold text-indigo-600 hover:text-indigo-800"
+                        className="text-[0.75rem] font-semibold text-indigo-600 hover:text-indigo-800"
                       >
                         View
                       </a>
@@ -965,7 +966,7 @@ function RowEditor({
                     </option>
                   ))}
                 </select>
-                <label className="inline-flex h-9 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4 text-[0.8125rem] font-medium text-slate-700 shadow-sm transition-all hover:border-slate-300 active:scale-95">
+                <label className="inline-flex h-10 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4 text-[0.8125rem] font-semibold text-slate-700 shadow-sm transition-all hover:border-slate-300 active:scale-95">
                   {docBusy ? "Uploading…" : "Upload a document"}
                   <input
                     type="file"

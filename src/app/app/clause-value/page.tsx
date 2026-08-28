@@ -79,22 +79,22 @@ export default function ClauseValuePage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-left">
             <thead>
-              <tr className="border-y border-line bg-surface-sunk/50">
+              <tr className="border-y border-slate-200 bg-slate-100/50">
                 {["Structure", "Locations", "Ever tripped", "To date"].map((h) => (
-                  <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
+                  <th key={h} className="px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-slate-100">
               {byStructure.map((s) => (
-                <tr key={s.key} className="hover:bg-petrol-50/40">
+                <tr key={s.key} className="hover:bg-indigo-50/40">
                   <td className="px-4 py-3">
-                    <p className="text-[0.875rem] font-medium text-ink">{s.label}</p>
-                    <p className="text-[0.75rem] text-muted">{s.description}</p>
+                    <p className="text-[0.875rem] font-medium text-slate-900">{s.label}</p>
+                    <p className="text-[0.75rem] text-slate-500">{s.description}</p>
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {s.centers}
                   </td>
                   <td className="px-4 py-3">
@@ -105,7 +105,7 @@ export default function ClauseValuePage() {
                       {s.everTriggered} of {s.centers}
                     </Pill>
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] font-medium text-ink">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] font-medium text-slate-900">
                     {money(s.toDate)}
                   </td>
                 </tr>
@@ -126,27 +126,27 @@ export default function ClauseValuePage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-left">
             <thead>
-              <tr className="border-y border-line bg-surface-sunk/50">
+              <tr className="border-y border-slate-200 bg-slate-100/50">
                 {["Remedy", "Locations", "Would pay today", "To date"].map((h) => (
-                  <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
+                  <th key={h} className="px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-slate-100">
               {byRemedy.map((r) => (
-                <tr key={r.kind} className="hover:bg-petrol-50/40">
-                  <td className="px-4 py-3 text-[0.875rem] font-medium text-ink">
+                <tr key={r.kind} className="hover:bg-indigo-50/40">
+                  <td className="px-4 py-3 text-[0.875rem] font-medium text-slate-900">
                     {r.label}
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {r.centers}
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {r.paying} of {r.centers}
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] font-medium text-ink">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] font-medium text-slate-900">
                     {money(r.toDate)}
                   </td>
                 </tr>
@@ -167,7 +167,7 @@ export default function ClauseValuePage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[820px] border-collapse text-left">
             <thead>
-              <tr className="border-y border-line bg-surface-sunk/50">
+              <tr className="border-y border-slate-200 bg-slate-100/50">
                 {[
                   "Center",
                   "Fixed rent",
@@ -175,37 +175,37 @@ export default function ClauseValuePage() {
                   "Monthly saving",
                   "Why",
                 ].map((h) => (
-                  <th key={h} className="label px-4 py-2.5 font-semibold text-faint">
+                  <th key={h} className="px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-400">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-line">
+            <tbody className="divide-y divide-slate-100">
               {clauseValues.map((v) => (
-                <tr key={v.row.id} className="hover:bg-petrol-50/40">
+                <tr key={v.row.id} className="hover:bg-indigo-50/40">
                   <td className="px-4 py-3">
                     <Link
                       href={`/app/locations/${v.row.id}`}
-                      className="text-[0.875rem] font-medium text-ink hover:text-petrol-700"
+                      className="text-[0.875rem] font-medium text-slate-900 hover:text-indigo-700"
                     >
                       {v.row.center.name}
                     </Link>
-                    <p className="text-[0.75rem] text-muted">
+                    <p className="text-[0.75rem] text-slate-500">
                       {v.row.center.city}, {v.row.center.state}
                     </p>
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {usd(Math.round(v.baseMonthly))}
                   </td>
-                  <td className="tnum px-4 py-3 text-[0.8125rem] text-ink-soft">
+                  <td className="tnum px-4 py-3 text-[0.8125rem] text-slate-700">
                     {v.remedyMonthly == null
                       ? "Not a rent remedy"
                       : usd(Math.round(v.remedyMonthly))}
                   </td>
                   <td className="px-4 py-3">
                     {v.verdict === "pays" ? (
-                      <span className="tnum text-[0.8125rem] font-semibold text-brass-700">
+                      <span className="tnum text-[0.8125rem] font-semibold text-amber-700">
                         {usd(Math.round(v.savingMonthly ?? 0))}
                       </span>
                     ) : (
@@ -214,7 +214,7 @@ export default function ClauseValuePage() {
                       </Pill>
                     )}
                   </td>
-                  <td className="max-w-[24rem] px-4 py-3 text-[0.75rem] leading-snug text-muted">
+                  <td className="max-w-[24rem] px-4 py-3 text-[0.75rem] leading-snug text-slate-500">
                     {v.reason}
                   </td>
                 </tr>
@@ -232,26 +232,26 @@ export default function ClauseValuePage() {
             hint="Where the language, not the center, is what stands between you and a remedy."
           />
         </div>
-        <ul className="mt-4 divide-y divide-line border-t border-line">
+        <ul className="mt-4 divide-y divide-slate-100 border-t border-slate-200">
           {renewalFlags.map((f) => (
             <li key={f.row.id} className="px-5 py-3.5 sm:px-6">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <Link
                   href={`/app/locations/${f.row.id}`}
-                  className="text-[0.875rem] font-medium text-ink hover:text-petrol-700"
+                  className="text-[0.875rem] font-medium text-slate-900 hover:text-indigo-700"
                 >
                   {f.row.center.name}
                 </Link>
-                <span className="tnum text-[0.75rem] text-faint">
+                <span className="tnum text-[0.75rem] text-slate-400">
                   {usd(Math.round(f.annualRent))}/yr fixed rent
                 </span>
               </div>
               {f.points.map((p) => (
                 <div key={p.issue} className="mt-1 flex items-start gap-2">
-                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-clay-500" />
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-rose-500" />
                   <p className="text-[0.8125rem] leading-snug">
-                    <span className="text-clay-700">{p.issue}.</span>{" "}
-                    <span className="text-ink-soft">{p.ask}</span>
+                    <span className="text-rose-700">{p.issue}.</span>{" "}
+                    <span className="text-slate-700">{p.ask}</span>
                   </p>
                 </div>
               ))}

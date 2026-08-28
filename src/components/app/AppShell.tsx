@@ -24,6 +24,7 @@ import { org, summary } from "@/lib/portfolio";
 import { DEMO_USER } from "@/lib/session";
 import { useScrollLock } from "@/lib/useScrollLock";
 import { ScanStatus } from "./ScanStatus";
+import { PovToggle } from "@/components/admin/ui";
 
 /**
  * The workspace shell, on the same design system as the console:
@@ -101,13 +102,13 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                   >
                     <span
                       className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-200",
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200",
                         active
                           ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30"
                           : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700",
                       )}
                     >
-                      <item.Icon className="h-3.5 w-3.5" />
+                      <item.Icon className="h-4 w-4" />
                     </span>
                     {item.label}
                   </Link>
@@ -192,7 +193,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <div className="ml-auto flex items-center gap-2.5">
-            <span className="hidden items-center gap-2 rounded-full bg-amber-50 px-3 py-2 text-[0.75rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/10 sm:inline-flex">
+            <div className="hidden md:block">
+              <PovToggle current="client" />
+            </div>
+            <span className="hidden h-10 items-center gap-2 rounded-full bg-amber-50 px-3.5 text-[0.75rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/10 sm:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500 anim-pulse-dot" />
               {/* Say which decision. The product now has more than one
                   queue asking for one, and "needs a decision" on its own
@@ -202,12 +206,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <Link
               href="/app/notices"
-              className="hidden rounded-xl bg-indigo-600 px-4 py-2.5 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
+              className="hidden h-10 items-center rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
             >
               Open notice desk
             </Link>
 
-            <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-2.5 shadow-sm">
+            <div className="flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white pl-1 pr-2.5 shadow-sm">
               <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.6875rem] font-bold text-white shadow-md shadow-indigo-500/25">
                 {DEMO_USER.initials}
               </span>

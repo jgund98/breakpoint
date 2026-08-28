@@ -289,7 +289,7 @@ export function Overview({
               <h2 className="text-[0.9375rem] font-semibold text-slate-900">Clients</h2>
               <Link
                 href="/admin/clients"
-                className="text-[0.75rem] font-medium text-indigo-600 hover:text-indigo-800"
+                className="text-[0.75rem] font-semibold text-indigo-600 hover:text-indigo-800"
               >
                 Open the registry →
               </Link>
@@ -351,7 +351,7 @@ export function Overview({
               </h2>
               <Link
                 href="/admin/requests"
-                className="text-[0.75rem] font-medium text-indigo-600 hover:text-indigo-800"
+                className="text-[0.75rem] font-semibold text-indigo-600 hover:text-indigo-800"
               >
                 Work the queue →
               </Link>

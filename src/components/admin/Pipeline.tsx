@@ -115,7 +115,7 @@ export function Pipeline() {
                         </Badge>
                         <Link
                           href={`/admin/clients/${s.org_slug}`}
-                          className="inline-flex items-center gap-1 text-[0.75rem] font-medium text-indigo-600 hover:text-indigo-800"
+                          className="inline-flex items-center gap-1 text-[0.75rem] font-semibold text-indigo-600 hover:text-indigo-800"
                         >
                           Board <ArrowRight className="h-3.5 w-3.5" />
                         </Link>

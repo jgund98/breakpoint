@@ -53,17 +53,17 @@ export default function ClausesPage() {
           value={
             <>
               {median}
-              <span className="text-[1rem] text-muted"> / 100</span>
+              <span className="text-[1rem] text-slate-500"> / 100</span>
             </>
           }
           sub={`Across ${graded.length} graded provisions`}
           tone="petrol"
         />
 
-        <div className="rounded-2xl border border-line bg-surface p-5 lg:col-span-2">
-          <p className="label text-muted">Grade distribution</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-2">
+          <p className="label text-slate-500">Grade distribution</p>
 
-          <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full bg-surface-sunk">
+          <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full bg-slate-100">
             {GRADES.map((letter) => {
               const n = dist[letter] ?? 0;
               if (n === 0) return null;
@@ -73,10 +73,10 @@ export default function ClausesPage() {
                   style={{ width: `${(n / graded.length) * 100}%` }}
                   className={
                     GRADE_TONE[letter] === "open"
-                      ? "bg-open-600"
+                      ? "bg-emerald-600"
                       : GRADE_TONE[letter] === "watch"
-                        ? "bg-brass-500"
-                        : "bg-clay-500"
+                        ? "bg-amber-500"
+                        : "bg-rose-500"
                   }
                 />
               );
@@ -93,16 +93,16 @@ export default function ClausesPage() {
                       n === 0
                         ? "bg-line"
                         : GRADE_TONE[letter] === "open"
-                          ? "bg-open-600"
+                          ? "bg-emerald-600"
                           : GRADE_TONE[letter] === "watch"
-                            ? "bg-brass-500"
-                            : "bg-clay-500"
+                            ? "bg-amber-500"
+                            : "bg-rose-500"
                     }`}
                   />
-                  <dt className="text-[0.75rem] text-muted">Grade {letter}</dt>
+                  <dt className="text-[0.75rem] text-slate-500">Grade {letter}</dt>
                   <dd
                     className={`tnum text-[0.9375rem] font-semibold ${
-                      n === 0 ? "text-faint" : "text-ink"
+                      n === 0 ? "text-slate-400" : "text-slate-900"
                     }`}
                   >
                     {n}
@@ -135,7 +135,7 @@ export default function ClausesPage() {
             action={{ label: "Portfolio setup", href: "/app/setup" }}
           />
         ) : (
-        <ul className="mt-4 divide-y divide-line">
+        <ul className="mt-4 divide-y divide-slate-100">
           {weakest.map(({ row, grade }) => {
             const weakestDial = [...grade.dials].sort((a, b) => a.score - b.score)[0];
             return (
@@ -143,10 +143,10 @@ export default function ClausesPage() {
                 <span
                   className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl font-display text-[1.125rem] ${
                     GRADE_TONE[grade.letter] === "open"
-                      ? "bg-open-50 text-open-700"
+                      ? "bg-emerald-50 text-emerald-700"
                       : GRADE_TONE[grade.letter] === "watch"
-                        ? "bg-brass-50 text-brass-700"
-                        : "bg-clay-50 text-clay-700"
+                        ? "bg-amber-50 text-amber-700"
+                        : "bg-rose-50 text-rose-700"
                   }`}
                 >
                   {grade.letter}
@@ -155,18 +155,18 @@ export default function ClausesPage() {
                   <div className="flex flex-wrap items-baseline gap-x-2.5">
                     <Link
                       href={`/app/locations/${row.id}`}
-                      className="text-[0.9375rem] font-semibold text-ink hover:text-petrol-700"
+                      className="text-[0.9375rem] font-semibold text-slate-900 hover:text-indigo-700"
                     >
                       {row.center.name}
                     </Link>
-                    <span className="text-[0.8125rem] text-muted">
+                    <span className="text-[0.8125rem] text-slate-500">
                       {row.id}
                       {row.econ.expiration
                         ? ` · lease to ${prettyDate(row.econ.expiration)}`
                         : " · lease term not supplied"}
                     </span>
                   </div>
-                  <p className="no-orphan mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                  <p className="no-orphan mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
                     <span className="font-medium">
                       Weakest dial: {weakestDial.label}.
                     </span>{" "}
@@ -176,14 +176,14 @@ export default function ClausesPage() {
                     {row.clause.preconditions.map((p) => (
                       <span
                         key={p}
-                        className="rounded-md bg-surface-sunk px-2 py-1 text-[0.6875rem] font-medium text-muted"
+                        className="rounded-md bg-slate-100 px-2 py-1 text-[0.6875rem] font-medium text-slate-500"
                       >
                         {PRECONDITION_META[p].label}
                       </span>
                     ))}
                   </div>
                 </div>
-                <span className="tnum shrink-0 text-[0.875rem] font-semibold text-ink">
+                <span className="tnum shrink-0 text-[0.875rem] font-semibold text-slate-900">
                   {grade.score}
                 </span>
               </li>
@@ -203,12 +203,12 @@ export default function ClausesPage() {
             {withAmendments.slice(0, 6).map((r) => (
               <li
                 key={r.id}
-                className="rounded-xl border border-brass-200 bg-brass-50 p-4"
+                className="rounded-xl border border-amber-200 bg-amber-50 p-4"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <Link
                     href={`/app/locations/${r.id}`}
-                    className="text-[0.875rem] font-semibold text-ink hover:text-petrol-700"
+                    className="text-[0.875rem] font-semibold text-slate-900 hover:text-indigo-700"
                   >
                     {r.center.name}
                   </Link>
@@ -220,7 +220,7 @@ export default function ClausesPage() {
                 {r.clause.amendments.map((a) => (
                   <p
                     key={a.label}
-                    className="mt-1.5 text-[0.8125rem] leading-relaxed text-ink-soft"
+                    className="mt-1.5 text-[0.8125rem] leading-relaxed text-slate-700"
                   >
                     <span className="font-medium">
                       {a.label}, {prettyDate(a.dated)}:

@@ -145,14 +145,14 @@ export function LocationActions({
 
       <div className="mt-4 space-y-3">
         {/* ---- scan now ---- */}
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line p-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 p-3.5">
           <div className="flex min-w-0 items-start gap-2.5">
-            <CalendarSearch className="mt-0.5 h-4 w-4 shrink-0 text-faint" />
+            <CalendarSearch className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
             <div className="min-w-0">
-              <p className="text-[0.8125rem] font-medium text-ink">
+              <p className="text-[0.8125rem] font-medium text-slate-900">
                 Scan this center now
               </p>
-              <p className="text-[0.75rem] text-muted">
+              <p className="text-[0.75rem] text-slate-500">
                 Outside the schedule. The result lands in Activity.
               </p>
             </div>
@@ -173,15 +173,15 @@ export function LocationActions({
         </div>
 
         {/* ---- closure report ---- */}
-        <div className="rounded-xl border border-line p-3.5">
+        <div className="rounded-xl border border-slate-200 p-3.5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-start gap-2.5">
-              <StoreIcon className="mt-0.5 h-4 w-4 shrink-0 text-faint" />
+              <StoreIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
               <div className="min-w-0">
-                <p className="text-[0.8125rem] font-medium text-ink">
+                <p className="text-[0.8125rem] font-medium text-slate-900">
                   Report a closure
                 </p>
-                <p className="text-[0.75rem] text-muted">
+                <p className="text-[0.75rem] text-slate-500">
                   Something your people saw at {centerName}. A store report is
                   primary evidence.
                 </p>
@@ -201,14 +201,14 @@ export function LocationActions({
           </div>
 
           {reporting && (
-            <div className="mt-3 space-y-3 border-t border-line pt-3">
+            <div className="mt-3 space-y-3 border-t border-slate-200 pt-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="label text-muted">Store</label>
+                  <label className="label text-slate-500">Store</label>
                   <select
                     value={store}
                     onChange={(e) => setStore(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-line bg-surface px-2.5 py-2 text-[0.8125rem] text-ink focus:border-petrol-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-sm px-2.5 py-2 text-[0.8125rem] text-slate-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                   >
                     <option value="">Choose a store</option>
                     {ordered.map((s) => (
@@ -220,13 +220,13 @@ export function LocationActions({
                   </select>
                 </div>
                 <div>
-                  <label className="label text-muted">Seen on</label>
+                  <label className="label text-slate-500">Seen on</label>
                   <input
                     type="date"
                     value={when}
                     max={today()}
                     onChange={(e) => setWhen(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[0.8125rem] text-ink focus:border-petrol-500 focus:outline-none"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-sm px-2.5 py-1.5 text-[0.8125rem] text-slate-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                   />
                 </div>
               </div>
@@ -235,7 +235,7 @@ export function LocationActions({
                 onChange={(e) => setNote(e.target.value)}
                 rows={2}
                 placeholder="Anything else worth knowing. Signage down, papered windows, a posted notice."
-                className="w-full rounded-lg border border-line bg-surface-sunk p-3 text-[0.8125rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 bg-white shadow-sm-sunk p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
               />
               <div className="flex flex-wrap items-center gap-3">
                 <ActionButton onClick={fileReport} disabled={!store || busy === "report"}>
@@ -244,7 +244,7 @@ export function LocationActions({
                 <button
                   type="button"
                   onClick={() => setReporting(false)}
-                  className="text-[0.75rem] text-muted hover:text-ink"
+                  className="text-[0.75rem] text-slate-500 hover:text-slate-900"
                 >
                   Cancel
                 </button>
@@ -253,20 +253,20 @@ export function LocationActions({
           )}
         </div>
 
-        {error && <p className="text-[0.8125rem] text-clay-700">{error}</p>}
+        {error && <p className="text-[0.8125rem] text-rose-700">{error}</p>}
 
         {/* ---- what is already filed ---- */}
         {rows.length > 0 && (
-          <ul className="divide-y divide-line rounded-xl border border-line">
+          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200">
             {rows.map((r) => (
               <li
                 key={r.id}
                 className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2"
               >
-                <p className="min-w-0 text-[0.75rem] text-ink-soft">
-                  <span className="font-medium text-ink">{KIND_LABEL[r.kind]}</span>
+                <p className="min-w-0 text-[0.75rem] text-slate-700">
+                  <span className="font-medium text-slate-900">{KIND_LABEL[r.kind]}</span>
                   {r.store_name ? `: ${r.store_name}` : ""}
-                  <span className="ml-1.5 text-faint">
+                  <span className="ml-1.5 text-slate-400">
                     {new Date(r.created_at).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -341,7 +341,7 @@ export function EstoppelCheck({
 
       {live ? (
         <>
-          <p className="mt-3 text-[0.8125rem] leading-relaxed text-ink-soft">
+          <p className="mt-3 text-[0.8125rem] leading-relaxed text-slate-700">
             A potential co-tenancy position exists at this location. An
             estoppel certifying that no claims, offsets, or landlord defaults
             exist may bar it, and the certificate is equally where the
@@ -350,26 +350,26 @@ export function EstoppelCheck({
           <ul className="mt-3 space-y-2">
             {failing.map((f) => (
               <li key={f.cite + f.label} className="flex items-start gap-2.5">
-                <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brass-600" />
-                <p className="text-[0.8125rem] leading-snug text-ink-soft">
-                  <span className="font-medium text-ink">{f.label}</span>{" "}
-                  <span className="text-faint">{f.cite}</span> — {f.observed}
+                <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
+                <p className="text-[0.8125rem] leading-snug text-slate-700">
+                  <span className="font-medium text-slate-900">{f.label}</span>{" "}
+                  <span className="text-slate-400">{f.cite}</span> — {f.observed}
                 </p>
               </li>
             ))}
           </ul>
         </>
       ) : (
-        <p className="mt-3 text-[0.8125rem] leading-relaxed text-ink-soft">
+        <p className="mt-3 text-[0.8125rem] leading-relaxed text-slate-700">
           No live position at this location as of {asOf}. A position can still
           arise between signature and closing, so tell us when an estoppel is
           requested and we re-check before you certify.
         </p>
       )}
 
-      <div className="mt-4 border-t border-line pt-3">
+      <div className="mt-4 border-t border-slate-200 pt-3">
         {done ? (
-          <p className="text-[0.8125rem] text-open-700">
+          <p className="text-[0.8125rem] text-emerald-700">
             Recorded. We review the position and send you what to assert or
             reserve before anyone signs.
           </p>
@@ -377,13 +377,13 @@ export function EstoppelCheck({
           <div className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="label text-muted">Requested on</label>
+                <label className="label text-slate-500">Requested on</label>
                 <input
                   type="date"
                   value={when}
                   max={today()}
                   onChange={(e) => setWhen(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[0.8125rem] text-ink focus:border-petrol-500 focus:outline-none"
+                  className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-sm px-2.5 py-1.5 text-[0.8125rem] text-slate-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                 />
               </div>
             </div>
@@ -392,7 +392,7 @@ export function EstoppelCheck({
               onChange={(e) => setNote(e.target.value)}
               rows={2}
               placeholder="Who asked, the deadline, and anything already sent."
-              className="w-full rounded-lg border border-line bg-surface-sunk p-3 text-[0.8125rem] text-ink placeholder:text-faint focus:border-petrol-500 focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-white shadow-sm-sunk p-3 text-[0.8125rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
             />
             <div className="flex flex-wrap items-center gap-3">
               <ActionButton onClick={record} disabled={busy}>
@@ -401,7 +401,7 @@ export function EstoppelCheck({
               <button
                 type="button"
                 onClick={() => setRecording(false)}
-                className="text-[0.75rem] text-muted hover:text-ink"
+                className="text-[0.75rem] text-slate-500 hover:text-slate-900"
               >
                 Cancel
               </button>
@@ -409,7 +409,7 @@ export function EstoppelCheck({
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[0.75rem] text-muted">
+            <p className="text-[0.75rem] text-slate-500">
               An estoppel has been requested at {centerName}?
             </p>
             <ActionButton variant="secondary" onClick={() => setRecording(true)}>
@@ -419,7 +419,7 @@ export function EstoppelCheck({
         )}
       </div>
 
-      <p className="mt-3 text-[0.6875rem] text-faint">
+      <p className="mt-3 text-[0.6875rem] text-slate-400">
         For review with your counsel. Not legal advice.
       </p>
     </Panel>

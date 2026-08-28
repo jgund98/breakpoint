@@ -101,7 +101,7 @@ export function ClientHeader({
                 value={current}
                 onChange={(e) => void setStatus(e.target.value)}
                 aria-label="Client status"
-                className="h-9 rounded-xl border border-white/25 bg-white/15 px-2.5 text-[0.8125rem] font-medium text-white backdrop-blur-sm transition-colors [&>option]:text-slate-900 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/40"
+                className="h-10 rounded-xl border border-white/25 bg-white/15 px-2.5 text-[0.8125rem] font-medium text-white backdrop-blur-sm transition-colors [&>option]:text-slate-900 hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/40"
               >
                 <option value="onboarding">Onboarding</option>
                 <option value="live">Live</option>
@@ -114,7 +114,7 @@ export function ClientHeader({
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1600);
                 }}
-                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/25 bg-white/15 px-4 text-[0.8125rem] font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/25 active:scale-95"
+                className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-white/25 bg-white/15 px-4 text-[0.8125rem] font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/25 active:scale-95"
               >
                 {copied ? (
                   <Check className="h-4 w-4 text-emerald-300" />

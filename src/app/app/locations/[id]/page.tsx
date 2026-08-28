@@ -55,12 +55,12 @@ export default async function LocationPage({
   return (
     <div className="space-y-5">
       {/* ---- breadcrumb ---- */}
-      <nav className="flex items-center gap-2 text-[0.8125rem] text-muted">
-        <Link href="/app/locations" className="hover:text-petrol-700">
+      <nav className="flex items-center gap-2 text-[0.8125rem] text-slate-500">
+        <Link href="/app/locations" className="hover:text-indigo-700">
           Locations
         </Link>
-        <span className="text-faint">/</span>
-        <span className="text-ink">{row.id}</span>
+        <span className="text-slate-400">/</span>
+        <span className="text-slate-900">{row.id}</span>
       </nav>
 
       {/* ---- head ---- */}
@@ -77,10 +77,10 @@ export default async function LocationPage({
               {STATE_META[ev.state].label}
             </Pill>
           </div>
-          <p className="mt-2 text-[0.9375rem] text-ink-soft">
+          <p className="mt-2 text-[0.9375rem] text-slate-700">
             {center.city}, {center.state} · {center.format} · {center.owner}
           </p>
-          <p className="mt-1 text-[0.8125rem] text-muted">
+          <p className="mt-1 text-[0.8125rem] text-slate-500">
             Store {row.storeNumber} · {row.unit} · {sf(econ.gla)}
             {econ.expiration
               ? ` · lease to ${prettyDate(econ.expiration)}`
@@ -130,23 +130,23 @@ export default async function LocationPage({
                 </Pill>
               }
             />
-            <blockquote className="mt-4 rounded-xl border border-line bg-surface-sunk p-5 text-[0.8125rem] leading-[1.85] text-ink-soft">
+            <blockquote className="mt-4 rounded-xl border border-slate-200 bg-slate-100 p-5 text-[0.8125rem] leading-[1.85] text-slate-700">
               {clause.sourceText}
             </blockquote>
 
             {clause.amendments.length > 0 && (
               <div className="mt-4">
-                <p className="label text-muted">Amendments that touch it</p>
+                <p className="label text-slate-500">Amendments that touch it</p>
                 <ul className="mt-2.5 space-y-2">
                   {clause.amendments.map((a) => (
                     <li
                       key={a.label}
-                      className="rounded-xl border border-brass-200 bg-brass-50 p-3.5"
+                      className="rounded-xl border border-amber-200 bg-amber-50 p-3.5"
                     >
-                      <p className="text-[0.8125rem] font-semibold text-brass-700">
+                      <p className="text-[0.8125rem] font-semibold text-amber-700">
                         {a.label} · {prettyDate(a.dated)}
                       </p>
-                      <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                      <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
                         {a.effect}
                       </p>
                     </li>
@@ -157,14 +157,14 @@ export default async function LocationPage({
 
             {clause.ambiguityNotes.length > 0 && (
               <div className="mt-4">
-                <p className="label text-muted">Flagged for counsel</p>
+                <p className="label text-slate-500">Flagged for counsel</p>
                 <ul className="mt-2.5 space-y-2">
                   {clause.ambiguityNotes.map((n) => (
                     <li
                       key={n}
-                      className="flex gap-2.5 text-[0.8125rem] leading-relaxed text-ink-soft"
+                      className="flex gap-2.5 text-[0.8125rem] leading-relaxed text-slate-700"
                     >
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-clay-500" />
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
                       {n}
                     </li>
                   ))}
@@ -174,7 +174,7 @@ export default async function LocationPage({
 
             {row.clauses.length > 1 && (
               <div className="mt-4">
-                <p className="label text-muted">Version history</p>
+                <p className="label text-slate-500">Version history</p>
                 <ul className="mt-2.5 space-y-2">
                   {row.clauses.map((c) => {
                     const status = clauseStatusOn(c, TODAY);
@@ -183,17 +183,17 @@ export default async function LocationPage({
                         key={c.id}
                         className={`flex flex-wrap items-baseline gap-x-2 rounded-xl border p-3 ${
                           status === "in_force"
-                            ? "border-open-100 bg-open-50"
-                            : "border-line bg-surface-sunk"
+                            ? "border-emerald-100 bg-emerald-50"
+                            : "border-slate-200 bg-slate-100"
                         }`}
                       >
-                        <span className="text-[0.8125rem] font-semibold text-ink">
+                        <span className="text-[0.8125rem] font-semibold text-slate-900">
                           {c.locations[0]}
                         </span>
                         <Pill tone={status === "in_force" ? "open" : "muted"}>
                           {status === "in_force" ? "In force" : "Superseded"}
                         </Pill>
-                        <span className="text-[0.75rem] text-muted">
+                        <span className="text-[0.75rem] text-slate-500">
                           {c.effectiveFrom
                             ? `From ${prettyDate(c.effectiveFrom)}`
                             : "From commencement"}
@@ -211,7 +211,7 @@ export default async function LocationPage({
               {clause.definedTerms.map((t) => (
                 <span
                   key={t}
-                  className="rounded-md bg-petrol-50 px-2 py-1 text-[0.6875rem] font-medium text-petrol-800"
+                  className="rounded-md bg-indigo-50 px-2 py-1 text-[0.6875rem] font-medium text-indigo-800"
                 >
                   {t}
                 </span>
@@ -240,7 +240,7 @@ export default async function LocationPage({
               }
             />
 
-            <p className="mt-3 text-[0.8125rem] leading-relaxed text-muted">
+            <p className="mt-3 text-[0.8125rem] leading-relaxed text-slate-500">
               {TIER_META[v.tier].blurb}
             </p>
 
@@ -260,23 +260,23 @@ export default async function LocationPage({
                         <span
                           className={`relative mt-1 h-[18px] w-[18px] shrink-0 rounded-full border-2 ${
                             meta.tier === "primary"
-                              ? "border-open-600 bg-open-50"
-                              : "border-faint bg-surface"
+                              ? "border-emerald-600 bg-emerald-50"
+                              : "border-faint bg-white"
                           }`}
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-baseline gap-x-2.5">
-                            <p className="text-[0.8125rem] font-semibold text-ink">
+                            <p className="text-[0.8125rem] font-semibold text-slate-900">
                               {meta.label}
                             </p>
                             <Pill tone={meta.tier === "primary" ? "open" : "muted"}>
                               {meta.tier === "primary" ? "Primary" : "Secondary"}
                             </Pill>
-                            <span className="tnum text-[0.75rem] text-faint">
+                            <span className="tnum text-[0.75rem] text-slate-400">
                               observed {prettyDate(e.observedAt)}
                             </span>
                           </div>
-                          <p className="mt-1 text-[0.8125rem] leading-relaxed text-ink-soft">
+                          <p className="mt-1 text-[0.8125rem] leading-relaxed text-slate-700">
                             {unit ? `${unit.name}: ` : ""}
                             {e.statement}
                           </p>
@@ -286,7 +286,7 @@ export default async function LocationPage({
                   })}
               </ol>
             ) : (
-              <p className="mt-5 rounded-xl border border-line bg-surface-sunk p-4 text-[0.8125rem] text-muted">
+              <p className="mt-5 rounded-xl border border-slate-200 bg-slate-100 p-4 text-[0.8125rem] text-slate-500">
                 No observations logged. Every named tenant at this center was
                 confirmed open on the last sweep.
               </p>
@@ -313,19 +313,19 @@ export default async function LocationPage({
               <span
                 className={`grid h-16 w-16 shrink-0 place-items-center rounded-2xl font-display text-[1.75rem] ${
                   GRADE_TONE[grade.letter] === "open"
-                    ? "bg-open-50 text-open-700"
+                    ? "bg-emerald-50 text-emerald-700"
                     : GRADE_TONE[grade.letter] === "watch"
-                      ? "bg-brass-50 text-brass-700"
-                      : "bg-clay-50 text-clay-700"
+                      ? "bg-amber-50 text-amber-700"
+                      : "bg-rose-50 text-rose-700"
                 }`}
               >
                 {grade.letter}
               </span>
               <div>
-                <p className="tnum text-[0.9375rem] font-semibold text-ink">
+                <p className="tnum text-[0.9375rem] font-semibold text-slate-900">
                   {grade.score} of 100
                 </p>
-                <p className="no-orphan mt-1 text-[0.8125rem] leading-relaxed text-muted">
+                <p className="no-orphan mt-1 text-[0.8125rem] leading-relaxed text-slate-500">
                   {grade.headline}
                 </p>
               </div>
@@ -335,26 +335,26 @@ export default async function LocationPage({
               {grade.dials.map((d) => (
                 <li key={d.key}>
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="text-[0.8125rem] font-medium text-ink">
+                    <p className="text-[0.8125rem] font-medium text-slate-900">
                       {d.label}
                     </p>
-                    <span className="tnum text-[0.75rem] text-muted">
+                    <span className="tnum text-[0.75rem] text-slate-500">
                       {Math.round(d.score * 100)}
                     </span>
                   </div>
-                  <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-sunk">
+                  <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-slate-100">
                     <div
                       className={`h-full rounded-full ${
                         d.score >= 0.75
-                          ? "bg-open-600"
+                          ? "bg-emerald-600"
                           : d.score >= 0.5
-                            ? "bg-brass-500"
-                            : "bg-clay-500"
+                            ? "bg-amber-500"
+                            : "bg-rose-500"
                       }`}
                       style={{ width: `${d.score * 100}%` }}
                     />
                   </div>
-                  <p className="no-orphan mt-1.5 text-[0.75rem] leading-snug text-muted">
+                  <p className="no-orphan mt-1.5 text-[0.75rem] leading-snug text-slate-500">
                     {d.verdict}
                   </p>
                 </li>
@@ -411,7 +411,7 @@ export default async function LocationPage({
                     ev.monthlyDelta == null ? (
                       "Needs sales"
                     ) : (
-                      <span className="text-brass-600">
+                      <span className="text-amber-600">
                         {usd(Math.round(ev.monthlyDelta))}
                       </span>
                     ),
@@ -475,22 +475,22 @@ export default async function LocationPage({
                     key={p}
                     className={`rounded-xl border p-3.5 ${
                       failed
-                        ? "border-clay-100 bg-clay-50"
-                        : "border-line bg-surface-sunk"
+                        ? "border-rose-100 bg-rose-50"
+                        : "border-slate-200 bg-slate-100"
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       <span
-                        className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-clay-500" : "bg-open-600"}`}
+                        className={`h-1.5 w-1.5 rounded-full ${failed ? "bg-rose-500" : "bg-emerald-600"}`}
                       />
-                      <p className="text-[0.8125rem] font-semibold text-ink">
+                      <p className="text-[0.8125rem] font-semibold text-slate-900">
                         {meta.label}
                       </p>
-                      <span className="ml-auto text-[0.6875rem] font-semibold uppercase tracking-wider text-muted">
+                      <span className="ml-auto text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-500">
                         {failed ? "Not met" : "Met"}
                       </span>
                     </div>
-                    <p className="mt-1 text-[0.75rem] leading-relaxed text-muted">
+                    <p className="mt-1 text-[0.75rem] leading-relaxed text-slate-500">
                       {meta.risk}
                     </p>
                   </li>
@@ -515,10 +515,10 @@ export default async function LocationPage({
                     {COMPUTABILITY_META[t.computability].label}
                   </Pill>
                   <div className="min-w-0">
-                    <p className="text-[0.8125rem] font-medium text-ink">
-                      {t.label} <span className="text-faint">{t.cite}</span>
+                    <p className="text-[0.8125rem] font-medium text-slate-900">
+                      {t.label} <span className="text-slate-400">{t.cite}</span>
                     </p>
-                    <p className="no-orphan mt-0.5 text-[0.75rem] leading-relaxed text-muted">
+                    <p className="no-orphan mt-0.5 text-[0.75rem] leading-relaxed text-slate-500">
                       {t.computabilityNote}
                     </p>
                   </div>
@@ -551,7 +551,7 @@ export default async function LocationPage({
         </div>
       </div>
 
-      <p className="rounded-xl border border-line bg-surface-sunk p-5 text-[0.75rem] leading-relaxed text-muted">
+      <p className="rounded-xl border border-slate-200 bg-slate-100 p-5 text-[0.75rem] leading-relaxed text-slate-500">
         Illustrative sample data. Breakpoint flags conditions and assembles the
         supporting file. Whether a right exists, and whether to exercise it, is
         a decision for you and your counsel on the executed lease and its
