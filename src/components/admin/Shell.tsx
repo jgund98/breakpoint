@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Building2,
@@ -11,66 +11,89 @@ import {
   BrainCircuit,
   SlidersHorizontal,
   ChevronRight,
+  Bell,
+  Plus,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CountBubble, Monogram } from "@/components/admin/ui";
 
 /**
- * The console shell: white sidebar with icon-chip navigation, learned
- * from QuoteTurbo2's portal. Every admin page renders inside it. The
- * active item carries the indigo chip with its colored shadow; each
- * item states what it is in one small line, because a new operator
- * should never wonder what a page holds.
+ * The console shell, in QuoteTurbo2's portal language: white icon-chip
+ * sidebar with live count badges, and a real topbar — global client
+ * search, a notification bell that counts the open request queue, and
+ * the one quick action that matters (new client). The shell fetches
+ * the console payload once so the chrome always knows the state of the
+ * company.
  */
 
+type ShellCounts = {
+  openRequests: number;
+  waitingSubmissions: number;
+  orgs: { slug: string; name: string; status: string; locations: number | null }[];
+};
+
 const NAV = [
-  {
-    href: "/admin",
-    label: "Overview",
-    sub: "The whole company",
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    href: "/admin/clients",
-    label: "Clients",
-    sub: "Registry & boards",
-    icon: Building2,
-    exact: false,
-  },
-  {
-    href: "/admin/onboarding",
-    label: "Onboarding",
-    sub: "Invites & submissions",
-    icon: Inbox,
-    exact: true,
-  },
-  {
-    href: "/admin/requests",
-    label: "Requests",
-    sub: "Everything clients filed",
-    icon: MessageSquareDot,
-    exact: true,
-  },
-  {
-    href: "/admin/agent",
-    label: "Agent canon",
-    sub: "System-wide programming",
-    icon: BrainCircuit,
-    exact: true,
-  },
-  {
-    href: "/admin/system",
-    label: "System",
-    sub: "Health & configuration",
-    icon: SlidersHorizontal,
-    exact: true,
-  },
+  { href: "/admin", label: "Overview", sub: "The whole company", icon: LayoutDashboard, exact: true },
+  { href: "/admin/clients", label: "Clients", sub: "Registry & boards", icon: Building2, exact: false },
+  { href: "/admin/onboarding", label: "Onboarding", sub: "Invites & submissions", icon: Inbox, exact: true, badge: "waiting" as const },
+  { href: "/admin/requests", label: "Requests", sub: "Everything clients filed", icon: MessageSquareDot, exact: true, badge: "open" as const },
+  { href: "/admin/agent", label: "Agent canon", sub: "System-wide programming", icon: BrainCircuit, exact: true },
+  { href: "/admin/system", label: "System", sub: "Health & configuration", icon: SlidersHorizontal, exact: true },
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
+  const [counts, setCounts] = useState<ShellCounts>({
+    openRequests: 0,
+    waitingSubmissions: 0,
+    orgs: [],
+  });
+  const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => setMounted(true), []);
+
+  const load = useCallback(async () => {
+    const res = await fetch("/admin/api", { cache: "no-store" });
+    if (!res.ok) return;
+    const data = await res.json();
+    setCounts({
+      openRequests: (data.requestsAll ?? []).filter(
+        (r: { handled_at: string | null }) => !r.handled_at,
+      ).length,
+      waitingSubmissions: (data.submissions ?? []).filter(
+        (s: { processed_at: string | null }) => !s.processed_at,
+      ).length,
+      orgs: data.orgs ?? [],
+    });
+  }, []);
+
+  /* Refresh the chrome on every navigation so the badges track the
+     work as it is done, not as it was when the tab opened. */
+  useEffect(() => {
+    void load();
+  }, [load, pathname]);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!searchRef.current?.contains(e.target as Node)) setSearchOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const q = query.trim().toLowerCase();
+  const hits = q
+    ? counts.orgs
+        .filter(
+          (o) => o.name.toLowerCase().includes(q) || o.slug.toLowerCase().includes(q),
+        )
+        .slice(0, 6)
+    : [];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -97,6 +120,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
               ? pathname === item.href
               : pathname.startsWith(item.href);
             const Icon = item.icon;
+            const badge =
+              item.badge === "open"
+                ? counts.openRequests
+                : item.badge === "waiting"
+                  ? counts.waitingSubmissions
+                  : 0;
             return (
               <Link
                 key={item.href}
@@ -117,13 +146,22 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <span className="flex items-center gap-3">
                   <span
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
+                      "relative flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200",
                       active
                         ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/30"
                         : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700",
                     )}
                   >
                     <Icon className="h-4 w-4" />
+                    {badge > 0 && (
+                      <CountBubble
+                        n={badge}
+                        className={cn(
+                          "absolute -right-1.5 -top-1.5",
+                          item.badge === "waiting" && "bg-amber-500",
+                        )}
+                      />
+                    )}
                   </span>
                   <span className="text-left">
                     <span className="block text-[0.8125rem] leading-tight">
@@ -173,15 +211,108 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* ---- content ---- */}
+      {/* ---- content column ---- */}
       <div className="lg:pl-72">
-        {/* Small screens get a slim brand bar instead of the sidebar. */}
-        <div className="flex h-14 items-center gap-2 border-b border-slate-200/60 bg-white px-4 lg:hidden">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600">
-            <span className="text-sm font-bold text-white">b</span>
+        {/* ---- topbar ---- */}
+        <header className="sticky top-0 z-30 border-b border-slate-200/60 bg-white/85 backdrop-blur-md">
+          <div className="flex h-16 items-center gap-3 px-4 lg:px-8">
+            {/* brand on small screens */}
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 lg:hidden">
+              <span className="text-sm font-bold text-white">b</span>
+            </div>
+
+            {/* ---- global client search ---- */}
+            <div ref={searchRef} className="relative w-full max-w-sm">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSearchOpen(true);
+                }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Jump to a client…"
+                className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-9 pr-3 text-[0.8125rem] text-slate-800 transition-colors placeholder:text-slate-400 hover:border-slate-300 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/15"
+              />
+              {searchOpen && q && (
+                <div className="absolute left-0 right-0 top-12 overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-2xl shadow-slate-300/50">
+                  {hits.length === 0 ? (
+                    <p className="px-4 py-3 text-[0.8125rem] text-slate-400">
+                      No client matches &#8220;{query.trim()}&#8221;.
+                    </p>
+                  ) : (
+                    <ul className="divide-y divide-slate-100">
+                      {hits.map((o) => (
+                        <li key={o.slug}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSearchOpen(false);
+                              setQuery("");
+                              router.push(`/admin/clients/${o.slug}`);
+                            }}
+                            className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-slate-50"
+                          >
+                            <Monogram name={o.name} size="sm" />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-[0.8125rem] font-semibold text-slate-900">
+                                {o.name}
+                              </span>
+                              <span className="block text-[0.6875rem] text-slate-400">
+                                {o.locations !== null
+                                  ? `${o.locations} locations`
+                                  : "awaiting import"}{" "}
+                                · {o.status}
+                              </span>
+                            </span>
+                            <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="border-t border-slate-100 bg-slate-50/60 px-4 py-2 text-[0.6875rem] text-slate-400">
+                    Locations are searched on each client&#8217;s board.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <Link
+                href="/admin/clients?new=1"
+                className="hidden h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-4 text-[0.8125rem] font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all duration-200 hover:bg-indigo-500 active:scale-95 sm:inline-flex"
+              >
+                <Plus className="h-4 w-4" /> New client
+              </Link>
+
+              <Link
+                href="/admin/requests"
+                aria-label={`${counts.openRequests} open requests`}
+                className="relative grid h-10 w-10 place-items-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+              >
+                <Bell className="h-[1.125rem] w-[1.125rem]" />
+                <CountBubble n={counts.openRequests} className="absolute right-1 top-1" />
+              </Link>
+
+              <span className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
+
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.75rem] font-bold text-white shadow-md shadow-indigo-500/25">
+                    OP
+                  </div>
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+                </div>
+                <span className="hidden text-[0.8125rem] font-semibold text-slate-800 xl:block">
+                  Operations
+                </span>
+              </div>
+            </div>
           </div>
-          <p className="text-sm font-bold text-slate-900">Breakpoint Console</p>
-          <nav className="ml-auto flex gap-1 overflow-x-auto">
+
+          {/* small-screen nav strip */}
+          <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-3 py-2 lg:hidden">
             {NAV.map((item) => (
               <Link
                 key={item.href}
@@ -197,8 +328,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
               </Link>
             ))}
           </nav>
-        </div>
-        <main className="mx-auto max-w-[88rem] px-6 py-8 lg:px-10">{children}</main>
+        </header>
+
+        <main
+          className="mx-auto max-w-[88rem] px-6 py-8 lg:px-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(at 30% 0%, rgba(79,70,229,0.04) 0px, transparent 45%), radial-gradient(at 85% 10%, rgba(139,92,246,0.04) 0px, transparent 45%)",
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

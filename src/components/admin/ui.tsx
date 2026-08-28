@@ -337,3 +337,178 @@ export function Th({
 export function EmptyNote({ children }: { children: ReactNode }) {
   return <p className="px-6 py-5 text-[0.8125rem] text-slate-500">{children}</p>;
 }
+
+/* ------------------------------------------------------------------
+   identity: every client gets a stable gradient monogram, the way a
+   real multi-tenant product renders accounts. Hashed from the name so
+   it never changes between renders or deploys.
+   ------------------------------------------------------------------ */
+
+const MONOGRAM_GRADIENTS = [
+  "from-indigo-500 to-violet-600",
+  "from-sky-500 to-indigo-600",
+  "from-emerald-500 to-teal-600",
+  "from-amber-500 to-orange-600",
+  "from-rose-500 to-pink-600",
+  "from-violet-500 to-purple-600",
+];
+
+export function Monogram({
+  name,
+  size = "md",
+  className,
+}: {
+  name: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const grad = MONOGRAM_GRADIENTS[h % MONOGRAM_GRADIENTS.length];
+  const initials = name
+    .split(/\s+/)
+    .filter((w) => /^[a-z0-9]/i.test(w))
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join("");
+  return (
+    <span
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br font-bold text-white shadow-md",
+        grad,
+        size === "sm"
+          ? "h-8 w-8 text-[0.6875rem]"
+          : size === "lg"
+            ? "h-12 w-12 rounded-2xl text-[1rem]"
+            : "h-10 w-10 text-[0.8125rem]",
+        className,
+      )}
+    >
+      {initials || "?"}
+    </span>
+  );
+}
+
+/* ------------------------------------------------------------------
+   data display
+   ------------------------------------------------------------------ */
+
+/** A thin progress bar that states completion honestly. */
+export function ProgressBar({
+  value,
+  className,
+  tone,
+}: {
+  /** 0..1 */
+  value: number;
+  className?: string;
+  /** Defaults by completion: full = emerald, partial = amber, none = slate. */
+  tone?: "emerald" | "amber" | "indigo" | "slate";
+}) {
+  const v = Math.max(0, Math.min(1, value));
+  const auto = v >= 1 ? "emerald" : v > 0 ? "amber" : "slate";
+  const color = {
+    emerald: "bg-emerald-500",
+    amber: "bg-amber-400",
+    indigo: "bg-indigo-500",
+    slate: "bg-slate-300",
+  }[tone ?? auto];
+  return (
+    <div className={cn("h-1.5 w-full overflow-hidden rounded-full bg-slate-100", className)}>
+      <div
+        className={cn("h-full rounded-full transition-[width] duration-700", color)}
+        style={{ width: `${v * 100}%` }}
+      />
+    </div>
+  );
+}
+
+/** Tiny bar chart, pure divs. `hot` bars carry the accent. */
+export function BarSpark({
+  data,
+  className,
+  barClass = "bg-white/30",
+  hotClass = "bg-amber-400",
+}: {
+  data: { v: number; hot?: boolean; label?: string }[];
+  className?: string;
+  barClass?: string;
+  hotClass?: string;
+}) {
+  const max = Math.max(1, ...data.map((d) => d.v));
+  return (
+    <div className={cn("flex h-16 items-end gap-1.5", className)}>
+      {data.map((d, i) => (
+        <div
+          key={i}
+          title={d.label}
+          className={cn(
+            "flex-1 rounded-t-md transition-all duration-500",
+            d.hot ? hotClass : barClass,
+          )}
+          style={{ height: `${Math.max(8, (d.v / max) * 100)}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** The QT2 channel-toggle idiom: a segmented control in a sunken pill. */
+export function Segmented<T extends string>({
+  options,
+  value,
+  onChange,
+  className,
+}: {
+  options: { value: T; label: string; count?: number }[];
+  value: T;
+  onChange: (v: T) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("flex rounded-xl bg-slate-100 p-1", className)}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[0.75rem] font-semibold transition-all duration-200",
+            value === o.value
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-700",
+          )}
+        >
+          {o.label}
+          {o.count !== undefined && (
+            <span
+              className={cn(
+                "tnum rounded-full px-1.5 py-0.5 text-[0.625rem] font-bold",
+                value === o.value
+                  ? "bg-indigo-50 text-indigo-700"
+                  : "bg-slate-200/70 text-slate-500",
+              )}
+            >
+              {o.count}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Red notification bubble, the QT2 bell-badge idiom. */
+export function CountBubble({ n, className }: { n: number; className?: string }) {
+  if (n <= 0) return null;
+  return (
+    <span
+      className={cn(
+        "tnum flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[0.625rem] font-bold text-white shadow-sm",
+        className,
+      )}
+    >
+      {n > 99 ? "99+" : n}
+    </span>
+  );
+}

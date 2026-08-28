@@ -64,6 +64,9 @@ export default async function ClientBoardPage({
         slug={client.slug}
         name={client.name}
         status={client.status}
+        descriptor={client.descriptor}
+        locations={hasPortfolio ? locations.length : null}
+        centers={hasPortfolio ? new Set(locations.map((l) => l.centerRef)).size : null}
       />
       <OpsBoard
         orgSlug={client.slug}

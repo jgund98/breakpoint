@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -9,7 +9,9 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
+  MapPin,
   Plus,
+  Radio,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -19,8 +21,11 @@ import {
   Btn,
   Card,
   IconChip,
+  Monogram,
+  ProgressBar,
   Rise,
   SearchInput,
+  StatCard,
   Th,
   inputCls,
   type BadgeTone,
@@ -56,6 +61,23 @@ export function ClientsTable() {
   });
   const [creating, setCreating] = useState(false);
 
+  /* The topbar's "New client" lands here with ?new=1. */
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.search.includes("new=1"))
+      setCreating(true);
+  }, []);
+
+  const placeByOrg = useMemo(
+    () =>
+      new Map(
+        (data?.coverage.withPlaceByOrg ?? []).map((r) => [
+          r.org_slug,
+          Number(r.with_place),
+        ]),
+      ),
+    [data],
+  );
+
   const shown = useMemo(() => {
     if (!data) return [];
     const q = query.trim().toLowerCase();
@@ -89,10 +111,15 @@ export function ClientsTable() {
     { key: "name", label: "Client" },
     { key: "status", label: "Status" },
     { key: "locations", label: "Locations", right: true },
+    { key: null, label: "Setup" },
     { key: "open_requests", label: "Open requests", right: true },
     { key: "created_at", label: "Since" },
     { key: null, label: "" },
   ];
+
+  const totalLocations = data.orgs.reduce((n, o) => n + (o.locations ?? 0), 0);
+  const live = data.orgs.filter((o) => o.status === "live").length;
+  const onboarding = data.orgs.filter((o) => o.status === "onboarding").length;
 
   return (
     <div className="space-y-6">
@@ -105,6 +132,40 @@ export function ClientsTable() {
           </Btn>
         }
       />
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          label="Clients"
+          value={data.orgs.length}
+          icon={<Building2 className="h-5 w-5" />}
+          color="indigo"
+          delay={0}
+        />
+        <StatCard
+          label="Live"
+          value={live}
+          sub="Monitored on schedule"
+          icon={<Radio className="h-5 w-5" />}
+          color="emerald"
+          delay={50}
+        />
+        <StatCard
+          label="Onboarding"
+          value={onboarding}
+          sub="Boards in setup state"
+          icon={<Plus className="h-5 w-5" />}
+          color="amber"
+          delay={100}
+        />
+        <StatCard
+          label="Locations"
+          value={totalLocations}
+          sub="Across every portfolio"
+          icon={<MapPin className="h-5 w-5" />}
+          color="violet"
+          delay={150}
+        />
+      </div>
 
       {creating && (
         <NewClientPanel
@@ -153,9 +214,7 @@ export function ClientsTable() {
                   <tr key={o.slug} className="group relative transition-colors hover:bg-slate-50">
                     <td className="px-6 py-4">
                       <span className="flex items-center gap-3">
-                        <IconChip color="indigo" size="sm">
-                          <Building2 className="h-4 w-4" />
-                        </IconChip>
+                        <Monogram name={o.name} />
                         <span>
                           <Link
                             href={`/admin/clients/${o.slug}`}
@@ -177,6 +236,21 @@ export function ClientsTable() {
                     <td className="tnum px-6 py-4 text-right text-[0.8125rem] text-slate-700">
                       {o.locations !== null ? o.locations : (
                         <span className="text-[0.75rem] text-slate-400">awaiting import</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {o.locations ? (
+                        <span className="flex items-center gap-2">
+                          <ProgressBar
+                            value={(placeByOrg.get(o.slug) ?? 0) / o.locations}
+                            className="w-24"
+                          />
+                          <span className="tnum whitespace-nowrap text-[0.6875rem] text-slate-400">
+                            {placeByOrg.get(o.slug) ?? 0}/{o.locations}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-[0.6875rem] text-slate-300">—</span>
                       )}
                     </td>
                     <td

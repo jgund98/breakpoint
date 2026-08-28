@@ -1,9 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Inbox } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PageHeader } from "@/components/admin/Shell";
-import { Badge, Btn, Card, IconChip, Rise, EmptyNote } from "@/components/admin/ui";
+import {
+  Badge,
+  Btn,
+  Card,
+  Monogram,
+  ProgressBar,
+  Rise,
+  EmptyNote,
+} from "@/components/admin/ui";
 import { useConsole } from "@/components/admin/useConsole";
 
 /**
@@ -58,24 +66,36 @@ export function Pipeline() {
                   key={s.id}
                   className="flex flex-wrap items-center justify-between gap-3 px-6 py-4"
                 >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <IconChip color="sky">
-                      <Inbox className="h-5 w-5" />
-                    </IconChip>
-                    <span className="min-w-0">
+                  <span className="flex min-w-0 flex-1 items-center gap-3">
+                    <Monogram name={s.client_name} />
+                    <span className="min-w-0 flex-1">
                       <span className="block truncate text-[0.8125rem] font-semibold text-slate-900">
                         {s.client_name}
                       </span>
-                      <span className="block text-[0.6875rem] text-slate-400">
-                        {s.row_count ?? 0} roster rows
-                        {s.store_estimate ? ` of ${s.store_estimate} expected` : ""}
-                        {" · "}
-                        {new Date(s.submitted_at).toLocaleString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                        })}
+                      <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                        {s.store_estimate ? (
+                          <span className="flex items-center gap-2">
+                            <ProgressBar
+                              value={(s.row_count ?? 0) / s.store_estimate}
+                              className="w-28"
+                            />
+                            <span className="tnum whitespace-nowrap text-[0.6875rem] text-slate-400">
+                              {s.row_count ?? 0}/{s.store_estimate} roster rows
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="tnum text-[0.6875rem] text-slate-400">
+                            {s.row_count ?? 0} roster rows
+                          </span>
+                        )}
+                        <span className="text-[0.6875rem] text-slate-400">
+                          {new Date(s.submitted_at).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </span>
                       </span>
                     </span>
                   </span>
