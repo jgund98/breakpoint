@@ -14,3 +14,10 @@ credential. Nothing blocks the build.
 DB: `DATABASE_URL` (Neon) is already provisioned via Vercel env pull.
 Site lock and demo credentials are in src/lib/gate.ts and the seed
 script — rotate before public launch.
+
+
+## SSO (SAML / OIDC)
+The login page offers "Continue with SSO" as an honest explainer (no dead button: it states SSO is provisioned per workspace once an IdP is connected). To make it real: pick an SSO broker (WorkOS or Auth.js with SAML), add per-org IdP config (issuer, cert, ACS URL) to org_settings, and exchange the assertion for an auth_session row (createSession in lib/auth.ts is the only integration point). No UI work is blocked on this.
+
+## Billing (Stripe)
+The Account tab computes the fee honestly from lib/value.ts (per-door rate x watched doors, with the annual floor) — THE RATE CARD IS A PLACEHOLDER pending the real pricing decision. To make billing real: create Stripe products per plan, store stripe_customer_id on org, and issue invoices from the admin Account card. Amounts shown to clients must keep coming from the same computed contract object so the UI and the invoice can never disagree.

@@ -128,8 +128,10 @@ export function LoginCard() {
               className="overflow-hidden"
             >
               <span className="mt-4 block rounded-lg bg-brass-50 px-4 py-3 text-sm leading-relaxed text-brass-700">
-                Single sign-on is provisioned with your workspace. Use the
-                demonstration credentials below for now.
+                Single sign-on (SAML and OIDC) is provisioned per workspace
+                once your identity provider is connected. Ask your account
+                manager to start the connection; until then, sign in with
+                your email and password.
               </span>
             </motion.p>
           )}
