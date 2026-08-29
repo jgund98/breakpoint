@@ -134,4 +134,6 @@ node --experimental-strip-types scripts/af2-engine.ts && node --experimental-str
 - **Internal staff management** (commit c7a32b9): /admin/team roster; staff_add / staff_disable / staff_enable / staff_password actions; app_user.disabled_at (migration 016); disable revokes live sessions; self- and last-account guards; 8 auth-probe checks.
 - **Demo mode** (commit c7a32b9): org_settings.demo_mode; toggle on the client masthead resets immediately; every sign-in to a demo org runs lib/demo-reset (clears worked flags, requests, notice stages, notifications, demo uploads; audit journal kept; engine regenerates real positions on load).
 - **Theo composer**: animated violet AI ring (bp-ai-glow, masked hairline).
+- **Staff permission ladder** (migration 017): app_user.staff_role admin/operator/observer; POST /admin/api role-gated (ADMIN_ONLY set; observer read-only); staff_role action with self- and last-admin guards; requireSession rejects disabled users; Team page shows the ladder, per-row role select, (you) marker; 7 new auth-probe checks.
+- **Theo glow v3**: 3px masked rotating band.
 - NEXT: extraction-schema admin panel (expert gold-set fields configurable, see src/lib/goldset.ts), /onboarding rework to QT2, item-3 bundle (demalling modeling, renewal flags, billing panel, SSO explainer).

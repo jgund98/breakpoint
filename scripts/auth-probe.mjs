@@ -213,6 +213,7 @@ const sAdd = await demo.post("/admin/api", {
   name: "Probe Staffer",
   email: "probe-staffer@breakpoint.test",
   title: "Probe",
+  role: "admin",
   password: "probe-password-1",
 });
 check("staff can create an internal account", sAdd.status === 200);
@@ -231,6 +232,47 @@ const sSelf = await api(probeStaffTok).post("/admin/api", {
   id: psRows[0].id,
 });
 check("an account cannot disable itself (400)", sSelf.status === 400);
+
+/* the permission ladder, exercised live on the same account */
+const sSelfRole = await api(probeStaffTok).post("/admin/api", {
+  action: "staff_role",
+  id: psRows[0].id,
+  role: "operator",
+});
+check("an account cannot change its own level (400)", sSelfRole.status === 400);
+const sToOp = await demo.post("/admin/api", {
+  action: "staff_role",
+  id: psRows[0].id,
+  role: "operator",
+});
+check("admin can set a permission level", sToOp.status === 200);
+const opUnknown = await api(probeStaffTok).post("/admin/api", {
+  action: "no_such_action",
+});
+check(
+  "operator passes the write gate (unknown action is 400, not 403)",
+  opUnknown.status === 400,
+);
+const opStaff = await api(probeStaffTok).post("/admin/api", {
+  action: "staff_add",
+  name: "x",
+  email: "x2@nowhere.test",
+  password: "aaaaaaaaaaaa",
+});
+check("operator cannot manage the roster (403)", opStaff.status === 403);
+const sToObs = await demo.post("/admin/api", {
+  action: "staff_role",
+  id: psRows[0].id,
+  role: "observer",
+});
+check("admin can demote to observer", sToObs.status === 200);
+const obsRead = await api(probeStaffTok).get("/admin/api");
+check("observer still reads the console", obsRead.status === 200);
+const obsWrite = await api(probeStaffTok).post("/admin/api", {
+  action: "no_such_action",
+});
+check("observer cannot write anything (403)", obsWrite.status === 403);
+
 const sDis = await demo.post("/admin/api", {
   action: "staff_disable",
   id: psRows[0].id,

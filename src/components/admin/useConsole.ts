@@ -22,11 +22,14 @@ export type OrgRow = {
   demo_mode: boolean;
 };
 
+export type StaffRole = "admin" | "operator" | "observer";
+
 export type StaffRow = {
   id: string;
   email: string;
   name: string;
   title: string | null;
+  staff_role: StaffRole;
   disabled_at: string | null;
   created_at: string;
 };
@@ -78,6 +81,8 @@ export type ConsoleData = {
   requestsAll: RequestRow[];
   coverage: Coverage;
   staff: StaffRow[];
+  yourStaffRole: StaffRole;
+  yourEmail: string;
 };
 
 export function useConsole() {

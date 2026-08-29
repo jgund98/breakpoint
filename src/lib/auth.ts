@@ -29,12 +29,17 @@ import { SESSION_COOKIE, SESSION_TOKEN, DEMO_EMAIL } from "@/lib/session";
 
 export type OrgRole = "owner" | "admin" | "analyst" | "counsel" | "viewer";
 
+export type StaffRole = "admin" | "operator" | "observer";
+
 export type AuthSession = {
   userId: string;
   email: string;
   name: string;
   title: string | null;
   platformAdmin: boolean;
+  /** Permission level inside the console; null for client-side users.
+      Accounts predating the ladder read as admin. */
+  staffRole: StaffRole | null;
   /** Active organization, resolved from the session. */
   orgId: string | null;
   orgSlug: string | null;
@@ -97,6 +102,7 @@ async function identityFor(
     name: string;
     title: string | null;
     platform_admin: boolean;
+    staff_role?: string | null;
   },
   preferredOrgId: string | null,
   legacy: boolean,
@@ -116,6 +122,9 @@ async function identityFor(
     name: userRow.name,
     title: userRow.title,
     platformAdmin: userRow.platform_admin,
+    staffRole: userRow.platform_admin
+      ? ((userRow.staff_role as StaffRole) ?? "admin")
+      : null,
     orgId: m?.org_id ?? null,
     orgSlug: m?.slug ?? null,
     orgName: m?.name ?? null,
@@ -137,8 +146,8 @@ export async function requireSession(
 
   if (token === SESSION_TOKEN) {
     const { rows } = await db().query(
-      `select id, email, name, title, platform_admin
-         from app_user where email = $1`,
+      `select id, email, name, title, platform_admin, staff_role
+         from app_user where email = $1 and disabled_at is null`,
       [DEMO_EMAIL],
     );
     if (!rows[0]) return null; // seed not run: the alias resolves to nothing
@@ -147,9 +156,11 @@ export async function requireSession(
 
   if (!/^[a-f0-9]{48}$/.test(token)) return null;
   const { rows } = await db().query(
-    `select s.org_id as session_org, u.id, u.email, u.name, u.title, u.platform_admin
+    `select s.org_id as session_org, u.id, u.email, u.name, u.title,
+            u.platform_admin, u.staff_role
        from auth_session s join app_user u on u.id = s.user_id
-      where s.token = $1 and s.expires_at > now()`,
+      where s.token = $1 and s.expires_at > now()
+        and u.disabled_at is null`,
     [token],
   );
   if (!rows[0]) return null;

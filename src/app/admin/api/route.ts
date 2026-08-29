@@ -269,7 +269,8 @@ export async function GET(request: NextRequest) {
 
   /* Internal staff roster: everyone holding the platform_admin key. */
   const staffRows = await db().query(
-    `select id, email, name, title, disabled_at, created_at
+    `select id, email, name, title, coalesce(staff_role, 'admin') as staff_role,
+            disabled_at, created_at
        from app_user where platform_admin = true
       order by (disabled_at is not null), name`,
   );
@@ -288,6 +289,8 @@ export async function GET(request: NextRequest) {
       demo_mode: demoSlugs.has(o.slug),
     })),
     staff: staffRows.rows,
+    yourStaffRole: staff.staffRole ?? "admin",
+    yourEmail: staff.email,
     submissions: submissions.rows,
     directives: directives.rows,
     requestsAll: requestsAll.rows,
@@ -313,6 +316,37 @@ export async function POST(request: NextRequest) {
   }
 
   const action = clip(payload.action, 32);
+
+  /* ---- permission ladder ----
+     admin: everything. operator: works the queues but cannot touch
+     people, client lifecycle, or system-wide programming. observer:
+     reads only. Enforced here, where every console write lands. */
+  const ADMIN_ONLY = new Set([
+    "staff_add",
+    "staff_disable",
+    "staff_enable",
+    "staff_password",
+    "staff_role",
+    "demo_mode",
+    "org_create",
+    "org_create_manual",
+    "org_status",
+    "org_update",
+    "directive_add",
+    "directive_toggle",
+    "directive_remove",
+  ]);
+  const myRole = staff.staffRole ?? "admin";
+  if (myRole === "observer")
+    return NextResponse.json(
+      { error: "Your console access is read-only." },
+      { status: 403 },
+    );
+  if (myRole !== "admin" && ADMIN_ONLY.has(action))
+    return NextResponse.json(
+      { error: "Administrator access required." },
+      { status: 403 },
+    );
 
   /* ---- org-scoped actions name their org, always ---- */
   const ORG_SCOPED = ["org_schedule", "location", "request_handled", "finding_move", "demo_mode"];
@@ -783,6 +817,9 @@ export async function POST(request: NextRequest) {
     const email = clip(payload.email, 200).toLowerCase();
     const title = clip(payload.title, 120);
     const password = String(payload.password ?? "").slice(0, 200);
+    const role = clip(payload.role, 16) || "operator";
+    if (!["admin", "operator", "observer"].includes(role))
+      return NextResponse.json({ error: "Unknown role." }, { status: 400 });
     if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
       return NextResponse.json(
         { error: "A name and a real email are required." },
@@ -801,11 +838,12 @@ export async function POST(request: NextRequest) {
       /* A client-side user joining the company keeps their account and
          password; they simply gain the staff key. */
       await db().query(
-        `update app_user set platform_admin = true, title = coalesce(nullif($2, ''), title)
+        `update app_user set platform_admin = true, staff_role = $3,
+                title = coalesce(nullif($2, ''), title)
           where id = $1`,
-        [existing.rows[0].id, title],
+        [existing.rows[0].id, title, role],
       );
-      await audit("staff_add", null, email, `promoted existing account (${staff.email})`);
+      await audit("staff_add", null, email, `promoted existing account to ${role} (${staff.email})`);
       return NextResponse.json({ ok: true, promoted: true });
     }
     if (password.length < 10)
@@ -814,11 +852,11 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     await db().query(
-      `insert into app_user (email, name, title, password_hash, platform_admin)
-       values ($1, $2, nullif($3, ''), $4, true)`,
-      [email, name, title, hashPassword(password)],
+      `insert into app_user (email, name, title, password_hash, platform_admin, staff_role)
+       values ($1, $2, nullif($3, ''), $4, true, $5)`,
+      [email, name, title, hashPassword(password), role],
     );
-    await audit("staff_add", null, email, `internal account created (${staff.email})`);
+    await audit("staff_add", null, email, `internal ${role} account created (${staff.email})`);
     return NextResponse.json({ ok: true });
   }
 
@@ -839,12 +877,13 @@ export async function POST(request: NextRequest) {
         );
       const others = await db().query(
         `select count(*)::int as n from app_user
-          where platform_admin = true and disabled_at is null and id <> $1`,
+          where platform_admin = true and disabled_at is null
+            and coalesce(staff_role, 'admin') = 'admin' and id <> $1`,
         [id],
       );
       if ((others.rows[0]?.n ?? 0) < 1)
         return NextResponse.json(
-          { error: "At least one active internal account must remain." },
+          { error: "At least one active administrator must remain." },
           { status: 400 },
         );
       await db().query(`update app_user set disabled_at = now() where id = $1`, [id]);
@@ -855,6 +894,46 @@ export async function POST(request: NextRequest) {
       await db().query(`update app_user set disabled_at = null where id = $1`, [id]);
       await audit("staff_enable", null, target.rows[0].email, `by ${staff.email}`);
     }
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "staff_role") {
+    const id = clip(payload.id, 64);
+    const role = clip(payload.role, 16);
+    if (!id || !["admin", "operator", "observer"].includes(role))
+      return NextResponse.json({ error: "Unknown role." }, { status: 400 });
+    const target = await db().query(
+      `select email, platform_admin, coalesce(staff_role, 'admin') as staff_role
+         from app_user where id = $1`,
+      [id],
+    );
+    if (!target.rows[0]?.platform_admin)
+      return NextResponse.json({ error: "Not an internal account." }, { status: 404 });
+    if (target.rows[0].email === staff.email)
+      return NextResponse.json(
+        { error: "You cannot change your own permission level." },
+        { status: 400 },
+      );
+    if (target.rows[0].staff_role === "admin" && role !== "admin") {
+      const admins = await db().query(
+        `select count(*)::int as n from app_user
+          where platform_admin = true and disabled_at is null
+            and coalesce(staff_role, 'admin') = 'admin' and id <> $1`,
+        [id],
+      );
+      if ((admins.rows[0]?.n ?? 0) < 1)
+        return NextResponse.json(
+          { error: "At least one active administrator must remain." },
+          { status: 400 },
+        );
+    }
+    await db().query(`update app_user set staff_role = $2 where id = $1`, [id, role]);
+    await audit(
+      "staff_role",
+      null,
+      target.rows[0].email,
+      `${target.rows[0].staff_role} -> ${role} (${staff.email})`,
+    );
     return NextResponse.json({ ok: true });
   }
 
