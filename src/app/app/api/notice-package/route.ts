@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
   const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>Co-Tenancy Notice Package — ${esc(r.id)} — ${esc(r.center.name)}</title>
+<title>Co-Tenancy Notice Package: ${esc(r.id)}, ${esc(r.center.name)}</title>
 <style>
   :root{color-scheme:light}
   body{font:14px/1.7 Georgia,'Times New Roman',serif;color:#111;max-width:52rem;margin:2.5rem auto;padding:0 1.5rem;background:#fff}
@@ -93,19 +93,19 @@ ${letter.closing.map((c) => `<p>${esc(c)}</p>`).join("")}
 ${letter.signature.map((s) => `<p>${esc(s)}</p>`).join("")}
 <p style="margin-top:.8rem">cc: ${letter.cc.map(esc).join("; ")}</p></div>
 
-<h2 class="exhibit">Exhibit A — The Clause, as Extracted</h2>
+<h2 class="exhibit">Exhibit A: The Clause, as Extracted</h2>
 <p class="muted" style="font:12px Arial,sans-serif">Extracted from the Lease; the operative language governs.</p>
 ${failing
   .map(
     (t) =>
       `<table><tr><th style="width:9rem">Citation</th><td>${esc(t.cite)}</td></tr>
        <tr><th>Requirement</th><td>${esc(t.requirement)}</td></tr>
-       <tr><th>Observed</th><td>${esc(t.observed)}${t.culprits.length ? ` — not open: ${esc(t.culprits.join(", "))}` : ""}</td></tr></table>`,
+       <tr><th>Observed</th><td>${esc(t.observed)}${t.culprits.length ? `; not open: ${esc(t.culprits.join(", "))}` : ""}</td></tr></table>`,
   )
   .join("")}
 ${r.clause.sourceText ? `<p style="font:12px/1.6 Arial,sans-serif;border-left:3px solid #ccc;padding-left:.8rem;color:#333">&ldquo;${esc(r.clause.sourceText.slice(0, 1200))}${r.clause.sourceText.length > 1200 ? "&hellip;" : ""}&rdquo;</p>` : ""}
 
-<h2 class="exhibit">Exhibit B — The Evidence Chain</h2>
+<h2 class="exhibit">Exhibit B: The Evidence Chain</h2>
 <table><tr><th>Date observed</th><th>Source</th><th>Tier</th><th>Statement</th></tr>
 ${r.evidence
   .map(
@@ -116,12 +116,12 @@ ${r.evidence
 </table>
 <p class="muted" style="font:11.5px Arial,sans-serif">Verification standard: one secondary source is a signal; two independent secondary sources corroborate; a primary source verifies. Only verified conditions carry a notice.</p>
 
-<h2 class="exhibit">Exhibit C — Occupancy Computation and Estimated Adjustment</h2>
+<h2 class="exhibit">Exhibit C: Occupancy Computation and Estimated Adjustment</h2>
 <table>
 <tr><th style="width:16rem">Measurement basis</th><td>Open and operating, by floor area, ${inline.length} suites in the denominator (anchor premises and outparcels excluded); remodeling and casualty closures deemed open where the clause provides</td></tr>
 <tr><th>Rent roll standing</th><td>${Math.round(r.center.rentRollCoverage * 100)}% of the center's floor area on file as of ${esc(prettyDate(r.center.rentRollAsOf))}</td></tr>
 <tr><th>Remedy formula (Lease)</th><td>${esc(r.clause.remedy.altRent?.text ?? (r.clause.remedy.abatementPct != null ? `${r.clause.remedy.abatementPct}% abatement of Fixed Minimum Rent` : "See the Lease"))}</td></tr>
-<tr><th>Estimated monthly adjustment</th><td>${esc(formatCoTenancyRent(r.evaluation.monthlyDelta))} on current reported Gross Sales — an estimate; the Lease formula on actual monthly Gross Sales controls</td></tr>
+<tr><th>Estimated monthly adjustment</th><td>${esc(formatCoTenancyRent(r.evaluation.monthlyDelta))} on current reported Gross Sales. An estimate; the Lease formula on actual monthly Gross Sales controls</td></tr>
 ${r.evaluation.cumulativeAtRisk ? `<tr><th>Cumulative since the right arose</th><td>${esc(usd(r.evaluation.cumulativeAtRisk))}, computed month by month on each month's own reported sales</td></tr>` : ""}
 </table>
 

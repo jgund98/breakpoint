@@ -39,7 +39,7 @@ export default function InboxPage() {
                 ],
                 [
                   "Handled",
-                  "A decision was made — a notice package went to counsel, or the team passed on the record. Either way it leaves the queue and stays in the ledger.",
+                  "A decision was made: a notice package went to counsel, or the team passed on the record. Either way it leaves the queue and stays in the ledger.",
                 ],
               ].map(([t, d], i) => (
                 <li key={t} className="flex gap-3">
@@ -86,8 +86,8 @@ export default function InboxPage() {
                   Election open
                 </dt>
                 <dd className="mt-0.5 text-[0.75rem] leading-relaxed text-slate-500">
-                  The remedy cap has run and the lease now demands a choice —
-                  resume full rent or terminate — inside a window that
+                  The remedy cap has run and the lease now demands a choice,
+                  resume full rent or terminate, inside a window that
                   lapses. This one is a deadline, not a review.
                 </dd>
               </div>

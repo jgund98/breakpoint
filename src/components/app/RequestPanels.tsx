@@ -355,7 +355,7 @@ export function EstoppelCheck({
                 <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600" />
                 <p className="text-[0.8125rem] leading-snug text-slate-700">
                   <span className="font-medium text-slate-900">{f.label}</span>{" "}
-                  <span className="text-slate-400">{f.cite}</span> — {f.observed}
+                  <span className="text-slate-400">{f.cite}</span>: {f.observed}
                 </p>
               </li>
             ))}

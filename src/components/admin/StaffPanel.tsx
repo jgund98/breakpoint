@@ -125,8 +125,7 @@ export function StaffPanel() {
             <p key={r} className="text-[0.75rem] leading-snug text-slate-500">
               <span className="font-semibold text-slate-700">
                 {ROLE_META[r].label}
-              </span>{" "}
-              — {ROLE_META[r].blurb}
+              </span>: {ROLE_META[r].blurb}
             </p>
           ))}
         </div>
@@ -273,9 +272,9 @@ export function StaffPanel() {
               onChange={(e) => setRole(e.target.value as StaffRole)}
               className={selectCls}
             >
-              <option value="admin">Administrator — full access</option>
-              <option value="operator">Operator — works the queues</option>
-              <option value="observer">Observer — read-only</option>
+              <option value="admin">Administrator: full access</option>
+              <option value="operator">Operator: works the queues</option>
+              <option value="observer">Observer: read-only</option>
             </select>
             <input
               value={password}

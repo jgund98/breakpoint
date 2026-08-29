@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   if (!can(role, rule.needs))
     return NextResponse.json(
       {
-        error: `Requires the "${rule.needs.replace(/_/g, " ")}" permission. Your role cannot take this step — that separation is deliberate.`,
+        error: `Requires the "${rule.needs.replace(/_/g, " ")}" permission. Your role cannot take this step; that separation is deliberate.`,
       },
       { status: 403 },
     );

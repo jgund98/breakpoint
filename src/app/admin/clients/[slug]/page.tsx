@@ -60,7 +60,7 @@ export default async function ClientBoardPage({
           evalTone: STATE_META[r.evaluation.state].tone,
           watched,
           tightest: tightest
-            ? `Tightest test: ${tightest.label} — ${tightest.headroom}`
+            ? `Tightest test: ${tightest.label}, ${tightest.headroom}`
             : "No computable test on file.",
         };
       });

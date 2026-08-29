@@ -79,7 +79,7 @@ export function PapersOnFile({ locationId }: { locationId: string }) {
       } else {
         setNotice(
           d.status === "failed"
-            ? "Stored, but it could not be read — see the row below for why."
+            ? "Stored, but it could not be read. See the row below for why."
             : d.status === "review"
               ? "Stored and read. The extracted record is with a person for review."
               : "Stored and read. The extracted record is proposed for sign-off.",

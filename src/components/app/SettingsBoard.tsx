@@ -796,7 +796,7 @@ function InviteDrawer({
           >
             <h2 className="text-[1.125rem] font-semibold text-slate-900">Invite someone</h2>
             <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-slate-500">
-              You get a join link to send them — email delivery connects
+              You get a join link to send them; email delivery connects
               later. The link sets their password and signs them in. Pick
               the role carefully: it decides whether they can approve or
               serve a notice.

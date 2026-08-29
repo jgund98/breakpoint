@@ -42,7 +42,7 @@ export default async function ExposurePage() {
       <PageHead
         eyebrow="Monitor"
         title="Anchor risk"
-        lede="Each row answers one question: if this retailer went dark tomorrow, what would it do to your rent? The engine re-runs every lease with that operator closed."
+        lede="Every anchor and junior operator at your centers, re-evaluated with that operator dark. Amounts state what MAY qualify under each lease's clocks."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -82,11 +82,9 @@ export default async function ExposurePage() {
             Ranked by what a single failure is worth
           </p>
           <p className="mt-0.5 max-w-[56rem] text-[0.8125rem] leading-snug text-slate-500">
-            Wave 1 trips leases that name the retailer. Wave 2 is the second
-            order: the closure drags center occupancy below percentage
-            floors in leases that never mention it. Amounts are what MAY
-            qualify subject to notice and the lease&apos;s clocks; open each
-            row for the doors behind the number.
+            Wave 1: leases that name the retailer. Wave 2: occupancy floors
+            the closure drags under. Open a row for the doors behind the
+            number.
           </p>
         </div>
         {cascades.length === 0 && (
@@ -182,21 +180,6 @@ export default async function ExposurePage() {
         </ul>
       </Panel>
 
-      <Panel>
-        <p className="text-[0.8125rem] font-semibold text-slate-900">
-          How to read this page
-        </p>
-        <p className="mt-1 max-w-[56rem] text-[0.8125rem] leading-snug text-slate-500">
-          This is a what-if, not a prediction: every number comes from
-          re-evaluating your actual clause records with one operator closed,
-          using the same engine that runs your live positions. Use it to know
-          which closure announcements matter before they happen — when a
-          watched operator posts layoff notices or announces a closure
-          program, the exposure here is what goes on the clock. Amounts
-          become claimable only through the lease&apos;s own qualifying
-          period and notice mechanics.
-        </p>
-      </Panel>
     </div>
   );
 }

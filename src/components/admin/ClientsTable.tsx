@@ -333,7 +333,7 @@ function NewClientPanel({
               New client
             </h2>
             <p className="mt-0.5 text-[0.8125rem] text-slate-500">
-              Create the account, then send the onboarding console link — that
+              Create the account, then send the onboarding console link; that
               link is the invite.
             </p>
           </div>

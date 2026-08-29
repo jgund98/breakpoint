@@ -176,19 +176,6 @@ export default async function LandlordsPage() {
         </ul>
       </Panel>
 
-      <Panel>
-        <p className="text-[0.8125rem] font-semibold text-slate-900">
-          Why this view exists
-        </p>
-        <p className="mt-1 max-w-[56rem] text-[0.8125rem] leading-snug text-slate-500">
-          Co-tenancy findings are renewal leverage, not just rent relief. A
-          documented watch record under one landlord — positions found,
-          notices served, how they responded — changes the posture of every
-          renewal and every new deal with that landlord. Ownership families
-          are resolved from the center records; the raw entities stay listed
-          because JVs and management arrangements matter to counsel.
-        </p>
-      </Panel>
     </div>
   );
 }

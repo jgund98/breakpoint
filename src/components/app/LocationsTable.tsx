@@ -289,8 +289,8 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
         <p className="border-t border-slate-100 px-6 py-3 text-[0.6875rem] leading-relaxed text-slate-400">
           Evidence: a Signal is one secondary source; Corroborated is two that
           agree; Verified is a primary source and can carry a notice. A state
-          marked &#8220;from your records&#8221; rests on facts you supply —
-          a served notice, an election — that no scan can see.
+          marked &#8220;from your records&#8221; rests on facts you supply,
+          a served notice, an election, that no scan can see.
         </p>
       )}
 

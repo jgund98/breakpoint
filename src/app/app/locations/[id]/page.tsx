@@ -127,7 +127,7 @@ export default async function LocationPage({
 
       {/* ---- Theo's read: the analyst brief on a flagged file. Every
               figure is the engine's; the voice is the product showing
-              its work the way a person would — a lead, then
+              its work the way a person would: a lead, then
               highlights with the reasoning attached. ---- */}
       {(() => {
         const brief = analystBrief(row);
@@ -144,7 +144,7 @@ export default async function LocationPage({
                 </h2>
                 <p className="text-[0.75rem] text-slate-500">
                   Composed from this file&#8217;s own record. Flags, never
-                  conclusions — counsel decides.
+                  conclusions; counsel decides.
                 </p>
               </div>
             </div>

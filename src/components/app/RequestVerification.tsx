@@ -47,7 +47,7 @@ export function RequestVerification({
       <span
         className={`inline-flex items-center gap-1.5 rounded-xl border border-emerald-100 bg-emerald-50 px-3 text-[0.75rem] font-semibold text-emerald-700 ${compact ? "h-9" : "h-10"}`}
       >
-        Field visit requested — we will confirm on site
+        Field visit requested. We will confirm on site
       </span>
     );
 

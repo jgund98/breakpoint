@@ -91,7 +91,7 @@ export default async function NoticesPage() {
         words, a landlord-verification demand wherever the lease grants one,
         and a full reservation of rights. Exhibits carry the clause extract,
         the dated evidence chain, and the computation. Bracketed fields are
-        completed from the executed lease by counsel — never guessed.
+        completed from the executed lease by counsel, never guessed.
       </Note>
 
       <div className="grid gap-3 sm:grid-cols-3">

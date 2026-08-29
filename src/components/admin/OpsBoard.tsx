@@ -657,7 +657,7 @@ export function OpsBoard({
           {!hasPortfolio ? (
             <div className="px-6 py-6">
               <p className="text-[0.875rem] font-semibold text-slate-900">
-                No locations yet — awaiting portfolio import.
+                No locations yet. Awaiting portfolio import.
               </p>
               <p className="mt-1 max-w-[44rem] text-[0.8125rem] leading-snug text-slate-500">
                 The roster from this client&#8217;s onboarding submission becomes

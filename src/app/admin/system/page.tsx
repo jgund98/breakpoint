@@ -149,8 +149,8 @@ export default async function SystemPage() {
       color: "rose",
       title: "Access",
       detail:
-        "Site lock plus the demo workspace session. Staff auth replaces authorized() in the admin routes before a real client signs in; client sign-in becomes Brevo magic links.",
-      state: { label: "Demo session", tone: "amber" },
+        "Password sign-in with database-backed sessions. Client roles are enforced per workspace; the console runs on the staff permission ladder (administrator, operator, observer). The site lock gates everything while the product is private.",
+      state: { label: "Enforced", tone: "emerald" },
     },
   ];
 
