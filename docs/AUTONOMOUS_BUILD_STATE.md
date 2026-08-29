@@ -3,9 +3,12 @@
 Updated: 2026-08-28 (session: inbox/notices/Theo shipped; auth build begun)
 
 ## Current phase
-**Phase 1: Real authentication, users, roles, and tenant isolation.**
-The single highest-dependency gap: everything in the mandate (permission
-matrix, isolation tests, multiple mock customers) sits behind it.
+**Phase 2 COMPLETE: notice workflow as a system of record.**
+Phase 1 (auth/roles/isolation, commit b50f40e) and Phase 2 (migration
+011 notice_workflow + /app/api/notice-workflow + NoticeDesk rewired,
+separation of duties server-enforced) are done: auth-probe 36/36,
+db-loop-probe 41/41. Next phase: client alert preferences persisted
+(gap #4), then scheduled reevaluation cron (gap #6).
 
 ## Environment facts a resuming session must know
 - Stack: Next.js 16 (Turbopack), React 19, Tailwind 4, `pg` against Neon

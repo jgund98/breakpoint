@@ -1,16 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Check, Lock, X } from "lucide-react";
-import {
-  NOTICE_META,
-  type NoticeStage,
-  useWorkspace,
-} from "@/lib/workspace-store";
-import { ROLES, type Permission } from "@/lib/team";
-import { DEMO_USER } from "@/lib/session";
+import { NOTICE_META, type NoticeStage } from "@/lib/workspace-store";
+import { ROLES, type Permission, type RoleId } from "@/lib/team";
 import { prettyDate } from "@/lib/clause";
 import { cn } from "@/lib/cn";
 import { ActionButton, Panel, PanelHead, Pill, type Tone } from "./ui";
@@ -55,10 +50,63 @@ const NEEDS: Partial<Record<NoticeStage, Permission>> = {
   approved: "serve_notice",
 };
 
+type FlowRow = {
+  stage: NoticeStage;
+  served_on: string | null;
+  reason: string | null;
+  updated_by: string | null;
+};
+
 export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
-  const { state, setNotice, ready } = useWorkspace();
+  /* The lifecycle is a system of record now: stages live in
+     notice_workflow, transitions are permission-checked and audited
+     SERVER-side, and this component only asks. */
+  const [flows, setFlows] = useState<Record<string, FlowRow> | null>(null);
+  const [role, setRole] = useState<RoleId>("viewer");
+  const [err, setErr] = useState<string | null>(null);
   const [declining, setDeclining] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/app/api/notice-workflow", { cache: "no-store" });
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      const map: Record<string, FlowRow> = {};
+      for (const w of d.workflows ?? []) map[w.location_ref] = w;
+      setFlows(map);
+      setRole(d.role ?? "viewer");
+    } catch {
+      setFlows({});
+    }
+  }, []);
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const setNotice = async (
+    locationId: string,
+    stage: NoticeStage,
+    declineReason?: string,
+  ) => {
+    try {
+      const r = await fetch("/app/api/notice-workflow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locationRef: locationId, to: stage, reason: declineReason }),
+      });
+      if (!r.ok) {
+        const d = await r.json().catch(() => null);
+        setErr(d?.error ?? "That step was refused.");
+      } else {
+        setErr(null);
+      }
+    } finally {
+      await load();
+    }
+  };
+
+  const ready = flows !== null;
 
   /* The served notice's next chapter, shared with the team's board. */
   const [tracked, setTracked] = useState<
@@ -80,11 +128,10 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
     };
   }, []);
 
-  const role = DEMO_USER.role;
   const can = (p: Permission) => ROLES[role].permissions.includes(p);
 
   const stageOf = (id: string): NoticeStage =>
-    state.notices[id]?.stage ?? "not_started";
+    flows?.[id]?.stage ?? "not_started";
 
   if (!ready) return <div className="shimmer h-64 rounded-2xl" />;
 
@@ -114,13 +161,18 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
           title="Packages"
           hint={`Signed in as ${ROLES[role].label}. Actions you cannot take are shown locked.`}
         />
+        {err && (
+          <p className="mt-2 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-[0.8125rem] text-rose-700">
+            {err}
+          </p>
+        )}
       </div>
 
       <ul className="mt-4 divide-y divide-slate-100">
         {candidates.map((c) => {
           const stage = stageOf(c.id);
           const meta = NOTICE_META[stage];
-          const record = state.notices[c.id];
+          const record = flows?.[c.id] ?? null;
           const needed = NEEDS[stage];
           const allowed = needed ? can(needed) : false;
           const blocked = !c.verified && stage === "not_started";
@@ -147,9 +199,10 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                   <p className="mt-1 text-[0.8125rem] text-slate-700">
                     {meta.blurb}
                   </p>
-                  {record?.servedOn && (
+                  {record?.served_on && (
                     <p className="mt-1 text-[0.75rem] font-medium text-emerald-700">
-                      Served {prettyDate(record.servedOn)}
+                      Served {prettyDate(record.served_on.slice(0, 10))}
+                      {record.updated_by ? ` by ${record.updated_by}` : ""}
                     </p>
                   )}
                   {record?.reason && (
@@ -242,7 +295,7 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
               {stage === "served" && (
                 <ResponseTracker
                   locationRef={c.id}
-                  servedOn={record?.servedOn?.slice(0, 10) ?? null}
+                  servedOn={record?.served_on?.slice(0, 10) ?? null}
                   current={tracked[c.id] ?? null}
                   onSaved={(v) => setTracked((p) => ({ ...p, [c.id]: v }))}
                 />

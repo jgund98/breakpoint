@@ -188,6 +188,71 @@ check("platform staff reaches /admin/api", staffAdmin.status === 200);
 const viewerAdmin = await viewer.get("/admin/api");
 check("A&F viewer (not staff) gets 403 on /admin/api", viewerAdmin.status === 403);
 
+console.log("--- notice workflow: separation of duties ---");
+const REF = "AF-9999-PROBE";
+const wAssemble = await demo.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "assembled",
+});
+check("owner assembles a package", wAssemble.status === 200);
+const wToCounsel = await demo.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "counsel_review",
+});
+check("owner sends it to counsel", wToCounsel.status === 200);
+const wViewerApprove = await viewer.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "approved",
+});
+check("viewer cannot approve (403)", wViewerApprove.status === 403);
+const wCounselServe = await counsel.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "served",
+});
+check("counsel cannot serve, by design (403)", wCounselServe.status === 403);
+const wApprove = await counsel.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "approved",
+});
+check("counsel approves after review", wApprove.status === 200);
+const sigTok = await login("signatory@abercrombie.test", "breakpoint-demo-1");
+check("signatory signs in", !!sigTok);
+const sig = api(sigTok);
+const wSigApprove = await sig.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "approved",
+});
+check(
+  "signatory cannot approve (wrong lane, 403 or 409)",
+  wSigApprove.status === 403 || wSigApprove.status === 409,
+);
+const wServe = await sig.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "served",
+});
+const served = await wServe.json();
+check(
+  `signatory records it served (${served.servedOn ?? "?"})`,
+  wServe.status === 200 && !!served.servedOn,
+);
+const wSkip = await demo.post("/app/api/notice-workflow", {
+  locationRef: REF,
+  to: "approved",
+});
+check("illegal transition from served is refused (409)", wSkip.status === 409);
+const merWorkflow = await mer.get("/app/api/notice-workflow").then((r) => r.json());
+check(
+  "meridian sees none of A&F's workflow rows",
+  (merWorkflow.workflows ?? []).every(
+    (w) => !String(w.location_ref).startsWith("AF-"),
+  ),
+);
+const afFlows = await demo.get("/app/api/notice-workflow").then((r) => r.json());
+check(
+  "A&F sees only its own workflow rows",
+  (afFlows.workflows ?? []).every((w) => !String(w.location_ref).startsWith("MER-")),
+);
+
 console.log("--- sign-out ---");
 const out = await fetch(`${BASE}/login/api`, {
   method: "DELETE",
@@ -207,6 +272,13 @@ const del2 = await sql.query(
 const del3 = await sql.query(
   `delete from auth_session where expires_at < now() or user_id in (select id from app_user where email like '%@meridian.test' or email like '%@abercrombie.test')`,
 );
+const del4 = await sql.query(
+  `delete from notice_workflow where location_ref = 'AF-9999-PROBE'`,
+);
+const del5 = await sql.query(
+  `delete from audit_log where action = 'notice_stage' and subject = 'AF-9999-PROBE'`,
+);
+console.log(`cleaned workflow rows:${del4.rowCount} stage audits:${del5.rowCount}`);
 console.log(
   `cleaned: requests:${del1.rowCount} logins:${del2.rowCount} sessions:${del3.rowCount}`,
 );

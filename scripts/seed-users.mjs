@@ -129,6 +129,16 @@ const afViewer = await ensureUser(
 );
 await ensureMembership(af, afViewer, "viewer");
 
+/* The only role that can record a notice as served. */
+const afSignatory = await ensureUser(
+  "signatory@abercrombie.test",
+  "M. Reyes",
+  "SVP, Store Development",
+  "breakpoint-demo-1",
+  false,
+);
+await ensureMembership(af, afSignatory, "signatory");
+
 /* ---- Meridian Outfitters: FICTIONAL TEST DATA ---- */
 const meridian = await ensureOrg(
   "meridian-outfitters",
