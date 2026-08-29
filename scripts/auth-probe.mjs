@@ -139,6 +139,12 @@ const cReq = await counsel.post("/app/api/requests", {
   centerName: "Ala Moana Center",
 });
 check("counsel can file a request (200)", cReq.status === 200);
+const fvReq = await counsel.post("/app/api/requests", {
+  kind: "field_verification",
+  locationId: "AF-1007",
+  centerName: "Ala Moana Center",
+});
+check("counsel can request a field verification (200)", fvReq.status === 200);
 
 console.log("--- tenant isolation: meridian must see nothing of A&F ---");
 const merTok = await login("owner@meridian.test", "breakpoint-demo-1");
@@ -517,7 +523,7 @@ check("destroyed session no longer resolves", dead.status === 401);
 
 /* ---- cleanup ---- */
 const del1 = await sql.query(
-  `delete from client_request where (org_slug = 'meridian-outfitters' or (location_ref = 'AF-1007' and kind = 'manual_scan' and handled_at is null)) and created_at > now() - interval '15 minutes'`,
+  `delete from client_request where (org_slug = 'meridian-outfitters' or (location_ref = 'AF-1007' and kind in ('manual_scan','field_verification') and handled_at is null)) and created_at > now() - interval '15 minutes'`,
 );
 const del2 = await sql.query(
   `delete from audit_log where action in ('login') and created_at > now() - interval '10 minutes'`,

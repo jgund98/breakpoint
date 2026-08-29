@@ -527,3 +527,47 @@ h4 {
 .scroll-sleek::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 0.55);
 }
+
+/* The one sanctioned AI signature: an animated violet ring that slowly
+   orbits Theo's composer. Registered-property spin with a static
+   gradient fallback where @property is unsupported. */
+@property --bp-glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes bp-glow-spin {
+  to {
+    --bp-glow-angle: 360deg;
+  }
+}
+.bp-ai-glow {
+  position: relative;
+}
+.bp-ai-glow::before,
+.bp-ai-glow::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 0.85rem;
+  background: conic-gradient(
+    from var(--bp-glow-angle),
+    #a5b4fc,
+    #c084fc,
+    #f0abfc,
+    #a5b4fc
+  );
+  animation: bp-glow-spin 3.6s linear infinite;
+  pointer-events: none;
+}
+.bp-ai-glow::before {
+  filter: blur(10px);
+  opacity: 0.4;
+}
+.bp-ai-glow::after {
+  opacity: 0.9;
+}
+.bp-ai-glow > * {
+  position: relative;
+  z-index: 1;
+}

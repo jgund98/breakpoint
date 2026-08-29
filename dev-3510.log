@@ -1,0 +1,27 @@
+▲ Next.js 16.2.12 (Turbopack)
+- Local:         http://localhost:3510
+- Network:       http://10.0.0.6:3510
+- Environments: .env.local
+✓ Ready in 847ms
+- Experiments (use with caution):
+  · optimizePackageImports
+
+ GET /app/theo 200 in 3.8s (next.js: 3.1s, proxy.ts: 148ms, application-code: 617ms)
+(node:7592) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.
+In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.
+
+To prepare for this change:
+- If you want the current behavior, explicitly use 'sslmode=verify-full'
+- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'
+
+See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET /icon?8a6309d1e52c3c8b 200 in 569ms (next.js: 305ms, application-code: 264ms)
+ GET /app/api/notifications 200 in 820ms (next.js: 367ms, proxy.ts: 5ms, application-code: 447ms)
+ GET /app/theo 200 in 111ms (next.js: 7ms, proxy.ts: 4ms, application-code: 100ms)
+ GET /app/api/notifications 200 in 107ms (next.js: 10ms, proxy.ts: 6ms, application-code: 91ms)
+ GET /app/theo 200 in 93ms (next.js: 7ms, proxy.ts: 5ms, application-code: 82ms)
+ GET /app/api/notifications 200 in 103ms (next.js: 4ms, proxy.ts: 4ms, application-code: 95ms)
+✓ Compiled in 206ms
+✓ Compiled in 148ms
+[?25h

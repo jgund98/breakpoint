@@ -352,12 +352,14 @@ export function Theo() {
           }}
           className="flex items-center gap-2 border-t border-slate-100 bg-slate-50/60 p-3"
         >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={`Ask ${theo.name}, or tell him to do something`}
-            className="h-10 flex-1 rounded-xl border border-slate-200 bg-white px-3.5 text-[0.875rem] text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
-          />
+          <div className="bp-ai-glow h-10 flex-1 rounded-xl">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={`Ask ${theo.name}, or tell him to do something`}
+              className="h-10 w-full rounded-xl border border-transparent bg-white px-3.5 text-[0.875rem] text-slate-900 shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
+            />
+          </div>
           <button
             type="submit"
             disabled={!input.trim() || thinking}

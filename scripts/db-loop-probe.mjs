@@ -105,7 +105,7 @@ check("scan request confirmed", requested);
 await clickText("Report");
 await pause(400);
 await page.evaluate((mark) => {
-  const sel = document.querySelector("select");
+  const sel = document.querySelector('select[data-probe="closure-store"]') ?? document.querySelector("select");
   const opts = [...sel.options].filter((o) => o.value);
   sel.value = opts[0].value;
   sel.dispatchEvent(new Event("change", { bubbles: true }));
@@ -488,29 +488,34 @@ const { rows: ns } = await sql.query(
 );
 check("notice status persisted", ns.length === 1 && ns[0].stage === "acknowledged");
 
-/* the flag inbox: reconcile files episodes; lifecycle moves stick and
-   restore (start -> in_review, reopen -> new leaves prod untouched) */
-const inbox = await page.evaluate(async () => {
+/* the flag inbox: reconcile files episodes; the lifecycle is
+   exercised on a PROBE-OWNED flag so real flag statuses — which the
+   client actively works — are never touched. */
+const { rows: probeFlag } = await sql.query(
+  `insert into finding_alert
+     (org_slug, location_ref, center_name, kind, episode, headline, detail, flagged_on)
+   values ('abercrombie-fitch', 'AF-9998-PROBE', 'Probe Center', 'triggered', $1,
+           'Probe flag', 'Created by db-loop-probe; deleted at cleanup.', current_date)
+   returning id`,
+  [MARK],
+);
+const probeFlagId = probeFlag[0].id;
+const inbox = await page.evaluate(async (flagId) => {
   const g = await fetch("/app/api/findings");
   if (!g.ok) return { status: g.status };
   const d = await g.json();
-  const first = (d.flags ?? []).find((f) => f.status === "new");
-  let moved = null;
-  let restored = null;
-  if (first) {
-    const p1 = await fetch("/app/api/findings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: first.id, action: "start" }),
-    });
-    moved = p1.ok ? (await p1.json()).status : null;
-    const p2 = await fetch("/app/api/findings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: first.id, action: "reopen" }),
-    });
-    restored = p2.ok ? (await p2.json()).status : null;
-  }
+  const p1 = await fetch("/app/api/findings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: flagId, action: "start" }),
+  });
+  const moved = p1.ok ? (await p1.json()).status : null;
+  const p2 = await fetch("/app/api/findings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id: flagId, action: "reopen" }),
+  });
+  const restored = p2.ok ? (await p2.json()).status : null;
   return {
     status: g.status,
     total: (d.flags ?? []).length,
@@ -518,7 +523,7 @@ const inbox = await page.evaluate(async () => {
     moved,
     restored,
   };
-});
+}, probeFlagId);
 check(
   `flag inbox reconciled (${inbox.total ?? 0} flags on file)`,
   inbox.status === 200 && (inbox.total ?? 0) > 0,
@@ -531,7 +536,9 @@ check(
 /* the notice package downloads as a self-contained document */
 const pkg = await page.evaluate(async () => {
   const list = await fetch("/app/api/findings").then((r) => r.json());
-  const ref = list.flags?.find((f) => f.kind === "triggered")?.location_ref;
+  const ref = list.flags?.find(
+    (f) => f.kind === "triggered" && !String(f.location_ref).includes("PROBE"),
+  )?.location_ref;
   if (!ref) return { skip: true };
   const r = await fetch(`/app/api/notice-package?location=${ref}`);
   const text = await r.text();
@@ -601,6 +608,7 @@ for (const [label, q, args] of [
   ["location_pipeline", `delete from location_pipeline where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`, []],
   ["notice_status", `delete from notice_status where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126'`, []],
   ["location_config AF-1126", `delete from location_config where org_slug = 'abercrombie-fitch' and location_ref = 'AF-1126' and place_id is null`, []],
+  ["finding_alert probe flag", `delete from finding_alert where location_ref = 'AF-9998-PROBE'`, []],
   ["audit_log", `delete from audit_log where created_at > now() - interval '10 minutes'`, []],
 ]) {
   const r = await sql.query(q, args);

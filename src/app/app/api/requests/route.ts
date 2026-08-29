@@ -17,7 +17,15 @@ import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-const KINDS = new Set(["manual_scan", "closure_report", "estoppel_review"]);
+const KINDS = new Set([
+  "manual_scan",
+  "closure_report",
+  "estoppel_review",
+  /* A triggered position resting on secondary evidence cannot carry a
+     notice; the client asks us to send a person. This is the ops-help
+     moment the whole flag flow funnels into. */
+  "field_verification",
+]);
 
 /** Trim to a sane length; a request field is not a document upload. */
 const clip = (v: unknown, max: number) =>

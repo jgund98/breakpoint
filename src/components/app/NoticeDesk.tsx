@@ -9,6 +9,7 @@ import { ROLES, type Permission, type RoleId } from "@/lib/team";
 import { prettyDate } from "@/lib/clause";
 import { cn } from "@/lib/cn";
 import { ActionButton, Panel, PanelHead, Pill, type Tone } from "./ui";
+import { RequestVerification } from "./RequestVerification";
 
 /**
  * THE NOTICE DESK
@@ -230,9 +231,14 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                   ) : (
                     <>
                       {blocked ? (
-                        <Pill tone="watch" dot>
-                          Awaiting primary evidence
-                        </Pill>
+                        /* The block IS the ask: a notice cannot rest on
+                           secondary sources, so the button files the
+                           field visit that fixes it. */
+                        <RequestVerification
+                          locationId={c.id}
+                          centerName={c.center}
+                          compact
+                        />
                       ) : meta.next ? (
                         <ActionButton
                           variant={stage === "approved" ? "brass" : "primary"}

@@ -107,6 +107,7 @@ export const KIND_LABEL: Record<string, string> = {
   manual_scan: "Scan now",
   closure_report: "Closure report",
   estoppel_review: "Estoppel review",
+  field_verification: "Field verification",
 };
 
 /** The onboarding console link we send a client. */

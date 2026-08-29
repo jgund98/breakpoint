@@ -207,6 +207,8 @@ export function LocationActions({
                   <label className="label text-slate-500">Store</label>
                   <select
                     value={store}
+                    aria-label="Store that closed"
+                    data-probe="closure-store"
                     onChange={(e) => setStore(e.target.value)}
                     className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white shadow-sm px-2.5 py-2 text-[0.8125rem] text-slate-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
                   >

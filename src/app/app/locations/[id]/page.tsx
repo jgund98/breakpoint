@@ -23,6 +23,7 @@ import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
 import { ScanHistory } from "@/components/app/ScanHistory";
 import { PrintButton } from "@/components/app/PrintButton";
 import { PapersOnFile } from "@/components/app/PapersOnFile";
+import { RequestVerification } from "@/components/app/RequestVerification";
 import { Rise } from "@/components/app/Motion";
 import {
   ActionButton,
@@ -109,13 +110,16 @@ export default async function LocationPage({
             <LinkButton href="/app/notices" variant="brass">
               Assemble notice package
             </LinkButton>
+          ) : v.tier !== "verified" && ev.anyFailing ? (
+            <RequestVerification
+              locationId={row.id}
+              centerName={center.name}
+            />
           ) : (
             <ActionButton variant="secondary" disabled>
               {ev.state === "blocked"
                 ? "Blocked on a precondition"
-                : v.tier !== "verified" && ev.anyFailing
-                  ? "Awaiting verification"
-                  : "Nothing to serve"}
+                : "Nothing to serve"}
             </ActionButton>
           )}
         </div>
