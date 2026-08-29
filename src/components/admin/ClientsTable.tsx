@@ -16,8 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { PageHeader } from "@/components/admin/Shell";
-import {
-  Badge,
+import {  Badge,
   Btn,
   Card,
   IconChip,
@@ -29,6 +28,7 @@ import {
   Th,
   inputCls,
   type BadgeTone,
+  statusLabel,
 } from "@/components/admin/ui";
 import {
   useConsole,
@@ -193,7 +193,7 @@ export function ClientsTable() {
                         <button
                           type="button"
                           onClick={() => sortBy(h.key as SortKey)}
-                          className="inline-flex items-center gap-1 hover:text-slate-700"
+                          className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-slate-700"
                         >
                           {h.label}
                           {sort.key === h.key &&
@@ -232,7 +232,7 @@ export function ClientsTable() {
                     </td>
                     <td className="px-6 py-4">
                       <Badge tone={STATUS_TONE[o.status]} dot>
-                        {o.status}
+                        {statusLabel(o.status)}
                       </Badge>
                     </td>
                     <td className="tnum px-6 py-4 text-right text-[0.8125rem] text-slate-700">

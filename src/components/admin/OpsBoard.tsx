@@ -16,8 +16,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import {
-  Badge,
+import {  Badge,
   Btn,
   Rise,
   Section,
@@ -29,6 +28,7 @@ import {
   selectCls,
   textareaCls,
   EVAL_BADGE,
+  statusLabel,
 } from "@/components/admin/ui";
 import { KIND_LABEL } from "@/components/admin/useConsole";
 import { ScanRecorder } from "@/components/admin/ScanRecorder";
@@ -941,7 +941,7 @@ export function OpsBoard({
                     }
                     dot
                   >
-                    {n.stage}
+                    {statusLabel(n.stage)}
                   </Badge>
                 </li>
               ))}
@@ -1073,7 +1073,7 @@ function RowEditor({
         </td>
         <td className="px-6 py-3 text-[0.75rem] text-slate-600">
           {cfg?.status && cfg.status !== "active" ? (
-            <Badge tone="rose">{cfg.status}</Badge>
+            <Badge tone="rose">{statusLabel(cfg.status)}</Badge>
           ) : (
             "active"
           )}

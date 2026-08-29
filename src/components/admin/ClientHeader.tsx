@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Check, Copy } from "lucide-react";
-import { Badge, Monogram, type BadgeTone } from "@/components/admin/ui";
+import {
+  Badge,
+  Monogram,
+  statusLabel,
+  type BadgeTone,
+} from "@/components/admin/ui";
 import { inviteLink } from "@/components/admin/useConsole";
 
 /**
@@ -69,7 +74,7 @@ export function ClientHeader({
                   {name}
                 </h1>
                 <Badge tone={STATUS_TONE[current] ?? "slate"} dot>
-                  {current}
+                  {statusLabel(current)}
                 </Badge>
               </div>
               <p className="mt-0.5 text-[0.8125rem] text-indigo-200">

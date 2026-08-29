@@ -288,6 +288,13 @@ const BADGE_DOT: Record<BadgeTone, string> = {
   sky: "bg-white/90",
 };
 
+/** DB enums are lowercase; the UI speaks Title case, everywhere. */
+export function statusLabel(s: string | null | undefined): string {
+  if (!s) return "";
+  const t = s.replace(/_/g, " ");
+  return t[0].toUpperCase() + t.slice(1);
+}
+
 export function Badge({
   tone = "slate",
   dot,

@@ -17,7 +17,7 @@ import {
   Search,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { CountBubble, Monogram, PovToggle } from "@/components/admin/ui";
+import { CountBubble, Monogram, PovToggle, statusLabel } from "@/components/admin/ui";
 
 /**
  * The console shell, in QuoteTurbo2's portal language: white icon-chip
@@ -269,7 +269,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                                 {o.locations !== null
                                   ? `${o.locations} locations`
                                   : "awaiting import"}{" "}
-                                · {o.status}
+                                · {statusLabel(o.status)}
                               </span>
                             </span>
                             <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />

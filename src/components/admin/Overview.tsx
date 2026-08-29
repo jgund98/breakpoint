@@ -14,8 +14,7 @@ import {
   ShieldQuestion,
 } from "lucide-react";
 import { PageHeader } from "@/components/admin/Shell";
-import {
-  Badge,
+import {  Badge,
   BarSpark,
   Card,
   IconChip,
@@ -24,6 +23,7 @@ import {
   Rise,
   StatCard,
   type BadgeTone,
+  statusLabel,
 } from "@/components/admin/ui";
 import { useConsole, KIND_LABEL } from "@/components/admin/useConsole";
 
@@ -308,7 +308,7 @@ export function Overview({
                             {o.name}
                           </span>
                           <Badge tone={STATUS_TONE[o.status]} dot>
-                            {o.status}
+                            {statusLabel(o.status)}
                           </Badge>
                           {o.open_requests > 0 && (
                             <Badge tone="rose" dot>

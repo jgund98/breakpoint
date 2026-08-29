@@ -24,18 +24,14 @@ import { Panel, Pill } from "./ui";
 /**
  * THEO
  *
- * The one deliberately dark surface in the workspace: the client is
- * talking to the intelligence, and the room should feel like it.
- * Glow is allowed HERE and nowhere else — a halo on the mark, light
- * behind the conversation — because this is the AI's own seat, not a
- * marketing hero.
- *
- * Still a working surface, not a chat bubble: answers arrive as
- * tables, figures and verbatim lease text, each stamped with its
- * source, exportable, and now carrying jump buttons into the file it
- * cites. Theo also DOES things: a scan request, a flag move, a notice
- * package — each on the product's real write-path, confirmed with a
- * receipt.
+ * Light, like the rest of the product — the dark "AI room" read as
+ * cheap and is dead (2026-08-29). The intelligence shows through life,
+ * not paint: a haloed mark, a soft light source behind the opening,
+ * gradient accents, and answers that move. Still a working surface:
+ * tables, figures and verbatim lease text with their sources,
+ * exportable, with jump buttons into the files Theo cites. Theo also
+ * DOES things — scan requests, estoppel queues, flag moves, the notice
+ * package — each on the product's real write-path with a receipt.
  */
 
 type TheoLink = { label: string; href: string };
@@ -128,14 +124,14 @@ export function Theo() {
      screens keep natural flow. */
   return (
     <div className="grid gap-4 lg:h-[calc(100svh-13.5rem)] lg:min-h-[540px] lg:grid-cols-[minmax(0,1fr)_260px]">
-      <div className="relative flex min-h-[480px] flex-col overflow-hidden rounded-2xl border border-indigo-500/25 bg-[#0c0a1d] shadow-xl shadow-indigo-950/50 lg:h-full lg:min-h-0">
-        {/* the room's light: one soft source above the conversation */}
+      <div className="relative flex min-h-[480px] flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-xl shadow-slate-200/50 lg:h-full lg:min-h-0">
+        {/* the light source: one soft wash above the conversation */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-x-0 top-0 h-64"
           style={{
             background:
-              "radial-gradient(60% 45% at 50% 0%, rgba(109,88,246,0.28), transparent 70%), radial-gradient(40% 30% at 85% 100%, rgba(139,92,246,0.12), transparent 70%)",
+              "radial-gradient(65% 100% at 50% 0%, rgba(99,102,241,0.09), transparent 75%)",
           }}
         />
 
@@ -144,40 +140,42 @@ export function Theo() {
           {turns.length === 0 && (
             <div className="flex min-h-full flex-col justify-center py-6">
               <div className="flex items-center gap-4">
-                {/* the mark, haloed */}
+                {/* the mark, haloed and breathing */}
                 <span className="relative flex h-12 w-12 items-center justify-center">
-                  <span className="absolute inset-0 rounded-2xl bg-indigo-500/50 blur-xl" />
-                  <span className="absolute -inset-1.5 rounded-2xl border border-indigo-400/20" />
-                  <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/50">
+                  <span className="absolute inset-0 animate-pulse rounded-2xl bg-indigo-400/40 blur-xl" />
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/40">
                     <Sparkles className="h-5 w-5 text-white" />
                   </span>
                 </span>
                 <div>
-                  <p className="text-[1rem] font-semibold text-white">
+                  <p className="text-[1rem] font-bold tracking-tight text-slate-900">
                     {theo.name}
                   </p>
-                  <p className="text-[0.75rem] text-indigo-200/70">
+                  <p className="text-[0.75rem] font-medium text-indigo-600">
                     {theo.role}
                   </p>
                 </div>
               </div>
-              <p className="mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-white">
+              <p className="mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-slate-900">
                 {greeting()}
               </p>
-              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-indigo-200/70">
+              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-slate-500">
                 {theo.charter}
               </p>
 
               <div className="mt-6 flex flex-wrap gap-2">
-                {STARTERS.map((s) => (
-                  <button
+                {STARTERS.map((s, i) => (
+                  <motion.button
                     key={s}
                     type="button"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.08 * i, duration: 0.35 }}
                     onClick={() => void send(s)}
-                    className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-left text-[0.8125rem] text-indigo-100 backdrop-blur-sm transition-all duration-200 hover:border-indigo-400/50 hover:bg-indigo-500/15 hover:text-white"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-[0.8125rem] text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-800 hover:shadow-md hover:shadow-indigo-100"
                   >
                     {s}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -192,7 +190,7 @@ export function Theo() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-end"
                 >
-                  <p className="max-w-[80%] rounded-xl rounded-br-sm bg-gradient-to-br from-indigo-500 to-violet-600 px-3.5 py-2.5 text-[0.875rem] text-white shadow-lg shadow-indigo-500/25">
+                  <p className="max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-2.5 text-[0.875rem] text-white shadow-md shadow-indigo-500/25">
                     {t.text}
                   </p>
                 </motion.div>
@@ -202,121 +200,128 @@ export function Theo() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="space-y-3"
+                  className="flex gap-3"
                 >
-                  <p className="text-[0.75rem] font-medium text-indigo-300/70">
-                    {t.answer.interpreted}
-                  </p>
-                  {t.answer.lead && (
-                    <p className="text-[0.9375rem] leading-relaxed text-white">
-                      {t.answer.lead}
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
+                    <Sparkles className="h-3.5 w-3.5 text-white" />
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <p className="text-[0.75rem] font-medium text-indigo-600">
+                      {t.answer.interpreted}
                     </p>
-                  )}
-                  {t.answer.blocks.map((b, k) => (
-                    <Block key={k} block={b} />
-                  ))}
+                    {t.answer.lead && (
+                      <p className="text-[0.9375rem] leading-relaxed text-slate-900">
+                        {t.answer.lead}
+                      </p>
+                    )}
+                    {t.answer.blocks.map((b, k) => (
+                      <Block key={k} block={b} />
+                    ))}
 
-                  {/* jump buttons: straight into the file Theo cites */}
-                  {t.links && t.links.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {t.links.map((l) =>
-                        l.href.startsWith("/app/api/") ? (
-                          <a
-                            key={l.href}
-                            href={l.href}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/40 bg-indigo-500/20 px-3 py-2 text-[0.8125rem] font-semibold text-white shadow-md shadow-indigo-900/40 backdrop-blur-sm transition-all hover:bg-indigo-500/35 active:scale-95"
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                            {l.label}
-                          </a>
-                        ) : (
-                          <Link
-                            key={l.href}
-                            href={l.href}
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/40 bg-indigo-500/20 px-3 py-2 text-[0.8125rem] font-semibold text-white shadow-md shadow-indigo-900/40 backdrop-blur-sm transition-all hover:bg-indigo-500/35 active:scale-95"
-                          >
-                            {l.label}
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </Link>
-                        ),
-                      )}
-                    </div>
-                  )}
+                    {/* jump buttons: straight into the file Theo cites */}
+                    {t.links && t.links.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {t.links.map((l) =>
+                          l.href.startsWith("/app/api/") ? (
+                            <a
+                              key={l.href}
+                              href={l.href}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2 text-[0.8125rem] font-semibold text-white shadow-md shadow-indigo-500/30 transition-all hover:bg-indigo-500 active:scale-95"
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              {l.label}
+                            </a>
+                          ) : (
+                            <Link
+                              key={l.href}
+                              href={l.href}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-[0.8125rem] font-semibold text-indigo-800 shadow-sm transition-all hover:border-indigo-300 hover:bg-indigo-100 active:scale-95"
+                            >
+                              {l.label}
+                              <ArrowRight className="h-3.5 w-3.5" />
+                            </Link>
+                          ),
+                        )}
+                      </div>
+                    )}
 
-                  {/* An answer that cannot leave the screen is half an
-                      answer. A real request from a regional manager was
-                      for "a one pager" to take into a meeting. */}
-                  <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const w = window.open("", "_blank");
-                        if (!w) return;
-                        w.document.write(
-                          answerToPrintable(t.answer!, {
-                            org: org.name,
-                            asOf: `Evaluated ${prettyDate(TODAY)}`,
-                          }),
-                        );
-                        w.document.close();
-                      }}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[0.75rem] font-semibold text-indigo-100 transition-colors hover:border-indigo-400/40 hover:text-white"
-                    >
-                      <FileText className="h-3 w-3" />
-                      One pager
-                    </button>
-                    {hasTabularContent(t.answer) && (
+                    {/* An answer that cannot leave the screen is half an
+                        answer. A real request from a regional manager was
+                        for "a one pager" to take into a meeting. */}
+                    <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2.5">
                       <button
                         type="button"
                         onClick={() => {
-                          const blob = new Blob([answerToCsv(t.answer!)], {
-                            type: "text/csv",
-                          });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement("a");
-                          a.href = url;
-                          a.download = `breakpoint-${t.answer!.interpreted
-                            .toLowerCase()
-                            .replace(/[^a-z0-9]+/g, "-")
-                            .slice(0, 48)}.csv`;
-                          a.click();
-                          URL.revokeObjectURL(url);
+                          const w = window.open("", "_blank");
+                          if (!w) return;
+                          w.document.write(
+                            answerToPrintable(t.answer!, {
+                              org: org.name,
+                              asOf: `Evaluated ${prettyDate(TODAY)}`,
+                            }),
+                          );
+                          w.document.close();
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[0.75rem] font-semibold text-indigo-100 transition-colors hover:border-indigo-400/40 hover:text-white"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[0.75rem] font-semibold text-slate-700 shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-800"
                       >
-                        <Download className="h-3 w-3" />
-                        CSV
+                        <FileText className="h-3 w-3" />
+                        One pager
                       </button>
-                    )}
-                    <p className="flex items-center gap-1.5 text-[0.6875rem] text-indigo-300/50">
-                      <Info className="h-3 w-3" />
-                      {t.answer.provenance}
-                    </p>
-                  </div>
-                  {t.answer.followUps.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {t.answer.followUps.map((f) => (
+                      {hasTabularContent(t.answer) && (
                         <button
-                          key={f}
                           type="button"
-                          onClick={() => void send(f)}
-                          className="rounded-lg border border-white/10 px-2.5 py-1.5 text-[0.75rem] text-indigo-200/70 transition-colors hover:border-indigo-400/50 hover:text-white"
+                          onClick={() => {
+                            const blob = new Blob([answerToCsv(t.answer!)], {
+                              type: "text/csv",
+                            });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = `breakpoint-${t.answer!.interpreted
+                              .toLowerCase()
+                              .replace(/[^a-z0-9]+/g, "-")
+                              .slice(0, 48)}.csv`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[0.75rem] font-semibold text-slate-700 shadow-sm transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-800"
                         >
-                          {f}
+                          <Download className="h-3 w-3" />
+                          CSV
                         </button>
-                      ))}
+                      )}
+                      <p className="flex items-center gap-1.5 text-[0.6875rem] text-slate-400">
+                        <Info className="h-3 w-3" />
+                        {t.answer.provenance}
+                      </p>
                     </div>
-                  )}
+                    {t.answer.followUps.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {t.answer.followUps.map((f) => (
+                          <button
+                            key={f}
+                            type="button"
+                            onClick={() => void send(f)}
+                            className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[0.75rem] text-slate-500 transition-colors hover:border-indigo-300 hover:bg-indigo-50/60 hover:text-indigo-700"
+                          >
+                            {f}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </motion.div>
               ),
             )}
           </AnimatePresence>
 
           {thinking && (
-            <div className="flex items-center gap-2.5 text-[0.8125rem] text-indigo-200/80">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-400" />
+            <div className="flex items-center gap-3 text-[0.8125rem] text-slate-500">
+              <span className="relative flex h-7 w-7 items-center justify-center">
+                <span className="absolute inset-0 animate-pulse rounded-lg bg-indigo-400/30 blur-md" />
+                <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
+                  <Sparkles className="h-3.5 w-3.5 animate-pulse text-white" />
+                </span>
               </span>
               Reading your portfolio
             </div>
@@ -330,18 +335,18 @@ export function Theo() {
             e.preventDefault();
             void send(input);
           }}
-          className="relative flex items-center gap-2 border-t border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm"
+          className="flex items-center gap-2 border-t border-slate-100 bg-slate-50/60 p-3"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={`Ask ${theo.name}, or tell him to do something`}
-            className="flex-1 rounded-xl border border-white/10 bg-white/[0.07] px-3.5 py-2.5 text-[0.875rem] text-white placeholder:text-indigo-200/40 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/25 focus:outline-none"
+            className="h-10 flex-1 rounded-xl border border-slate-200 bg-white px-3.5 text-[0.875rem] text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
           />
           <button
             type="submit"
             disabled={!input.trim() || thinking}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/40 transition-all hover:from-indigo-400 hover:to-violet-500 active:scale-95 disabled:opacity-40 disabled:shadow-none"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30 transition-all hover:from-indigo-500 hover:to-violet-500 active:scale-95 disabled:opacity-40 disabled:shadow-none"
           >
             <ArrowUp className="h-4 w-4" />
           </button>
@@ -439,11 +444,12 @@ export function Theo() {
   );
 }
 
-/* Blocks live on the dark surface now; glassy, never washed. */
+/* Answer blocks on the light surface: white cards, real borders, no
+   washed grays. */
 function Block({ block }: { block: AnswerBlock }) {
   if (block.type === "text")
     return (
-      <p className="text-[0.875rem] leading-relaxed text-indigo-100">
+      <p className="text-[0.875rem] leading-relaxed text-slate-700">
         {block.body}
       </p>
     );
@@ -454,14 +460,14 @@ function Block({ block }: { block: AnswerBlock }) {
         {block.items.map((s) => (
           <div
             key={s.label}
-            className="rounded-xl border border-white/10 bg-white/[0.06] p-3 backdrop-blur-sm"
+            className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
           >
-            <p className="text-[0.75rem] text-indigo-200/70">{s.label}</p>
-            <p className="tnum mt-1 text-[1.25rem] font-bold leading-none text-white">
+            <p className="text-[0.75rem] text-slate-500">{s.label}</p>
+            <p className="tnum mt-1 text-[1.25rem] font-bold leading-none text-slate-900">
               {s.value}
             </p>
             {s.hint && (
-              <p className="mt-1 text-[0.6875rem] leading-snug text-indigo-200/50">
+              <p className="mt-1 text-[0.6875rem] leading-snug text-slate-400">
                 {s.hint}
               </p>
             )}
@@ -472,11 +478,11 @@ function Block({ block }: { block: AnswerBlock }) {
 
   if (block.type === "verbatim")
     return (
-      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
-        <p className="text-[0.6875rem] font-semibold tracking-wide text-indigo-300/80 uppercase">
+      <div className="rounded-xl border border-slate-200 border-l-4 border-l-indigo-600 bg-white p-4 shadow-sm">
+        <p className="text-[0.6875rem] font-semibold tracking-wide text-indigo-700 uppercase">
           {block.cite}
         </p>
-        <p className="mt-2 text-[0.8125rem] leading-[1.8] text-indigo-100">
+        <p className="mt-2 text-[0.8125rem] leading-[1.8] text-slate-700">
           {block.body}
         </p>
       </div>
@@ -484,14 +490,14 @@ function Block({ block }: { block: AnswerBlock }) {
 
   if (block.type === "gap")
     return (
-      <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
-        <p className="text-[0.8125rem] leading-relaxed text-amber-100">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <p className="text-[0.8125rem] leading-relaxed text-slate-700">
           {block.body}
         </p>
         {block.action && (
           <Link
             href={block.action.href}
-            className="mt-2.5 inline-block text-[0.8125rem] font-semibold text-amber-300 hover:underline"
+            className="mt-2.5 inline-block text-[0.8125rem] font-semibold text-amber-700 hover:underline"
           >
             {block.action.label}
           </Link>
@@ -500,32 +506,29 @@ function Block({ block }: { block: AnswerBlock }) {
     );
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/10">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="bg-white/[0.06]">
+          <tr className="bg-slate-50">
             {block.columns.map((c) => (
               <th
                 key={c}
-                className="px-3 py-2 text-[0.6875rem] font-semibold tracking-wide text-indigo-300/70 uppercase"
+                className="px-3 py-2 text-[0.6875rem] font-semibold tracking-wider text-slate-400 uppercase"
               >
                 {c}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/[0.07]">
+        <tbody className="divide-y divide-slate-100 bg-white">
           {block.rows.map((r, i) => (
-            <tr key={i} className="hover:bg-white/[0.04]">
+            <tr key={i} className="hover:bg-indigo-50/40">
               {r.cells.map((cell, j) => (
-                <td
-                  key={j}
-                  className="px-3 py-2 text-[0.8125rem] text-indigo-100"
-                >
+                <td key={j} className="px-3 py-2 text-[0.8125rem] text-slate-700">
                   {j === 0 && r.href ? (
                     <Link
                       href={r.href}
-                      className="font-semibold text-white underline-offset-2 hover:underline"
+                      className="font-semibold text-indigo-800 hover:underline"
                     >
                       {cell}
                     </Link>
@@ -539,7 +542,7 @@ function Block({ block }: { block: AnswerBlock }) {
         </tbody>
       </table>
       {block.caption && (
-        <p className="border-t border-white/10 px-3 py-2 text-[0.75rem] text-indigo-200/60">
+        <p className="border-t border-slate-200 bg-white px-3 py-2 text-[0.75rem] text-slate-500">
           {block.caption}
         </p>
       )}
