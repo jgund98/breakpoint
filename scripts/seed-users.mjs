@@ -142,9 +142,9 @@ await ensureMembership(af, afSignatory, "signatory");
 /* ---- Meridian Outfitters: FICTIONAL TEST DATA ---- */
 const meridian = await ensureOrg(
   "meridian-outfitters",
-  "Meridian Outfitters (Fictional Test Data)",
+  "Meridian Outfitters",
   "onboarding",
-  "Synthetic customer for isolation and permission testing",
+  "Specialty apparel · 65 watched locations",
 );
 const mUsers = [
   ["owner@meridian.test", "J. Calloway", "VP, Real Estate", "owner"],

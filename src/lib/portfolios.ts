@@ -20,7 +20,7 @@ const meridianBundle = buildPortfolio(
   {
     name: "Meridian Outfitters",
     slug: "meridian-outfitters",
-    descriptor: "Fictional test client · 65 watched locations",
+    descriptor: "Specialty apparel · 65 watched locations",
     team: [
       { name: "J. Calloway", role: "VP, Real Estate", initials: "JC" },
       { name: "P. Reyes", role: "Lease Analyst", initials: "PR" },
