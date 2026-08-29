@@ -80,7 +80,7 @@ export default function ReportPage() {
                 "brass",
               ],
               ["Remedy running", running, "Locations already paying co-tenancy rent", "open"],
-              ["On watch", summary.watchCount, "Within three points of a threshold, or curing", "petrol"],
+              ["On watch", summary.watchCount, "Within three points of a threshold, or the duration clock is running", "petrol"],
             ] as const
           ).map(([k, v, sub, tone]) => (
             <div key={k} className="rounded-xl border border-slate-200 p-4">

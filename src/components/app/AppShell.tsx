@@ -12,6 +12,7 @@ import {
   FileBarChart2,
   FileSignature,
   FileText,
+  Inbox as InboxIcon,
   LayoutDashboard,
   Radar,
   Search,
@@ -52,6 +53,7 @@ const NAV = [
   {
     heading: "Act",
     items: [
+      { href: "/app/inbox", label: "Inbox", sub: "Flags needing action", Icon: InboxIcon },
       { href: "/app/deadlines", label: "Deadlines", sub: "Clocks and elections", Icon: CalendarClock },
       { href: "/app/notices", label: "Notice packages", sub: "Assembled for counsel", Icon: FileSignature },
       { href: "/app/report", label: "Portfolio report", sub: "The period, printable", Icon: FileBarChart2 },
@@ -112,6 +114,29 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  /* The inbox badge: how many flags are NEW. Polled so the rail stays
+     live without a refresh — the badge appears the moment a flag
+     files, whichever page is open. */
+  const [newFlags, setNewFlags] = useState(0);
+  useEffect(() => {
+    let live = true;
+    const pull = () => {
+      if (document.visibilityState === "hidden") return;
+      fetch("/app/api/findings")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (live && d?.counts) setNewFlags(d.counts.new ?? 0);
+        })
+        .catch(() => {});
+    };
+    pull();
+    const t = setInterval(pull, 60_000);
+    return () => {
+      live = false;
+      clearInterval(t);
+    };
+  }, [pathname]);
+
   let index = 0;
   return (
     <nav className="space-y-4">
@@ -157,8 +182,16 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
                       <item.Icon className="h-4 w-4" />
                     </span>
                     <span className="text-left">
-                      <span className="block text-[0.8125rem] leading-tight">
+                      <span className="flex items-center gap-1.5 text-[0.8125rem] leading-tight">
                         {item.label}
+                        {item.href === "/app/inbox" && newFlags > 0 && (
+                          <span className="relative inline-flex">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-40" />
+                            <span className="relative inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-600 px-1 text-[0.625rem] font-bold leading-none text-white">
+                              {newFlags}
+                            </span>
+                          </span>
+                        )}
                       </span>
                       <span
                         className={cn(

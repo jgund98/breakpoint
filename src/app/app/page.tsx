@@ -174,11 +174,11 @@ export default function OverviewPage() {
       <Stagger className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Item>
           <Stat
-            label="Needs a decision"
+            label="Triggered"
             tone="brass"
             value={decisions.length}
-            sub="Cure elapsed or an election window is open."
-            href="/app/notices"
+            sub="Qualifying period complete. Each files a dated flag to the inbox."
+            href="/app/inbox"
           />
         </Item>
         <Item>
@@ -295,9 +295,9 @@ export default function OverviewPage() {
       <Panel flush>
         <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
           <PanelHead
-            title="Needs a decision"
-            hint="Cure elapsed, preconditions met."
-            right={<LinkButton href="/app/locations">All locations</LinkButton>}
+            title="Triggered positions"
+            hint="Qualifying period complete. Worked from the inbox, assembled on the notice desk."
+            right={<LinkButton href="/app/inbox">Open the inbox</LinkButton>}
           />
         </div>
 

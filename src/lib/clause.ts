@@ -719,34 +719,110 @@ export type ClauseState =
   | "watch"
   | "curing"
   | "claimable"
+  | "cured"
   | "remedy_active"
   | "election_open"
   | "blocked"
   | "precondition_unverified"
   | "lapsed";
 
+/*
+ * TERMINOLOGY LAW (2026-08-28, scored against the expert's key).
+ *
+ * "Cure" belongs to the LANDLORD: it is what the landlord may do after
+ * the tenant's notice. The period before the trigger is the QUALIFYING
+ * PERIOD, so the state while it runs is "Duration clock running", never
+ * "Cure running" — a real estate team reading "cure" assumes a notice
+ * went out. And nothing is ever labeled "Claimable": the failure has
+ * TRIGGERED; whether it is claimable is counsel's call after
+ * preconditions. (Internal keys keep their names; the labels carry the
+ * law.)
+ *
+ * PROVENANCE. States split into two families and the UI must say
+ * which: "observed" states derive from our own scans and date
+ * arithmetic; "reported" states depend on facts only the client can
+ * supply — whether notice was served, whether an election was made. A
+ * directory can never see a notice.
+ */
 export const STATE_META: Record<
   ClauseState,
-  { label: string; tone: "open" | "watch" | "brass" | "clay" | "muted"; blurb: string }
+  {
+    label: string;
+    tone: "open" | "watch" | "brass" | "clay" | "muted";
+    blurb: string;
+    source: "observed" | "reported";
+  }
 > = {
-  compliant: { label: "Compliant", tone: "open", blurb: "Every test satisfied." },
-  watch: { label: "Watch", tone: "watch", blurb: "Inside three points of a threshold." },
-  curing: { label: "Cure running", tone: "watch", blurb: "Failing, landlord still inside its window." },
-  claimable: { label: "Claimable", tone: "brass", blurb: "Cure elapsed. Notice not yet served." },
-  remedy_active: { label: "Remedy active", tone: "brass", blurb: "Notice served, alternative rent running." },
-  election_open: { label: "Election open", tone: "clay", blurb: "Cap reached. The right lapses if unexercised." },
-  blocked: { label: "Precondition unmet", tone: "clay", blurb: "A test fails but the tenant cannot claim." },
+  compliant: {
+    label: "Compliant",
+    tone: "open",
+    blurb: "Every test satisfied.",
+    source: "observed",
+  },
+  watch: {
+    label: "Watch",
+    tone: "watch",
+    blurb: "Inside three points of a threshold.",
+    source: "observed",
+  },
+  curing: {
+    label: "Duration clock running",
+    tone: "watch",
+    blurb: "Failing. The qualifying period has not yet completed.",
+    source: "observed",
+  },
+  claimable: {
+    label: "Triggered",
+    tone: "brass",
+    blurb: "Qualifying period complete. Review for notice.",
+    source: "observed",
+  },
+  /*
+   * Recovered after a prior trigger. Materially different from
+   * compliant: remedy continuity means a recurrence resumes relief
+   * immediately, with no fresh qualifying period.
+   */
+  cured: {
+    label: "Cured",
+    tone: "open",
+    blurb: "Recovered after a prior trigger. A recurrence resumes the remedy immediately.",
+    source: "observed",
+  },
+  remedy_active: {
+    label: "Remedy active",
+    tone: "brass",
+    blurb: "Notice served, alternative rent running.",
+    source: "reported",
+  },
+  election_open: {
+    label: "Election open",
+    tone: "clay",
+    blurb: "Cap reached. The right lapses if unexercised.",
+    source: "reported",
+  },
+  blocked: {
+    label: "Precondition unmet",
+    tone: "clay",
+    blurb: "A test fails but the tenant cannot claim.",
+    source: "observed",
+  },
   /*
    * Not the same as "unmet". Unmet is a finding; this is the absence of
-   * one. Presenting it as claimable would put money on the dashboard
+   * one. Presenting it as triggered would put money on the dashboard
    * that a precondition might quietly erase.
    */
   precondition_unverified: {
     label: "Confirm your store",
     tone: "watch",
     blurb: "A test fails, but we cannot yet confirm your own store is open and operating.",
+    source: "observed",
   },
-  lapsed: { label: "Lapsed", tone: "muted", blurb: "Window closed without election." },
+  lapsed: {
+    label: "Lapsed",
+    tone: "muted",
+    blurb: "Window closed without election.",
+    source: "reported",
+  },
 };
 
 export type ClaimStatus = {
@@ -1061,7 +1137,11 @@ export function evaluateClause(
   let state: ClauseState;
 
   if (!anyFailing) {
-    state = nearMiss ? "watch" : "compliant";
+    state = claim.previouslyTriggered
+      ? "cured"
+      : nearMiss
+        ? "watch"
+        : "compliant";
   } else if (failedPre.length > 0) {
     state = "blocked";
   } else if ((claim.unverifiedPreconditions ?? []).length > 0) {

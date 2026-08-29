@@ -122,6 +122,19 @@ type ScanRunRow = {
   created_at: string;
 };
 
+type FlagAdminRow = {
+  id: number;
+  location_ref: string;
+  center_name: string;
+  kind: string;
+  headline: string;
+  flagged_on: string;
+  status: "new" | "in_review" | "handled";
+  actor: string | null;
+  handled_at: string | null;
+  created_at: string;
+};
+
 type Account = {
   accountManager: string | null;
   contractStart: string | null;
@@ -268,6 +281,7 @@ export function OpsBoard({
   const [pipeline, setPipeline] = useState<PipelineRow[]>([]);
   const [noticeStatus, setNoticeStatus] = useState<NoticeStatusRow[]>([]);
   const [scanRuns, setScanRuns] = useState<ScanRunRow[]>([]);
+  const [flags, setFlags] = useState<FlagAdminRow[]>([]);
   const [account, setAccount] = useState<Account>({
     accountManager: null,
     contractStart: null,
@@ -297,6 +311,7 @@ export function OpsBoard({
     setPipeline(data.pipeline ?? []);
     setNoticeStatus(data.noticeStatus ?? []);
     setScanRuns(data.scanRuns ?? []);
+    setFlags(data.flags ?? []);
     setAccount({
       accountManager: data.org?.accountManager ?? null,
       contractStart: data.org?.contractStart?.slice?.(0, 10) ?? null,
@@ -703,6 +718,85 @@ export function OpsBoard({
           )}
         </Section>
       </Rise>
+
+      {/* ---- the client's flag inbox, ops view: what the client has
+              or has not acted on, and the power to move it for them
+              on the record ---- */}
+      {flags.length > 0 && (
+        <Rise delay={210}>
+          <Section
+            title="Client flag inbox"
+            blurb={`${flags.filter((f) => f.status === "new").length} new · ${flags.filter((f) => f.status === "in_review").length} in review · ${flags.filter((f) => f.status === "handled").length} handled`}
+            flush
+          >
+            <ul className="divide-y divide-slate-100">
+              {flags.slice(0, 12).map((f) => (
+                <li
+                  key={f.id}
+                  className="flex flex-wrap items-center justify-between gap-3 px-6 py-3"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2 text-[0.8125rem]">
+                      <span className="font-semibold text-slate-900">
+                        {f.center_name}
+                      </span>
+                      <span className="text-slate-400">{f.location_ref}</span>
+                      <Badge
+                        tone={
+                          f.status === "new"
+                            ? "rose"
+                            : f.status === "in_review"
+                              ? "indigo"
+                              : "emerald"
+                        }
+                      >
+                        {f.status === "new"
+                          ? "New"
+                          : f.status === "in_review"
+                            ? "In review"
+                            : "Handled"}
+                      </Badge>
+                    </p>
+                    <p className="mt-0.5 text-[0.75rem] text-slate-500">
+                      {f.headline} · flagged {f.flagged_on?.slice(0, 10)}
+                      {f.status === "handled" && f.actor ? ` · by ${f.actor}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    {f.status !== "handled" ? (
+                      <Btn
+                        variant="ghost"
+                        onClick={() =>
+                          void post({
+                            action: "finding_move",
+                            id: f.id,
+                            status: "handled",
+                          })
+                        }
+                      >
+                        Mark handled
+                      </Btn>
+                    ) : (
+                      <Btn
+                        variant="ghost"
+                        onClick={() =>
+                          void post({
+                            action: "finding_move",
+                            id: f.id,
+                            status: "new",
+                          })
+                        }
+                      >
+                        Reopen
+                      </Btn>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        </Rise>
+      )}
 
       {/* ---- the recorder: monitoring as a record ---- */}
       {hasPortfolio && (

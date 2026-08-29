@@ -27,10 +27,13 @@ export type TableRow = {
 
 const VIEWS = [
   { id: "all", label: "All locations" },
-  { id: "decision", label: "Needs a decision" },
-  { id: "watch", label: "Watch and curing" },
+  { id: "decision", label: "Triggered" },
+  { id: "watch", label: "Watch and clock running" },
   { id: "running", label: "Remedy running" },
 ] as const;
+
+/** States that rest on client-reported facts rather than our scans. */
+const REPORTED = new Set(["remedy_active", "election_open", "lapsed"]);
 
 type SortKey = "monthly" | "center" | "clock";
 
@@ -235,6 +238,13 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
                   <Pill tone={r.stateTone} dot>
                     {r.stateLabel}
                   </Pill>
+                  {/* provenance: these states rest on facts only the
+                      client can supply — notice served, election made */}
+                  {REPORTED.has(r.stateKey) && (
+                    <p className="mt-1 text-[0.625rem] font-medium uppercase tracking-wide text-slate-400">
+                      From your records
+                    </p>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-[0.8125rem] text-slate-700">
                   {r.failing || <span className="text-slate-400">None</span>}
@@ -273,6 +283,16 @@ export function LocationsTable({ rows }: { rows: TableRow[] }) {
           </tbody>
         </table>
       </div>
+
+      {/* the key, exactly where the pills are: quiet, one line each */}
+      {filtered.length > 0 && (
+        <p className="border-t border-slate-100 px-6 py-3 text-[0.6875rem] leading-relaxed text-slate-400">
+          Evidence: a Signal is one secondary source; Corroborated is two that
+          agree; Verified is a primary source and can carry a notice. A state
+          marked &#8220;from your records&#8221; rests on facts you supply —
+          a served notice, an election — that no scan can see.
+        </p>
+      )}
 
       {rows.length === 0 && (
         <EmptyState

@@ -14,6 +14,7 @@ import {
   verificationOf,
 } from "@/lib/clause";
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
+import { nextStepsFor } from "@/lib/findings";
 import { TODAY, rowById, rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
@@ -79,6 +80,12 @@ export default async function LocationPage({
             <Pill tone={tone} dot>
               {STATE_META[ev.state].label}
             </Pill>
+            {/* provenance: an observed state comes from our scans; a
+                reported one rests on facts only the client can supply
+                (notice served, election made). The UI says which. */}
+            {STATE_META[ev.state].source === "reported" && (
+              <Pill tone="muted">From your records</Pill>
+            )}
           </div>
           <p className="mt-2 text-[0.9375rem] text-slate-700">
             {center.city}, {center.state} · {center.format} · {center.owner}
@@ -109,6 +116,34 @@ export default async function LocationPage({
           )}
         </div>
       </div>
+
+      {/* ---- when this location is flagged, the path is spelled out.
+              A reader who has never worked a co-tenancy claim leaves
+              this panel knowing exactly what happens next. ---- */}
+      {(ev.state === "claimable" ||
+        ev.state === "election_open" ||
+        ev.state === "precondition_unverified") && (
+        <Panel flush className="border-l-4 border-l-amber-400">
+          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <PanelHead
+              title="What happens next"
+              hint="The path from this flag to a served notice, on this location's own facts."
+            />
+          </div>
+          <ol className="grid gap-3 px-5 py-4 sm:px-6 lg:grid-cols-2">
+            {nextStepsFor(row).map((s, i) => (
+              <li key={i} className="flex gap-2.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-indigo-600 text-[0.625rem] font-bold text-white shadow-sm">
+                  {i + 1}
+                </span>
+                <p className="text-[0.8125rem] leading-relaxed text-slate-700">
+                  {s}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      )}
 
       {/* ---- the simulator ---- */}
       <Rise>

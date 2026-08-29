@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     if (!org)
       return NextResponse.json({ error: "Unknown client." }, { status: 404 });
 
-    const [settings, configs, sources, requests, pipeline, alerts, notices, runs] =
+    const [settings, configs, sources, requests, pipeline, alerts, notices, runs, flags] =
       await Promise.all([
         db().query(`select scan_schedule from org_settings where org_slug = $1`, [
           org.slug,
@@ -147,6 +147,13 @@ export async function GET(request: NextRequest) {
             order by created_at desc limit 8`,
           [org.slug],
         ),
+        db().query(
+          `select id, location_ref, center_name, kind, headline, flagged_on,
+                  status, actor, handled_at, created_at
+             from finding_alert where org_slug = $1
+            order by flagged_on desc, id desc limit 100`,
+          [org.slug],
+        ),
       ]);
 
     return NextResponse.json({
@@ -168,6 +175,7 @@ export async function GET(request: NextRequest) {
       alerts: alerts.rows,
       noticeStatus: notices.rows,
       scanRuns: runs.rows,
+      flags: flags.rows,
     });
   }
 
@@ -277,12 +285,32 @@ export async function POST(request: NextRequest) {
   const action = clip(payload.action, 32);
 
   /* ---- org-scoped actions name their org, always ---- */
-  const ORG_SCOPED = ["org_schedule", "location", "request_handled"];
+  const ORG_SCOPED = ["org_schedule", "location", "request_handled", "finding_move"];
   let org: Awaited<ReturnType<typeof orgBySlug>> = null;
   if (ORG_SCOPED.includes(action)) {
     org = await orgBySlug(clip(payload.org, 64));
     if (!org)
       return NextResponse.json({ error: "Unknown client." }, { status: 400 });
+  }
+
+  /* ops moving a client flag through its lifecycle, on the record */
+  if (action === "finding_move" && org) {
+    const id = Number(payload.id);
+    const status = clip(payload.status, 16);
+    if (!Number.isInteger(id) || !["new", "in_review", "handled"].includes(status))
+      return NextResponse.json({ error: "Unreadable move." }, { status: 400 });
+    const { rowCount } = await db().query(
+      `update finding_alert
+          set status = $1, actor = 'ops',
+              handled_at = case when $1 = 'handled' then now() else null end,
+              updated_at = now()
+        where id = $2 and org_slug = $3`,
+      [status, id, org.slug],
+    );
+    if (!rowCount)
+      return NextResponse.json({ error: "No such flag." }, { status: 404 });
+    await audit("finding_move", org.slug, String(id), status);
+    return NextResponse.json({ ok: true });
   }
 
   if (action === "org_schedule" && org) {

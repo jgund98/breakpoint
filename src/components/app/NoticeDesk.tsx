@@ -160,6 +160,13 @@ export function NoticeDesk({ candidates }: { candidates: NoticeCandidate[] }) {
                 </div>
 
                 <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {/* the package itself, timestamped at download */}
+                  <a
+                    href={`/app/api/notice-package?location=${c.id}`}
+                    className="text-[0.75rem] font-semibold whitespace-nowrap text-indigo-700 hover:underline"
+                  >
+                    Download package
+                  </a>
                   {stage === "served" || stage === "declined" ? (
                     <ActionButton
                       variant="quiet"

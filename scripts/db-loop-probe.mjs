@@ -488,6 +488,71 @@ const { rows: ns } = await sql.query(
 );
 check("notice status persisted", ns.length === 1 && ns[0].stage === "acknowledged");
 
+/* the flag inbox: reconcile files episodes; lifecycle moves stick and
+   restore (start -> in_review, reopen -> new leaves prod untouched) */
+const inbox = await page.evaluate(async () => {
+  const g = await fetch("/app/api/findings");
+  if (!g.ok) return { status: g.status };
+  const d = await g.json();
+  const first = (d.flags ?? []).find((f) => f.status === "new");
+  let moved = null;
+  let restored = null;
+  if (first) {
+    const p1 = await fetch("/app/api/findings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: first.id, action: "start" }),
+    });
+    moved = p1.ok ? (await p1.json()).status : null;
+    const p2 = await fetch("/app/api/findings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: first.id, action: "reopen" }),
+    });
+    restored = p2.ok ? (await p2.json()).status : null;
+  }
+  return {
+    status: g.status,
+    total: (d.flags ?? []).length,
+    newCount: d.counts?.new ?? 0,
+    moved,
+    restored,
+  };
+});
+check(
+  `flag inbox reconciled (${inbox.total ?? 0} flags on file)`,
+  inbox.status === 200 && (inbox.total ?? 0) > 0,
+);
+check(
+  "flag lifecycle moves and restores",
+  inbox.moved === "in_review" && inbox.restored === "new",
+);
+
+/* the notice package downloads as a self-contained document */
+const pkg = await page.evaluate(async () => {
+  const list = await fetch("/app/api/findings").then((r) => r.json());
+  const ref = list.flags?.find((f) => f.kind === "triggered")?.location_ref;
+  if (!ref) return { skip: true };
+  const r = await fetch(`/app/api/notice-package?location=${ref}`);
+  const text = await r.text();
+  return {
+    status: r.status,
+    disposition: r.headers.get("content-disposition") ?? "",
+    hasLetter: /NOTICE OF CO-TENANCY FAILURE/.test(text),
+    hasExhibits: /Exhibit A/.test(text) && /Exhibit B/.test(text) && /Exhibit C/.test(text),
+    hasDisclaimer: /Not legal advice/.test(text),
+  };
+});
+check(
+  "notice package downloads with letter, exhibits, and disclaimer",
+  pkg.skip ||
+    (pkg.status === 200 &&
+      pkg.disposition.includes("attachment") &&
+      pkg.hasLetter &&
+      pkg.hasExhibits &&
+      pkg.hasDisclaimer),
+);
+
 /* Theo answers from the portfolio, server-side */
 const theo = await page.evaluate(async () => {
   const res = await fetch("/app/api/theo", {
