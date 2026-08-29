@@ -146,7 +146,7 @@ export function Theo() {
           className="pointer-events-none absolute inset-x-0 top-0 h-64"
           style={{
             background:
-              "radial-gradient(65% 100% at 50% 0%, rgba(99,102,241,0.09), transparent 75%)",
+              "radial-gradient(45% 90% at 30% 0%, rgba(66,133,244,0.08), transparent 70%), radial-gradient(45% 90% at 70% 0%, rgba(155,114,203,0.08), transparent 70%)",
           }}
         />
 
@@ -157,8 +157,8 @@ export function Theo() {
               <div className="flex items-center gap-4">
                 {/* the mark, haloed and breathing */}
                 <span className="relative flex h-12 w-12 items-center justify-center">
-                  <span className="absolute inset-0 animate-pulse rounded-2xl bg-indigo-400/40 blur-xl" />
-                  <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-lg shadow-indigo-500/40">
+                  <span className="absolute inset-0 animate-pulse rounded-2xl bg-gradient-to-br from-[#4285f4]/40 to-[#9b72cb]/40 blur-xl" />
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4285f4] via-[#9b72cb] to-[#d96570] shadow-lg shadow-[#9b72cb]/40">
                     <Sparkles className="h-5 w-5 text-white" />
                   </span>
                 </span>
@@ -166,7 +166,7 @@ export function Theo() {
                   <p className="text-[1rem] font-bold tracking-tight text-slate-900">
                     {theo.name}
                   </p>
-                  <p className="text-[0.75rem] font-medium text-indigo-600">
+                  <p className="text-[0.75rem] font-medium text-[#4285f4]">
                     {theo.role}
                   </p>
                 </div>
@@ -205,7 +205,7 @@ export function Theo() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-end"
                 >
-                  <p className="max-w-[80%] rounded-2xl rounded-br-md bg-gradient-to-br from-indigo-600 to-violet-600 px-4 py-2.5 text-[0.875rem] text-white shadow-md shadow-indigo-500/25">
+                  <p className="max-w-[80%] rounded-2xl rounded-br-md bg-slate-100 px-4 py-2.5 text-[0.9375rem] text-slate-900">
                     {t.text}
                   </p>
                 </motion.div>
@@ -215,13 +215,10 @@ export function Theo() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex gap-3"
+                  className="flex flex-col"
                 >
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
-                    <Sparkles className="h-3.5 w-3.5 text-white" />
-                  </span>
                   <div className="min-w-0 flex-1 space-y-3">
-                    <p className="text-[0.75rem] font-medium text-indigo-600">
+                    <p className="text-[0.75rem] font-medium text-slate-400">
                       {t.answer.interpreted}
                     </p>
                     {t.answer.lead && (
@@ -332,10 +329,15 @@ export function Theo() {
 
           {thinking && (
             <div className="flex items-center gap-3 text-[0.8125rem] text-slate-500">
-              <span className="relative flex h-7 w-7 items-center justify-center">
-                <span className="absolute inset-0 animate-pulse rounded-lg bg-indigo-400/30 blur-md" />
-                <span className="relative flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
-                  <Sparkles className="h-3.5 w-3.5 animate-pulse text-white" />
+              <span className="bp-think inline-flex h-10 items-center rounded-full">
+                <span className="relative inline-flex h-10 items-center gap-1.5 rounded-full bg-white px-4 shadow-sm">
+                  {[0, 1, 2].map((i) => (
+                    <span
+                      key={i}
+                      className="bp-dot h-1.5 w-1.5 rounded-full bg-slate-600"
+                      style={{ animationDelay: `${i * 0.18}s` }}
+                    />
+                  ))}
                 </span>
               </span>
               Reading your portfolio
@@ -352,18 +354,18 @@ export function Theo() {
           }}
           className="flex items-center gap-2 border-t border-slate-100 bg-slate-50/60 p-3"
         >
-          <div className="bp-ai-glow h-10 flex-1 rounded-xl">
+          <div className="bp-ai-glow h-10 flex-1 rounded-full">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={`Ask ${theo.name}, or tell him to do something`}
-              className="h-10 w-full rounded-xl border border-transparent bg-white px-3.5 text-[0.875rem] text-slate-900 shadow-sm placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
+              className="h-10 w-full rounded-full border border-transparent bg-white px-4 text-[0.875rem] text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
           <button
             type="submit"
             disabled={!input.trim() || thinking}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/30 transition-all hover:from-indigo-500 hover:to-violet-500 active:scale-95 disabled:opacity-40 disabled:shadow-none"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#4285f4] to-[#9b72cb] text-white shadow-md shadow-[#9b72cb]/30 transition-all hover:opacity-90 active:scale-95 disabled:opacity-40 disabled:shadow-none"
           >
             <ArrowUp className="h-4 w-4" />
           </button>

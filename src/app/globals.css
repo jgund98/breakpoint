@@ -546,16 +546,17 @@ h4 {
    opaque and use --bp-glow-inner-r for its radius so the two curves
    stay concentric. */
 .bp-ai-glow {
-  --bp-glow-inner-r: 0.625rem;
+  --bp-glow-inner-r: 9999px;
   position: relative;
   padding: 3px;
   border-radius: calc(var(--bp-glow-inner-r) + 3px);
   background: conic-gradient(
     from var(--bp-glow-angle),
-    #818cf8,
-    #a855f7,
-    #e879f9,
-    #818cf8
+    #4285f4,
+    #9b72cb,
+    #d96570,
+    #9b72cb,
+    #4285f4
   );
   animation: bp-glow-spin 3.6s linear infinite;
 }
@@ -568,10 +569,11 @@ h4 {
   border-radius: inherit;
   background: conic-gradient(
     from var(--bp-glow-angle),
-    #818cf8,
-    #a855f7,
-    #e879f9,
-    #818cf8
+    #4285f4,
+    #9b72cb,
+    #d96570,
+    #9b72cb,
+    #4285f4
   );
   animation: bp-glow-spin 3.6s linear infinite;
   filter: blur(10px);
@@ -581,4 +583,36 @@ h4 {
 .bp-ai-glow > * {
   position: relative;
   border-radius: var(--bp-glow-inner-r);
+}
+
+
+/* The thinking halo: a soft multicolor arc breathing around the
+   indicator bubble while the answer is assembled. */
+.bp-think {
+  position: relative;
+}
+.bp-think::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 9999px;
+  background: conic-gradient(
+    from var(--bp-glow-angle),
+    #4285f4,
+    #9b72cb,
+    #d96570,
+    #9b72cb,
+    #4285f4
+  );
+  animation: bp-glow-spin 2.8s linear infinite;
+  filter: blur(8px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+@keyframes bp-dot {
+  0%, 60%, 100% { opacity: 0.25; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+.bp-dot {
+  animation: bp-dot 1.2s ease-in-out infinite;
 }
