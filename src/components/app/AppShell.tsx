@@ -388,6 +388,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const topbarMe = useIdentity();
 
   // Close on navigation, and stop the page behind the drawer scrolling
   // without losing the reader's place.
@@ -468,12 +469,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.75rem] font-bold text-white shadow-md shadow-indigo-500/25">
-                    {DEMO_USER.initials}
+                    {topbarMe.initials}
                   </div>
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
                 </div>
                 <span className="hidden whitespace-nowrap text-[0.8125rem] font-semibold text-slate-800 xl:block">
-                  {DEMO_USER.name}
+                  {topbarMe.name}
                 </span>
               </div>
             </div>
