@@ -205,10 +205,18 @@ export async function GET(request: NextRequest) {
           limit 60`,
       ),
     ]);
+    const fields = await db().query(
+      `select id, field_key, label, instruction, category, required, active, sort, source
+         from extraction_field
+        order by array_position(
+          array['identity','trigger','remedy','preconditions','status','review']::text[],
+          category), sort, created_at`,
+    );
     return NextResponse.json({
       queue: queue.rows,
       audit: audits.rows,
       jobs: jobs.rows,
+      fields: fields.rows,
     });
   }
 
@@ -335,6 +343,10 @@ export async function POST(request: NextRequest) {
     "directive_add",
     "directive_toggle",
     "directive_remove",
+    "xfield_add",
+    "xfield_update",
+    "xfield_toggle",
+    "xfield_remove",
   ]);
   const myRole = staff.staffRole ?? "admin";
   if (myRole === "observer")
@@ -975,6 +987,100 @@ export async function POST(request: NextRequest) {
     );
     if (on) await resetDemoOrg(org.slug);
     await audit("demo_mode", org.slug, org.slug, on ? "on (reset ran)" : "off");
+    return NextResponse.json({ ok: true });
+  }
+
+  /* ---- extraction capture checklist ----
+     The expert's schema as operations data: what every abstraction
+     must hunt for. Assembled into the extraction prompt at run time
+     (lib/extraction-schema.ts). */
+  if (action === "xfield_add") {
+    const label = clip(payload.label, 120);
+    const instruction = clip(payload.instruction, 2000);
+    const category = clip(payload.category, 24) || "review";
+    if (!label || !instruction)
+      return NextResponse.json(
+        { error: "A label and an instruction are required." },
+        { status: 400 },
+      );
+    if (!["identity", "trigger", "remedy", "preconditions", "status", "review"].includes(category))
+      return NextResponse.json({ error: "Unknown category." }, { status: 400 });
+    const key = label
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 64);
+    const dup = await db().query(
+      `select 1 from extraction_field where field_key = $1`,
+      [key],
+    );
+    if (dup.rows.length)
+      return NextResponse.json(
+        { error: "A field with that name already exists." },
+        { status: 409 },
+      );
+    await db().query(
+      `insert into extraction_field (field_key, label, instruction, category, required, sort, source)
+       values ($1, $2, $3, $4, $5, 900, 'ops')`,
+      [key, label, instruction, category, payload.required === true],
+    );
+    await audit("xfield_add", null, key, `by ${staff.email}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "xfield_update") {
+    const id = clip(payload.id, 64);
+    const label = clip(payload.label, 120);
+    const instruction = clip(payload.instruction, 2000);
+    if (!id || !label || !instruction)
+      return NextResponse.json(
+        { error: "A label and an instruction are required." },
+        { status: 400 },
+      );
+    const r = await db().query(
+      `update extraction_field
+          set label = $2, instruction = $3, required = $4, updated_at = now()
+        where id = $1 returning field_key`,
+      [id, label, instruction, payload.required === true],
+    );
+    if (!r.rows[0])
+      return NextResponse.json({ error: "Unknown field." }, { status: 404 });
+    await audit("xfield_update", null, r.rows[0].field_key, `by ${staff.email}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "xfield_toggle") {
+    const id = clip(payload.id, 64);
+    const r = await db().query(
+      `update extraction_field set active = not active, updated_at = now()
+        where id = $1 returning field_key, active`,
+      [id],
+    );
+    if (!r.rows[0])
+      return NextResponse.json({ error: "Unknown field." }, { status: 404 });
+    await audit(
+      "xfield_toggle",
+      null,
+      r.rows[0].field_key,
+      `${r.rows[0].active ? "on" : "off"} by ${staff.email}`,
+    );
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "xfield_remove") {
+    const id = clip(payload.id, 64);
+    /* Only console-added fields can be deleted; the expert's schema
+       rows can be switched off but never destroyed. */
+    const r = await db().query(
+      `delete from extraction_field where id = $1 and source = 'ops' returning field_key`,
+      [id],
+    );
+    if (!r.rows[0])
+      return NextResponse.json(
+        { error: "Expert-schema fields can be switched off, not deleted." },
+        { status: 400 },
+      );
+    await audit("xfield_remove", null, r.rows[0].field_key, `by ${staff.email}`);
     return NextResponse.json({ ok: true });
   }
 

@@ -20,6 +20,7 @@
  * produces a proposed record that a person approves.
  */
 import { assembleDirectives } from "@/lib/directives";
+import { captureChecklist } from "@/lib/extraction-schema";
 
 export const PROMPT_VERSION = "bp-extract-2026-08-29-1";
 
@@ -92,8 +93,14 @@ class AnthropicProvider implements ExtractionProvider {
 
   async extract(input: ExtractionInput): Promise<ExtractionResult> {
     let canon = "";
+    let checklist = "";
     try {
       canon = await assembleDirectives(input.orgSlug);
+    } catch {
+      /* enhancement, not dependency */
+    }
+    try {
+      checklist = await captureChecklist();
     } catch {
       /* enhancement, not dependency */
     }
@@ -109,6 +116,7 @@ class AnthropicProvider implements ExtractionProvider {
       "Extract only what the document actually says; never infer a term the text does not state. Where the document is silent, use null. Quote operative language verbatim.",
       "Capture every tenant-critical find you encounter (notice provisions, renewal options, estoppel obligations, exclusives, radius, assignment, kick-outs, percentage rent) even though the errand is co-tenancy.",
       canon ? `Standing extraction canon:\n${canon}` : "",
+      checklist,
     ]
       .filter(Boolean)
       .join("\n\n");
