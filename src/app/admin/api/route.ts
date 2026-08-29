@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
 
   /* ---- the cross-client extraction queue ---- */
   if (request.nextUrl.searchParams.get("pipeline")) {
-    const [queue, audits] = await Promise.all([
+    const [queue, audits, jobs] = await Promise.all([
       db().query(
         `select p.org_slug, o.name as org_name, p.location_ref, p.stage,
                 p.extracted, p.source_excerpt, p.confidence, p.note,
@@ -191,8 +191,24 @@ export async function GET(request: NextRequest) {
         `select actor, action, org_slug, subject, detail, created_at
            from audit_log order by created_at desc limit 80`,
       ),
+      db().query(
+        `select j.id, j.org_slug, o.name as org_name, j.location_ref,
+                j.status, j.provider, j.model, j.prompt_version,
+                j.confidence, j.result, j.citations, j.error,
+                j.created_by, j.created_at, d.filename
+           from extraction_job j
+           left join org o on o.slug = j.org_slug
+           left join lease_document d on d.id = j.document_id
+          where j.status in ('queued','extracting','review','proposed','failed')
+          order by j.created_at desc
+          limit 60`,
+      ),
     ]);
-    return NextResponse.json({ queue: queue.rows, audit: audits.rows });
+    return NextResponse.json({
+      queue: queue.rows,
+      audit: audits.rows,
+      jobs: jobs.rows,
+    });
   }
 
   /* ---- HQ: the whole company ---- */
@@ -406,6 +422,47 @@ export async function POST(request: NextRequest) {
     }
     await audit("location_saved", org.slug, ref);
     return NextResponse.json({ ok: true });
+  }
+
+  /* ---- ingestion: a person signs off on an extracted document ---- */
+  if (action === "job_approve" || action === "job_reject") {
+    const id = Number(payload.id);
+    if (!Number.isInteger(id))
+      return NextResponse.json({ error: "No job." }, { status: 400 });
+    const { rows: jobs } = await db().query(
+      `select id, org_slug, location_ref, status,
+              (select filename from lease_document d where d.id = document_id) as filename
+         from extraction_job where id = $1`,
+      [id],
+    );
+    const job = jobs[0];
+    if (!job || !["review", "proposed"].includes(job.status))
+      return NextResponse.json(
+        { error: "Nothing awaiting a decision on that job." },
+        { status: 404 },
+      );
+    const to = action === "job_approve" ? "approved" : "rejected";
+    await db().query(
+      `update extraction_job
+          set status = $2, reviewed_by = 'ops',
+              error = case when $2 = 'rejected' then $3 else error end,
+              updated_at = now()
+        where id = $1`,
+      [id, to, clip(payload.reason, 500) || "Rejected by review."],
+    );
+    await audit(`extraction_${to}`, job.org_slug, job.location_ref, job.filename);
+    await notify(
+      job.org_slug,
+      "extraction",
+      to === "approved"
+        ? `${job.filename ?? "Your document"}: record approved`
+        : `${job.filename ?? "Your document"} needs another look`,
+      to === "approved"
+        ? `A person reviewed the extracted record for ${job.location_ref} and signed off. It is on file under watch.`
+        : `The extraction could not be approved as read. ${clip(payload.reason, 300) || "Operations will follow up."}`,
+      job.location_ref,
+    );
+    return NextResponse.json({ ok: true, status: to });
   }
 
   /* ---- the abstraction lifecycle ---- */

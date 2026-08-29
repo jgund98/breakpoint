@@ -13,7 +13,9 @@
  * the counter genuinely resets to zero in between.
  */
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import { Pill } from "@/components/app/ui";
 import { Segmented } from "@/components/admin/ui";
 import { prettyDate } from "@/lib/clause";
@@ -49,6 +51,7 @@ const STATUS_LABEL: Record<FlagRow["status"], string> = {
 };
 
 export function InboxList() {
+  const router = useRouter();
   const [flags, setFlags] = useState<FlagRow[] | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [view, setView] = useState<"open" | "handled" | "all">("open");
@@ -210,13 +213,30 @@ export function InboxList() {
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
                     {f.status === "new" && (
+                      /* Starting a review IS opening the file: the flag
+                         moves to "in review" and you land on the
+                         location, where Theo's read and the next steps
+                         are waiting. */
                       <button
-                        onClick={() => move(f.id, "start")}
+                        onClick={() => {
+                          void move(f.id, "start");
+                          router.push(`/app/locations/${f.location_ref}`);
+                        }}
                         disabled={busy === f.id}
-                        className="inline-flex h-9 items-center rounded-xl bg-indigo-600 px-3.5 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-md shadow-indigo-500/30 transition-all hover:bg-indigo-500 active:scale-95 disabled:opacity-50"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 text-[0.8125rem] font-semibold whitespace-nowrap text-white shadow-md shadow-indigo-500/30 transition-all hover:bg-indigo-500 active:scale-95 disabled:opacity-50"
                       >
-                        Start review
+                        Review
+                        <ArrowRight className="h-3.5 w-3.5" />
                       </button>
+                    )}
+                    {f.status === "in_review" && (
+                      <Link
+                        href={`/app/locations/${f.location_ref}`}
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 text-[0.8125rem] font-semibold whitespace-nowrap text-indigo-800 shadow-sm transition-all hover:bg-indigo-100 active:scale-95"
+                      >
+                        Open the file
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
                     )}
                     {f.status !== "handled" && (
                       <button

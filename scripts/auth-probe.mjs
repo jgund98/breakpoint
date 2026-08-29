@@ -418,6 +418,94 @@ check(
   deadJoined.status === 401,
 );
 
+console.log("--- ingestion pipeline: upload -> read -> review -> approve ---");
+const FICTIONAL_LEASE = [
+  "FICTIONAL TEST DOCUMENT - synthetic lease text for pipeline testing.",
+  "Section 7.02 Co-Tenancy. So long as Nordstrom is open and operating in the Shopping Center, Tenant's obligations continue unmodified.",
+  "In addition, if less than 80% of the inline Gross Leasable Area is open and operating for 3 consecutive months, a Co-Tenancy Failure shall exist.",
+  "Upon such failure and written notice by Tenant, Tenant may pay 4% of Gross Sales in lieu of Fixed Minimum Rent.",
+  "Section 21. Notices shall be sent to Landlord at the notice address stated in the Basic Lease Provisions.",
+  "Section 24. Tenant shall have one option to renew the Term for five (5) years.",
+].join("\n");
+const mkForm = () => {
+  const form = new FormData();
+  form.append(
+    "file",
+    new File([FICTIONAL_LEASE], "probe-fictional-amendment.txt", {
+      type: "text/plain",
+    }),
+  );
+  form.append("locationRef", "AF-1007");
+  form.append("kind", "amendment");
+  return form;
+};
+const vUp = await fetch(`${BASE}/app/api/documents`, {
+  method: "POST",
+  headers: { cookie: `${GATE}; bp_session=${viewerTok}` },
+  body: mkForm(),
+});
+check("viewer cannot upload a document (403)", vUp.status === 403);
+const up = await fetch(`${BASE}/app/api/documents`, {
+  method: "POST",
+  headers: { cookie: `${GATE}; bp_session=${counselTok}` },
+  body: mkForm(),
+});
+const upBody = await up.json();
+check(
+  `counsel uploads; pipeline reads it (provider ${upBody.provider}, status ${upBody.status})`,
+  up.status === 200 && upBody.jobId && ["review", "proposed"].includes(upBody.status),
+);
+const { rows: jobRows } = await sql.query(
+  `select j.status, j.provider, j.confidence, j.result, j.citations,
+          (select count(*)::int from document_text where document_id = j.document_id) as pages
+     from extraction_job j where j.id = $1`,
+  [upBody.jobId],
+);
+const jr = jobRows[0];
+const limbs = jr?.result?.co_tenancy_limbs ?? [];
+const finds = jr?.result?.tenant_critical_finds ?? [];
+check(
+  `text extracted (${jr?.pages} pages) and citations anchored (${(jr?.citations ?? []).length})`,
+  (jr?.pages ?? 0) >= 1 && (jr?.citations ?? []).length >= 3,
+);
+check(
+  `the scanner found the clause: ${limbs.length} limbs incl. the 80% floor and Nordstrom`,
+  limbs.some((l) => l.type === "pct" && l.threshold === 80) &&
+    limbs.some((l) => l.type === "named" && /nordstrom/i.test(l.name ?? "")),
+);
+check(
+  `tenant-critical finds kept (${finds.map((f) => f.kind).join(", ")})`,
+  finds.some((f) => f.kind === "notice_address") &&
+    finds.some((f) => f.kind === "renewal_option"),
+);
+const deskList = await demo.get("/admin/api?pipeline=1").then((r) => r.json());
+check(
+  "the document appears on the extraction desk",
+  (deskList.jobs ?? []).some((j) => j.id === upBody.jobId),
+);
+const approveJob = await demo.post("/admin/api", {
+  action: "job_approve",
+  id: upBody.jobId,
+});
+check("ops approves the record", approveJob.status === 200);
+const { rows: approvedRows } = await sql.query(
+  `select status, reviewed_by from extraction_job where id = $1`,
+  [upBody.jobId],
+);
+check(
+  "approval is on the record",
+  approvedRows[0]?.status === "approved" && approvedRows[0]?.reviewed_by === "ops",
+);
+const { rows: ingestNotif } = await sql.query(
+  `select count(*)::int as n from notification
+    where org_slug = 'abercrombie-fitch' and kind = 'extraction'
+      and created_at > now() - interval '5 minutes'`,
+);
+check(
+  `the client was told at read and at approval (${ingestNotif[0].n} notifications)`,
+  ingestNotif[0].n >= 2,
+);
+
 console.log("--- sign-out ---");
 const out = await fetch(`${BASE}/login/api`, {
   method: "DELETE",
@@ -451,6 +539,23 @@ await sql.query(
 );
 await sql.query(
   `delete from audit_log where action like 'team_%' and created_at > now() - interval '15 minutes'`,
+);
+/* ingestion probe artifacts: the document cascades its text; the job
+   goes explicitly; the notifications and audits it produced go too */
+await sql.query(
+  `delete from extraction_job where location_ref = 'AF-1007'
+     and created_at > now() - interval '15 minutes'`,
+);
+await sql.query(
+  `delete from lease_document where filename = 'probe-fictional-amendment.txt'`,
+);
+await sql.query(
+  `delete from notification where kind = 'extraction'
+     and created_at > now() - interval '15 minutes'`,
+);
+await sql.query(
+  `delete from audit_log where action in ('document_uploaded','extraction_run','extraction_approved','extraction_rejected')
+     and created_at > now() - interval '15 minutes'`,
 );
 const del5 = await sql.query(
   `delete from audit_log where action = 'notice_stage' and subject = 'AF-9999-PROBE'`,

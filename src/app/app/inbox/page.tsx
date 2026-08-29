@@ -31,11 +31,11 @@ export default function InboxPage() {
               {[
                 [
                   "New",
-                  "The evaluation crossed a line. Nobody has looked yet — the flag reads as unread until someone does.",
+                  "The evaluation crossed a line. Nobody has looked yet. Hitting Review marks it in review and opens the location's file, where Theo's read and the next steps are waiting.",
                 ],
                 [
                   "In review",
-                  "Someone owns it: verifying the evidence, confirming your store's standing, weighing the economics.",
+                  "Someone owns it and the file is open: verifying the evidence, confirming your store's standing, weighing the economics. Open the file again from the flag any time.",
                 ],
                 [
                   "Handled",

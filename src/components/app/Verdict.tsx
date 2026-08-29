@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { compactUsd, prettyDate, usd } from "@/lib/clause";
@@ -42,6 +43,7 @@ export function Verdict({
   const [flags, setFlags] = useState<FlagRow[] | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState<number | null>(null);
+  const router = useRouter();
 
   const load = useCallback(async () => {
     try {
@@ -144,11 +146,14 @@ export function Verdict({
                       </p>
                     </div>
                     <button
-                      onClick={() => start(f.id)}
+                      onClick={() => {
+                        void start(f.id);
+                        router.push(`/app/locations/${f.location_ref}`);
+                      }}
                       disabled={busy === f.id}
                       className="inline-flex h-8 shrink-0 items-center rounded-lg bg-white/90 px-3 text-[0.75rem] font-semibold whitespace-nowrap text-indigo-800 shadow-sm transition-all hover:bg-white active:scale-95 disabled:opacity-50"
                     >
-                      Start review
+                      Review
                     </button>
                   </li>
                 ))}
