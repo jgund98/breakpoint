@@ -4,16 +4,16 @@
  * what is on file is what keeps the vault from reading as one-way.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  if (request.cookies.get(SESSION_COOKIE)?.value !== SESSION_TOKEN)
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const org = currentOrg();
+  const org = { slug: session.orgSlug! };
 
   const id = request.nextUrl.searchParams.get("id");
   if (id) {

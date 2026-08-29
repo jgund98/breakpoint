@@ -24,6 +24,30 @@ import {
 import { cn } from "@/lib/cn";
 import { org, rows, summary } from "@/lib/portfolio";
 import { DEMO_USER } from "@/lib/session";
+
+/* The signed-in identity from the session, demo fallback until it
+   loads (and for the legacy demo cookie, which resolves to the same
+   seeded account). */
+function useIdentity() {
+  const [me, setMe] = useState<{ name: string; title: string | null; orgName: string | null } | null>(null);
+  useEffect(() => {
+    fetch("/app/api/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.name) setMe(d); })
+      .catch(() => {});
+  }, []);
+  return {
+    name: me?.name ?? DEMO_USER.name,
+    initials: (me?.name ?? DEMO_USER.name)
+      .split(/\s+/)
+      .map((w) => w[0])
+      .join("")
+      .replace(/[^A-Za-z]/g, "")
+      .slice(0, 2)
+      .toUpperCase(),
+    orgName: me?.orgName ?? org.name,
+  };
+}
 import { useScrollLock } from "@/lib/useScrollLock";
 import { Monogram, PovToggle } from "@/components/admin/ui";
 import { NotificationBell } from "./NotificationBell";
@@ -311,20 +335,21 @@ function LocationSearch() {
 }
 
 function UserCard({ onSignOut }: { onSignOut: () => void }) {
+  const me = useIdentity();
   return (
     <div className="border-t border-slate-100 bg-gradient-to-r from-slate-50/80 to-white p-4">
       <div className="flex items-center gap-3">
         <div className="relative">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-[0.8125rem] font-bold text-white shadow-lg shadow-indigo-500/30 ring-2 ring-white/60">
-            {DEMO_USER.initials}
+            {me.initials}
           </div>
           <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[0.8125rem] font-semibold text-slate-900">
-            {DEMO_USER.name}
+            {me.name}
           </p>
-          <p className="text-[0.6875rem] text-slate-400">{org.name}</p>
+          <p className="text-[0.6875rem] text-slate-400">{me.orgName}</p>
         </div>
         <button
           type="button"

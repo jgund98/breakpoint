@@ -32,6 +32,11 @@ export const PORTFOLIOS: Record<string, { locations: number; centers: number }> 
   },
 };
 
+/** Whether this org's roster is imported into the evaluation engine. */
+export function hasPortfolio(slug: string | null | undefined): boolean {
+  return !!slug && slug in PORTFOLIOS;
+}
+
 export async function orgBySlug(slug: string): Promise<OrgRow | null> {
   const clean = (slug ?? "").trim().slice(0, 64);
   if (!clean) return null;

@@ -6,27 +6,28 @@
  * in_review), handle (→ handled), reopen (→ new).
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
+import { hasPortfolio } from "@/lib/orgs";
 import { db } from "@/lib/db";
 import { expectedFlags } from "@/lib/findings";
 
 export const runtime = "nodejs";
 
-function authorized(request: NextRequest) {
-  return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorized(request))
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const org = currentOrg();
+  const org = { slug: session.orgSlug! };
 
   /* Reconcile: a flag row is created the first time an episode is
      seen. An episode already on file keeps its status — that is the
      whole point. A recovered-then-retripped location has a NEW episode
-     key and files a new row: the reset. */
-  for (const f of expectedFlags()) {
+     key and files a new row: the reset.
+     TENANCY: the evaluation engine currently holds one imported
+     portfolio; flags derive from it only for the org that owns it.
+     Any other org sees exactly its own (empty) inbox — never another
+     client's flags. */
+  for (const f of hasPortfolio(org.slug) ? expectedFlags() : []) {
     await db().query(
       `insert into finding_alert
          (org_slug, location_ref, center_name, kind, episode, headline, detail, flagged_on)
@@ -66,9 +67,15 @@ const MOVES: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request))
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const org = currentOrg();
+  if (!canWrite(session))
+    return NextResponse.json(
+      { error: "Your role is read-only here." },
+      { status: 403 },
+    );
+  const org = { slug: session.orgSlug! };
   const payload = (await request.json().catch(() => null)) as {
     id?: number;
     action?: string;

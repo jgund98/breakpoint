@@ -5,20 +5,16 @@
  * was told.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
-function authorized(request: NextRequest) {
-  return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorized(request))
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const org = currentOrg();
+  const org = { slug: session.orgSlug! };
   const [list, unread] = await Promise.all([
     db().query(
       `select id, kind, title, body, location_ref, created_at, read_at
@@ -39,9 +35,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request))
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const org = currentOrg();
+  const org = { slug: session.orgSlug! };
   const payload = (await request.json().catch(() => null)) as {
     id?: string;
     all?: boolean;

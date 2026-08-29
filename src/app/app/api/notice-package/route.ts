@@ -9,7 +9,8 @@
  * the money stated as an estimate — or it does not go out.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
+import { requireMember } from "@/lib/auth";
+import { hasPortfolio } from "@/lib/orgs";
 import { org, rows } from "@/lib/portfolio";
 import { buildNoticeLetter } from "@/lib/notice-letter";
 import {
@@ -27,8 +28,14 @@ const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export async function GET(request: NextRequest) {
-  if (request.cookies.get(SESSION_COOKIE)?.value !== SESSION_TOKEN)
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  /* Tenancy: the imported portfolio belongs to one org. Another org's
+     member gets a 404, indistinguishable from a wrong id. */
+  if (!hasPortfolio(session.orgSlug))
+    return NextResponse.json({ error: "No such location." }, { status: 404 });
 
   const id = (request.nextUrl.searchParams.get("location") ?? "").slice(0, 32);
   const r = rows.find((x) => x.id === id);

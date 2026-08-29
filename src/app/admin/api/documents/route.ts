@@ -12,7 +12,7 @@
  * id.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
+import { requireStaff } from "@/lib/auth";
 import { orgBySlug } from "@/lib/orgs";
 import { db } from "@/lib/db";
 
@@ -21,13 +21,10 @@ export const runtime = "nodejs";
 const MAX_BYTES = 4 * 1024 * 1024;
 const KINDS = ["lease", "amendment", "estoppel", "other"];
 
-function authorized(request: NextRequest) {
-  return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  const staff = await requireStaff(request);
+  if (!staff)
+    return NextResponse.json({ error: "Staff only." }, { status: 403 });
 
   const id = request.nextUrl.searchParams.get("id");
   if (id) {
@@ -64,8 +61,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  const staff = await requireStaff(request);
+  if (!staff)
+    return NextResponse.json({ error: "Staff only." }, { status: 403 });
 
   const form = await request.formData().catch(() => null);
   if (!form)
@@ -112,8 +110,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  const staff = await requireStaff(request);
+  if (!staff)
+    return NextResponse.json({ error: "Staff only." }, { status: 403 });
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "No document." }, { status: 400 });
   const org = await orgBySlug(request.nextUrl.searchParams.get("org") ?? "");

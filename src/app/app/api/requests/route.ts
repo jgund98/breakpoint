@@ -12,26 +12,27 @@
  * because a route handler should not trust that routing saved it.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 const KINDS = new Set(["manual_scan", "closure_report", "estoppel_review"]);
 
-function authorized(request: NextRequest) {
-  return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
-}
-
 /** Trim to a sane length; a request field is not a document upload. */
 const clip = (v: unknown, max: number) =>
   typeof v === "string" ? v.trim().slice(0, max) : "";
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request)) {
+  const session = await requireMember(request);
+  if (!session) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
+  if (!canWrite(session))
+    return NextResponse.json(
+      { error: "Your role is read-only here." },
+      { status: 403 },
+    );
 
   let payload: Record<string, unknown>;
   try {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
   const rawDate = clip(payload.observedOn, 10);
   const observedOn = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? rawDate : null;
 
-  const org = currentOrg();
+  const org = { slug: session.orgSlug! };
   const { rows } = await db().query(
     `insert into client_request
        (org_slug, location_ref, center_name, kind, store_name, observed_on, body)
@@ -79,7 +80,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) {
+  const session = await requireMember(request);
+  if (!session) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
@@ -88,7 +90,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "location is required." }, { status: 400 });
   }
 
-  const org = currentOrg();
+  const org = { slug: session.orgSlug! };
   const { rows } = await db().query(
     `select id, kind, store_name, observed_on, body, created_at, handled_at
        from client_request

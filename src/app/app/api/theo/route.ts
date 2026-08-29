@@ -18,8 +18,8 @@
  * alone. Theo is never down because a model is.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
+import { hasPortfolio } from "@/lib/orgs";
 import { assembleDirectives } from "@/lib/directives";
 import { ask, theo } from "@/lib/theo";
 import { STATE_META, formatCoTenancyRent } from "@/lib/clause";
@@ -81,10 +81,9 @@ type TaskOutcome = {
   links: TheoLink[];
 } | null;
 
-async function tryTask(question: string): Promise<TaskOutcome> {
+async function tryTask(question: string, slug: string): Promise<TaskOutcome> {
   const q = question.toLowerCase();
   const loc = resolveLocation(question);
-  const slug = currentOrg().slug;
 
   const wantsScan =
     /(request|run|order|schedule|start|get)[^.?!]*\bscan\b|\bscan\b[^.?!]*\b(request|now|please)\b/.test(q);
@@ -289,6 +288,7 @@ type ModelPolish = {
 };
 
 async function polishWithModel(
+  orgSlugForCanon: string,
   question: string,
   history: { q: string; a: string }[],
   engineInterpreted: string,
@@ -301,7 +301,7 @@ async function polishWithModel(
 
   let canon = "";
   try {
-    canon = await assembleDirectives(currentOrg().slug);
+    canon = await assembleDirectives(orgSlugForCanon);
   } catch {
     /* the canon is an enhancement, not a dependency */
   }
@@ -376,7 +376,8 @@ async function polishWithModel(
 }
 
 export async function POST(request: NextRequest) {
-  if (request.cookies.get(SESSION_COOKIE)?.value !== SESSION_TOKEN)
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const payload = (await request.json().catch(() => null)) as {
@@ -393,11 +394,28 @@ export async function POST(request: NextRequest) {
       }))
     : [];
 
+  /* Tenancy: Theo reasons over the imported portfolio, which belongs
+     to one org. Another org gets an honest answer, never A&F data. */
+  if (!hasPortfolio(session.orgSlug)) {
+    return NextResponse.json({
+      engine: "index",
+      answer: {
+        interpreted: question,
+        lead: "Your portfolio is not imported into the evaluation engine yet, so I have nothing of yours to reason over. Portfolio setup shows exactly where that stands.",
+        provenance: "",
+        blocks: [],
+        followUps: [],
+      },
+      links: [{ label: "Portfolio setup", href: "/app/setup" }],
+    });
+  }
+
   /* Layer 0: tasks. When the client asks Theo to DO something the
      product can do, he does it on the real write-path and confirms
-     with a receipt. Evaluated fresh on every request; nothing cached. */
+     with a receipt. Evaluated fresh on every request; nothing cached.
+     Viewers are read-only: they get answers, never writes. */
   try {
-    const task = await tryTask(question);
+    const task = canWrite(session) ? await tryTask(question, session.orgSlug!) : null;
     if (task) {
       return NextResponse.json({
         engine: "action",
@@ -438,6 +456,7 @@ export async function POST(request: NextRequest) {
     .slice(0, 6000);
 
   const polish = await polishWithModel(
+    session.orgSlug!,
     question,
     history,
     answer.interpreted,

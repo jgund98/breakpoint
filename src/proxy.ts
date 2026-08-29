@@ -40,10 +40,15 @@ export default function proxy(request: NextRequest) {
     (p) => pathname === p || pathname.startsWith(`${p}/`),
   );
 
-  if (
-    needsSession &&
-    request.cookies.get(SESSION_COOKIE)?.value !== SESSION_TOKEN
-  ) {
+  /* The edge checks only that a session cookie of plausible shape is
+     present (the legacy demo constant or a real 48-hex token). Actual
+     validation happens server-side in every operation — the edge has
+     no database and must not pretend to authenticate. */
+  const sessionValue = request.cookies.get(SESSION_COOKIE)?.value ?? "";
+  const plausible =
+    sessionValue === SESSION_TOKEN || /^[a-f0-9]{48}$/.test(sessionValue);
+
+  if (needsSession && !plausible) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

@@ -4,33 +4,37 @@
  * with the response on file. Ops reads the same rows on the board.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 const STAGES = ["served", "acknowledged", "disputed", "cured", "resolved"];
 
-function authorized(request: NextRequest) {
-  return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
-}
-
 export async function GET(request: NextRequest) {
-  if (!authorized(request))
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   const { rows } = await db().query(
     `select location_ref, stage, served_on, response, updated_at
        from notice_status where org_slug = $1`,
-    [currentOrg().slug],
+    [session.orgSlug!],
   );
   return NextResponse.json({ statuses: rows });
 }
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request))
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const org = currentOrg();
+  /* Recording what happened to a SERVED notice is a legal-record act:
+     owner, admin, or counsel. Analysts read; viewers read. */
+  if (!session.role || !["owner", "admin", "counsel"].includes(session.role))
+    return NextResponse.json(
+      { error: "Recording notice status requires owner, admin, or counsel." },
+      { status: 403 },
+    );
+  const org = { slug: session.orgSlug! };
   const payload = (await request.json().catch(() => null)) as {
     locationRef?: string;
     stage?: string;

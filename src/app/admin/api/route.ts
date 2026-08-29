@@ -18,16 +18,12 @@
  * swap is the `authorized` function and nothing else.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
+import { requireStaff } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { orgBySlug, sanitizeSlug, PORTFOLIOS } from "@/lib/orgs";
 import { rowById } from "@/lib/portfolio";
 
 export const runtime = "nodejs";
-
-function authorized(request: NextRequest) {
-  return request.cookies.get(SESSION_COOKIE)?.value === SESSION_TOKEN;
-}
 
 /** Append-only record of what the console did. Never blocks the action. */
 async function audit(
@@ -89,8 +85,9 @@ function normalizeSchedule(raw: unknown): object | null {
 }
 
 export async function GET(request: NextRequest) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  const staff = await requireStaff(request);
+  if (!staff)
+    return NextResponse.json({ error: "Staff only." }, { status: 403 });
 
   const slug = (request.nextUrl.searchParams.get("org") ?? "").slice(0, 64);
 
@@ -272,8 +269,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  const staff = await requireStaff(request);
+  if (!staff)
+    return NextResponse.json({ error: "Staff only." }, { status: 403 });
 
   let payload: Record<string, unknown>;
   try {

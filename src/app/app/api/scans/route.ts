@@ -4,14 +4,14 @@
  * store.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE, SESSION_TOKEN } from "@/lib/session";
-import { currentOrg } from "@/lib/repo";
+import { canWrite, requireMember } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
-  if (request.cookies.get(SESSION_COOKIE)?.value !== SESSION_TOKEN)
+  const session = await requireMember(request);
+  if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   const center = (request.nextUrl.searchParams.get("center") ?? "").slice(0, 120);
   if (!center)
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       where o.org_slug = $1 and o.center_ref = $2
       order by r.created_at desc, o.store_name
       limit 200`,
-    [currentOrg().slug, center],
+    [session.orgSlug!, center],
   );
   return NextResponse.json({ observations: rows });
 }
