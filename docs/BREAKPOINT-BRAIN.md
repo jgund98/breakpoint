@@ -180,49 +180,70 @@ change).
   33–50% of fixed rent; election windows commonly 6–18 months;
   termination rights usually after 12 months of alternative rent.
 
-### Round-2 lessons (the expert's 65-mall dataset, 2026-08-28)
+### Round-2 lessons (the expert's 65-mall dataset, 2026-08-28 — SCORED)
 Dataset `af_portfolio_dataset (2).json` on the Desktop (65 malls,
-2024-09..2026-08, seed 42); evaluator `scripts/af2-blind.ts`; blind
-predictions frozen at `shots/af2-predictions.json` (commit a95e74b,
-BEFORE any round-2 key existed). Final digest: 37 compliant, 10
-remedy_active, 7 cap_reached, 5 cured, 2 watch, 2 opening_satisfied,
-1 opening_deferral_ended, 1 opening_deferred; $6,947,485 cumulative.
-Laws learned or confirmed:
-- **Measurement-materiality guard.** The failing pct margins were
-  bimodal: a hairline tier 0.03-0.19 points below threshold, then
-  nothing until 0.28+. Hairline shortfalls are inside directory-derived
-  measurement noise and must NOT run the clock (they turned four
-  designed `duration_not_met` malls into false trips). Guard: a pct
-  month counts as failing only when short by >= 0.2 points; hairline
-  months are watch-level, never verified failures.
-- **Preexisting failures COUNT.** Expert precedent from the round-1
-  key (danbury_fair): `preexisting_failure: true` with a live trigger,
-  notes "failure pre-dates window start; clocks shown from window
-  start are conservative." Do not treat preexisting as waived; run the
-  clock conservatively from window start, trip, and surface the flag
-  for counsel (real leases sometimes carve these out, so the flag is
-  a counsel question, not a verdict change). I first ruled carve-out
-  and the precedent proved me wrong; the flag exists to be shown, not
-  to zero the record.
+2024-09..2026-08, seed 42). Blind predictions frozen at
+`shots/af2-predictions.json` (commit a95e74b, before the key existed);
+key delivered same day, scored by `scripts/af2-score.ts` (key stays on
+the Desktop, NEVER in the repo). **Blind score: 1027/1040 monthly
+verdicts, 60/65 end states (5 more were a scorer mapping bug, not
+engine error), 17/26 triggers, 17/17 notice months.** The corrected
+engine is `scripts/af2-engine.ts` → `shots/af2-learned.json`:
+**1040/1040 monthly, 65/65 states, 26/26 triggers, 26/26 notices,
+26/26 remedy starts, money within rounding of the key's $7,345,600.**
+This file is the backend engine spec. Laws, including where the blind
+run was WRONG:
+- **NO materiality epsilon — my blind guard was wrong.** The failing
+  margins looked bimodal (0.03-0.19 then 0.28+) and I inferred a
+  measurement-noise tier; the key fails a month short by 0.03 points.
+  Raw strict comparison, always. The guard cost 13 monthly verdicts, 4
+  triggers and ~$560k. Lesson behind the lesson: a clean statistical
+  pattern in synthetic data is a property of the generator, not a
+  license to invent doctrine — legal tests are bright-line.
+- **Template scenario names describe the DESIGNED EPISODE, not the
+  whole timeline.** "duration_not_met" malls also carry a later
+  streak that trips and cures. Never grade a mall by its label.
+- **Remedy continuity (universal).** Once any remedy has triggered,
+  later failing months resume relief IMMEDIATELY — no fresh
+  qualifying period (cherry_creek sequenced AND mall_of_america
+  alternative_rent both pay a later 3-month streak under a 4-month
+  duration clause). The duration clock guards the first trip only.
+- **Reach-back ONLY on retroactive:true.** A sequenced remedy without
+  the flag starts at the trigger month (round-1's "sequenced =
+  reach-back" over-generalized). retroactive appears only with sales
+  gates in this set.
+- **Sales gate = one-time unlock.** Once trailing-6-month sales
+  qualify in ANY month, the remedy applies to the whole trip per the
+  retroactive flag (south_hills: gate met 2026-02, remedy runs from
+  first fail 2025-04). Gate never met in window → no remedy value.
+- **The cap does not stop the money meter.** Rent at risk accrues from
+  remedy start until cure or window end; cap_expiry = remedy_start +
+  cap_m CALENDAR months, and past it with the condition persisting the
+  state is post_cap (termination window open). Keystone: 23 months
+  counted under a 12-month cap, $1.14M.
+- **Opening co-tenancy = $0 rent at risk.** Rent has not commenced, so
+  there is no remedy differential to count. The lever is the
+  TERMINATION FUSE: delivery + cap_m months. Conditions met before the
+  fuse → rent commences that month; unmet at the fuse → tenant
+  termination right + construction cost reimbursement.
+- **Preexisting failures COUNT.** Round-1 precedent (danbury), round-2
+  confirmed (keystone $1.14M, danbury): clock runs conservatively from
+  window start, trips; the flag is surfaced for counsel (real leases
+  sometimes carve these out), never treated as a waiver. I first ruled
+  carve-out and the precedent proved me wrong.
 - **Opening clauses can be settled by lease text.** "Satisfied at
-  delivery" in the clause is a lease fact; the observation window
-  began after delivery and the series cannot see delivery day. Do not
-  re-litigate a stated delivery-time condition from window data.
-- **stateAtEnd describes the final month.** A lifted suspension with a
-  passing requirement at end is compliant, not suspended; failures
-  observed during suspension are recorded (lowercase f) but never run
-  the clock.
-- **Cap accounting nuance.** The expert computes cap expiry as
-  CALENDAR months from remedy start (remedy_start + cap_m); the
-  evaluator counts cumulative remedy months. Identical for continuous
-  failures; they diverge only across cure/re-trip cycles. Flag any
-  capped, cycling clause for explicit reading.
+  delivery" is a lease fact; the window began after delivery — do not
+  re-litigate it from window data. (Scored correct.)
+- **suspended_until = first ACTIVE month** (verified via cielo's
+  trigger); failures during suspension are observed but never run the
+  clock; stateAtEnd describes the final month (lifted suspension +
+  passing requirement = compliant).
 - **State vocabulary mapping** (key → engine): "condition_failing
   (duration not yet met)" = watch_duration_running; "triggered
   (cure/notice period running)" = triggered_awaiting_relief;
-  "post_cap (termination window open)" = cap_reached;
-  "opening_conditions_met (rent commenced)" = opening_satisfied /
-  opening_deferral_ended.
+  "cured (remedy ended)" = cured; "post_cap (termination window
+  open)" = cap_reached; "opening_conditions_met (rent commenced)" =
+  opening_satisfied / opening_deferral_ended.
 - **Blind protocol.** Predictions are frozen by git commit BEFORE any
   key is opened; answer keys are NEVER committed to the repo. A prior
   round's already-scored key is legitimate study material for the next
