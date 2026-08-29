@@ -22,11 +22,11 @@ UI/UX column: OK = verified against the design laws; see BREAKPOINT-BRAIN §5.
 | /app/coverage | Coverage + confirm-store | portfolio + requests | client_request | member | notify | probe | FUNC | OK |
 | /app/activity | Sweeps + filed scans | scan_run/observation | scan_* | member | — | probe | DONE | OK |
 | /app/deadlines | Clocks + ICS export | portfolio | — | member | — | app-shoot | FUNC | OK |
-| /app/notices | Counsel-grade letter + exhibits + staged desk + download | notice-package route; workspace-store stages | notice_package (localStorage stages: see gap) | role-gated stages (team.ts) | — | db-loop-probe | FUNC (stage state is localStorage, not DB) | OK |
+| /app/notices | Counsel-grade letter + exhibits + staged desk + download | notice-package + notice-workflow routes | notice_workflow | server-enforced team.ts lanes, audited | audit notice_stage | auth-probe 58 | **DONE** | OK |
 | Notice package download | Timestamped self-contained document | /app/api/notice-package | — | member | — | probe check | DONE | OK |
 | /app/report | Printable period report | portfolio | — | member | — | app-shoot | FUNC | OK |
 | /app/setup | Implementation tracker | location_pipeline | location_pipeline | member | — | probe | DONE | OK |
-| /app/settings | Team, alerts channels | partial | org_settings | member | — | — | UI-ONLY in parts (alert prefs not persisted per user) | OK |
+| /app/settings | Real team (invite/join/role/remove), alert routing persisted + bell-enforced | /app/api/team, /join/api, /app/api/preferences | membership, invitation, org_settings.alert_routing | owner/admin manage; guards | audited | auth-probe 58 | **DONE** | OK |
 | Notification bell | Unread, mark-all | /app/api/notifications | notification | member | — | probe | DONE | OK |
 | /app/api/documents | Read-only vault | lease_document | lease_document | member | — | probe | DONE | — |
 
@@ -42,6 +42,12 @@ UI/UX column: OK = verified against the design laws; see BREAKPOINT-BRAIN §5.
 | /admin/agent | Canon editor (24 directives) | directive actions | agent_directive | platform_admin | probe | DONE | OK |
 | /admin/requests | Cross-client queue | requestsAll | client_request | platform_admin | probe | DONE | OK |
 | /admin/system | Live health, audit table | counts | audit_log | platform_admin | probe | DONE | OK |
+
+## Platform jobs
+| Piece | Status |
+|---|---|
+| Daily reevaluation (/api/cron/evaluate, vercel.json, CRON_SECRET) + staff manual trigger on /admin/system | **DONE** — idempotent, audited, bell-notifies new flags |
+| Auth & tenancy (sessions, roles, org scoping, page gate) | **DONE** — auth-probe 58/58 against production |
 
 ## Onboarding (/onboarding)
 Task board, autosave, submission → admin work order. FUNC/DONE
