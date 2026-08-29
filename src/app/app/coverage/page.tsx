@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import { ENTITLEMENT_META, prettyDate, shortDate } from "@/lib/clause";
 import { SOURCE_INFO, type SourceId, coverage } from "@/lib/coverage";
@@ -15,7 +16,8 @@ import {
   type Tone,
 } from "@/components/app/ui";
 
-export default function CoveragePage() {
+export default async function CoveragePage() {
+  await requirePortfolio();
   const c = coverage;
 
   /*

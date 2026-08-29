@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import { Building2, ClipboardCheck, Radar, Store } from "lucide-react";
 import { rows, TODAY } from "@/lib/portfolio";
 import { activitySummary } from "@/lib/activity";
@@ -12,7 +13,8 @@ import { PageHead } from "@/components/app/ui";
  * customers are served by a person reading published directories. This
  * is the screen that person works from.
  */
-export default function CheckPage() {
+export default async function CheckPage() {
+  await requirePortfolio();
   const centers: CheckCenter[] = rows.map((r) => {
     /* The stores this clause actually turns on. They sort to the top of
        the change list, because a named anchor going missing is the job

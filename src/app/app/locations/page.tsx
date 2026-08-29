@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import {
   STATE_META,
   TIER_META,
@@ -11,7 +12,8 @@ import {
   type TableRow,
 } from "@/components/app/LocationsTable";
 
-export default function LocationsPage() {
+export default async function LocationsPage() {
+  await requirePortfolio();
   const data: TableRow[] = rows.map((r) => {
     const v = verificationOf(r.evidence);
     const failing = r.evaluation.triggers.filter((t) => t.failing);

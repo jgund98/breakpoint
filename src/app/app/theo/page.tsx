@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import type { Metadata } from "next";
 import { Theo } from "@/components/app/Theo";
 import { PageHead } from "@/components/app/ui";
@@ -5,7 +6,8 @@ import { theo } from "@/lib/theo";
 
 export const metadata: Metadata = { title: theo.name };
 
-export default function TheoPage() {
+export default async function TheoPage() {
+  await requirePortfolio();
   return (
     <div className="space-y-5">
       <PageHead

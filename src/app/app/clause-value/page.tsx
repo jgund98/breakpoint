@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import { usd } from "@/lib/clause";
 import {
@@ -23,7 +24,8 @@ import {
  * says whether it would be worth anything if it did, and which language
  * is the reason it would not.
  */
-export default function ClauseValuePage() {
+export default async function ClauseValuePage() {
+  await requirePortfolio();
   const money = (n: number) => (n > 0 ? usd(Math.round(n)) : "None");
 
   return (

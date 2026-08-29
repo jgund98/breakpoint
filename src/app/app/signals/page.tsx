@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import { SOURCE_META, TIER_META, prettyDate, verificationOf } from "@/lib/clause";
 import { rows, signalFeed } from "@/lib/portfolio";
@@ -11,7 +12,8 @@ import {
   type Tone,
 } from "@/components/app/ui";
 
-export default function SignalsPage() {
+export default async function SignalsPage() {
+  await requirePortfolio();
   const byMonth = new Map<string, typeof signalFeed>();
   for (const s of signalFeed) {
     const key = s.observedAt.slice(0, 7);

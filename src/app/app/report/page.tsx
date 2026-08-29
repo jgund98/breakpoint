@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import type { Metadata } from "next";
 import { STATE_META, prettyDate } from "@/lib/clause";
 import { TODAY, org, rows, summary } from "@/lib/portfolio";
@@ -19,7 +20,8 @@ const compactUsd = (n: number) =>
  * and forwarded. The same figures as the workspace, arranged for a
  * reader who was not in the room — a VP hands this to a CFO.
  */
-export default function ReportPage() {
+export default async function ReportPage() {
+  await requirePortfolio();
   const decisions =
     (summary.byState.get("claimable") ?? 0) +
     (summary.byState.get("election_open") ?? 0);

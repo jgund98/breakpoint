@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import {
   SOURCE_META,
@@ -32,7 +33,8 @@ import {
  * the letter downloaded — same builder, no marketing copy between the
  * client and the document.
  */
-export default function NoticesPage() {
+export default async function NoticesPage() {
+  await requirePortfolio();
   const candidates = rows
     .filter(
       (r) =>

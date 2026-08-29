@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -43,6 +44,7 @@ export default async function LocationPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requirePortfolio();
   const { id } = await params;
   const row = rowById(id);
   if (!row) notFound();

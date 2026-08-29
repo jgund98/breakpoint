@@ -14,9 +14,15 @@ real team management (migration 013; /app/api/team invite/role/remove/
 revoke with last-owner and self-removal guards; /join/[token] page +
 /join/api accepting invitations, creating the user, signing them in;
 Settings team tab on the real membership table with join-link delivery
-until email connects). auth-probe 55/55. Next: the per-org portfolio
-seam (gap #2 — the big one), then the document ingestion pipeline
-(gap #5).
+until email connects). auth-probe 55/55. Phase 6 COMPLETE: the workspace UI respects
+tenancy — every portfolio page calls requirePortfolio() (lib/
+portfolio-gate.ts) and redirects non-imported orgs to /app/setup,
+which renders that org honest own-state (papers, extraction, the
+onboarding door) keyed on the SESSION org. auth-probe 58/58. KNOWN
+LIMIT (documented): the A&F portfolio JSON still ships in the client
+bundle for any authenticated user; the full server-only seam (gap #2)
+removes that. Next: the per-org portfolio seam, then the document
+ingestion pipeline (gap #5).
 
 ## Environment facts a resuming session must know
 - Stack: Next.js 16 (Turbopack), React 19, Tailwind 4, `pg` against Neon

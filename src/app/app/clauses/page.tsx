@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import { PRECONDITION_META, prettyDate } from "@/lib/clause";
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
@@ -15,7 +16,8 @@ import {
 
 const GRADES = ["A", "B", "C", "D"] as const;
 
-export default function ClausesPage() {
+export default async function ClausesPage() {
+  await requirePortfolio();
   const graded = rows
     .map((r) => ({ row: r, grade: gradeClause(r.clause) }))
     .sort((a, b) => a.grade.score - b.grade.score);

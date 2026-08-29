@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import {
   COMPUTABILITY_META,
@@ -31,7 +32,8 @@ import {
 } from "@/components/app/ThresholdRail";
 import { sweeps } from "@/lib/activity";
 
-export default function OverviewPage() {
+export default async function OverviewPage() {
+  await requirePortfolio();
   const decisions = rows
     .filter(
       (r) =>

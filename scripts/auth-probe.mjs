@@ -298,6 +298,38 @@ check(
   (afFlows.workflows ?? []).every((w) => !String(w.location_ref).startsWith("MER-")),
 );
 
+console.log("--- workspace pages respect tenancy ---");
+const merTok2 = await login("owner@meridian.test", "breakpoint-demo-1");
+const pageRes = await fetch(`${BASE}/app`, {
+  headers: { cookie: `${GATE}; bp_session=${merTok2}` },
+  redirect: "manual",
+});
+check(
+  "meridian browsing /app is redirected off the A&F portfolio",
+  pageRes.status >= 300 &&
+    pageRes.status < 400 &&
+    (pageRes.headers.get("location") ?? "").includes("/app/setup"),
+);
+const setupRes = await fetch(`${BASE}/app/setup`, {
+  headers: { cookie: `${GATE}; bp_session=${merTok2}` },
+});
+const setupBody = await setupRes.text();
+check(
+  "meridian's setup page shows its own honest state, no A&F data",
+  setupRes.status === 200 &&
+    setupBody.includes("not in the evaluation engine") &&
+    !setupBody.includes("Ala Moana"),
+);
+const afPage = await fetch(`${BASE}/app`, {
+  headers: { cookie: `${GATE}; bp_session=${demoTok}` },
+  redirect: "manual",
+});
+check("A&F still reaches its overview", afPage.status === 200);
+await fetch(`${BASE}/login/api`, {
+  method: "DELETE",
+  headers: { cookie: `${GATE}; bp_session=${merTok2}` },
+});
+
 console.log("--- team: invite, join, role, remove ---");
 const tViewerInvite = await viewer.post("/app/api/team", {
   action: "invite",

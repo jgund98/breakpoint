@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import {
   Bell,
@@ -31,7 +32,8 @@ const SEVERITY: Record<string, { label: string; tone: Tone }> = {
   info: { label: "Info", tone: "muted" },
 };
 
-export default function ActivityPage() {
+export default async function ActivityPage() {
+  await requirePortfolio();
   const a = activitySummary;
 
   return (

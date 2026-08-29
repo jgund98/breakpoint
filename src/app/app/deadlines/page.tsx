@@ -1,3 +1,4 @@
+import { requirePortfolio } from "@/lib/portfolio-gate";
 import { PageHead, Stat } from "@/components/app/ui";
 import { DeadlineList } from "@/components/app/DeadlineList";
 import { portfolioDeadlines } from "@/lib/deadlines";
@@ -6,7 +7,8 @@ import { portfolioDeadlines } from "@/lib/deadlines";
  * The calendar: every date on the portfolio that demands something of
  * a person, exportable to the calendar they actually live in.
  */
-export default function DeadlinesPage() {
+export default async function DeadlinesPage() {
+  await requirePortfolio();
   const items = portfolioDeadlines();
   const cures = items.filter((d) => d.kind === "cure").length;
   const elections = items.filter((d) => d.kind === "election").length;
