@@ -126,3 +126,12 @@ node scripts/auth-probe.mjs http://localhost:3510
 node --experimental-strip-types scripts/af-score.ts
 node --experimental-strip-types scripts/af2-engine.ts && node --experimental-strip-types scripts/af2-score.ts shots/af2-learned.json
 ```
+
+
+## 2026-08-29 session additions
+
+- **Field verification ops loop** (commit d0fed1c): request kind field_verification (migration 015), RequestVerification button on blocked NoticeDesk positions and unverified failing locations, admin queue label, probes cover it.
+- **Internal staff management** (commit c7a32b9): /admin/team roster; staff_add / staff_disable / staff_enable / staff_password actions; app_user.disabled_at (migration 016); disable revokes live sessions; self- and last-account guards; 8 auth-probe checks.
+- **Demo mode** (commit c7a32b9): org_settings.demo_mode; toggle on the client masthead resets immediately; every sign-in to a demo org runs lib/demo-reset (clears worked flags, requests, notice stages, notifications, demo uploads; audit journal kept; engine regenerates real positions on load).
+- **Theo composer**: animated violet AI ring (bp-ai-glow, masked hairline).
+- NEXT: extraction-schema admin panel (expert gold-set fields configurable, see src/lib/goldset.ts), /onboarding rework to QT2, item-3 bundle (demalling modeling, renewal flags, billing panel, SSO explainer).
