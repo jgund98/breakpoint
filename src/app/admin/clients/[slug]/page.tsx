@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { STATE_META } from "@/lib/clause";
 import { rows } from "@/lib/portfolio";
 import { orgBySlug, PORTFOLIOS } from "@/lib/orgs";
+import { db } from "@/lib/db";
 import { ClientHeader } from "@/components/admin/ClientHeader";
 import { OpsBoard, type LocationSnapshot } from "@/components/admin/OpsBoard";
 
@@ -24,6 +25,12 @@ export default async function ClientBoardPage({
   if (!client) notFound();
 
   const hasPortfolio = Boolean(PORTFOLIOS[client.slug]);
+
+  const demo = await db().query(
+    `select demo_mode from org_settings where org_slug = $1`,
+    [client.slug],
+  );
+  const demoMode = demo.rows[0]?.demo_mode === true;
 
   const locations: LocationSnapshot[] = !hasPortfolio
     ? []
@@ -67,6 +74,7 @@ export default async function ClientBoardPage({
         descriptor={client.descriptor}
         locations={hasPortfolio ? locations.length : null}
         centers={hasPortfolio ? new Set(locations.map((l) => l.centerRef)).size : null}
+        demoMode={demoMode}
       />
       <OpsBoard
         orgSlug={client.slug}

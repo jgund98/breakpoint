@@ -548,8 +548,8 @@ h4 {
 .bp-ai-glow::after {
   content: "";
   position: absolute;
-  inset: -2px;
-  border-radius: 0.85rem;
+  inset: -1.5px;
+  border-radius: calc(0.75rem + 1.5px);
   background: conic-gradient(
     from var(--bp-glow-angle),
     #a5b4fc,
@@ -561,10 +561,21 @@ h4 {
   pointer-events: none;
 }
 .bp-ai-glow::before {
-  filter: blur(10px);
-  opacity: 0.4;
+  filter: blur(8px);
+  opacity: 0.35;
 }
+/* Mask the ring down to an even hairline so the corners never go
+   chunky: paint the full gradient, then knock out the content box. */
 .bp-ai-glow::after {
+  padding: 1.5px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
   opacity: 0.9;
 }
 .bp-ai-glow > * {

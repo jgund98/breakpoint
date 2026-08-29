@@ -32,6 +32,7 @@ export function ClientHeader({
   locations,
   centers,
   storeEstimate,
+  demoMode = false,
 }: {
   slug: string;
   name: string;
@@ -40,9 +41,23 @@ export function ClientHeader({
   locations: number | null;
   centers: number | null;
   storeEstimate?: number | null;
+  demoMode?: boolean;
 }) {
   const [current, setCurrent] = useState(status);
   const [copied, setCopied] = useState(false);
+  const [demo, setDemo] = useState(demoMode);
+  const [demoBusy, setDemoBusy] = useState(false);
+
+  const setDemoMode = async (on: boolean) => {
+    setDemoBusy(true);
+    const res = await fetch("/admin/api", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "demo_mode", org: slug, on }),
+    });
+    if (res.ok) setDemo(on);
+    setDemoBusy(false);
+  };
 
   const setStatus = async (next: string) => {
     const prev = current;
@@ -101,6 +116,26 @@ export function ClientHeader({
               </div>
             )}
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void setDemoMode(!demo)}
+                disabled={demoBusy}
+                title={
+                  demo
+                    ? "Demo mode is on: every sign-in restores the pristine evaluated state."
+                    : "Turn on to restore the pristine evaluated state on every sign-in."
+                }
+                className={`inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-[0.8125rem] font-semibold backdrop-blur-sm transition-all active:scale-95 disabled:opacity-50 ${
+                  demo
+                    ? "border-violet-300/60 bg-violet-400/25 text-white"
+                    : "border-white/25 bg-white/15 text-white hover:bg-white/25"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${demo ? "animate-pulse bg-violet-300" : "bg-white/40"}`}
+                />
+                {demoBusy ? "Saving…" : demo ? "Demo mode on" : "Demo mode"}
+              </button>
               <select
                 value={current}
                 onChange={(e) => void setStatus(e.target.value)}

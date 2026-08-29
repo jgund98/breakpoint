@@ -207,6 +207,53 @@ check("platform staff reaches /admin/api", staffAdmin.status === 200);
 const viewerAdmin = await viewer.get("/admin/api");
 check("A&F viewer (not staff) gets 403 on /admin/api", viewerAdmin.status === 403);
 
+console.log("--- internal staff management ---");
+const sAdd = await demo.post("/admin/api", {
+  action: "staff_add",
+  name: "Probe Staffer",
+  email: "probe-staffer@breakpoint.test",
+  title: "Probe",
+  password: "probe-password-1",
+});
+check("staff can create an internal account", sAdd.status === 200);
+const probeStaffTok = await login(
+  "probe-staffer@breakpoint.test",
+  "probe-password-1",
+);
+check("new internal account signs in", !!probeStaffTok);
+const psConsole = await api(probeStaffTok).get("/admin/api");
+check("new internal account reaches the console", psConsole.status === 200);
+const { rows: psRows } = await sql.query(
+  `select id from app_user where email = 'probe-staffer@breakpoint.test'`,
+);
+const sSelf = await api(probeStaffTok).post("/admin/api", {
+  action: "staff_disable",
+  id: psRows[0].id,
+});
+check("an account cannot disable itself (400)", sSelf.status === 400);
+const sDis = await demo.post("/admin/api", {
+  action: "staff_disable",
+  id: psRows[0].id,
+});
+check("staff can disable an internal account", sDis.status === 200);
+const psAfter = await api(probeStaffTok).get("/admin/api");
+check(
+  "disabling revokes the live session",
+  psAfter.status === 401 || psAfter.status === 403,
+);
+const psRelogin = await login(
+  "probe-staffer@breakpoint.test",
+  "probe-password-1",
+);
+check("a disabled account cannot sign in", !psRelogin);
+const vStaff = await viewer.post("/admin/api", {
+  action: "staff_add",
+  name: "x",
+  email: "x@nowhere.test",
+  password: "aaaaaaaaaaaa",
+});
+check("client viewer cannot manage staff (403)", vStaff.status === 403);
+
 console.log("--- alert routing: org policy on the record ---");
 const prefGet = await viewer.get("/app/api/preferences").then((r) => r.json());
 check(
@@ -567,8 +614,14 @@ const del5 = await sql.query(
   `delete from audit_log where action = 'notice_stage' and subject = 'AF-9999-PROBE'`,
 );
 console.log(`cleaned workflow rows:${del4.rowCount} stage audits:${del5.rowCount}`);
+const delStaff = await sql.query(
+  `delete from app_user where email = 'probe-staffer@breakpoint.test'`,
+);
+await sql.query(
+  `delete from audit_log where subject = 'probe-staffer@breakpoint.test'`,
+);
 console.log(
-  `cleaned: requests:${del1.rowCount} logins:${del2.rowCount} sessions:${del3.rowCount}`,
+  `cleaned: requests:${del1.rowCount} logins:${del2.rowCount} sessions:${del3.rowCount} staff:${delStaff.rowCount}`,
 );
 await sql.end();
 

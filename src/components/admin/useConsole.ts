@@ -19,6 +19,16 @@ export type OrgRow = {
   centers: number | null;
   account_manager: string | null;
   contract_renewal: string | null;
+  demo_mode: boolean;
+};
+
+export type StaffRow = {
+  id: string;
+  email: string;
+  name: string;
+  title: string | null;
+  disabled_at: string | null;
+  created_at: string;
 };
 
 export type Submission = {
@@ -67,6 +77,7 @@ export type ConsoleData = {
   directives: Directive[];
   requestsAll: RequestRow[];
   coverage: Coverage;
+  staff: StaffRow[];
 };
 
 export function useConsole() {

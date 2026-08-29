@@ -7,6 +7,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createSession, destroySession, verifyPassword } from "@/lib/auth";
+import { isDemoOrg, resetDemoOrg } from "@/lib/demo-reset";
 import { SESSION_COOKIE } from "@/lib/session";
 import { db } from "@/lib/db";
 
@@ -26,16 +27,28 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false }, { status: 401 });
 
   const { rows } = await db().query(
-    `select u.id, u.password_hash,
+    `select u.id, u.password_hash, u.disabled_at,
             (select m.org_id from membership m
-              where m.user_id = u.id order by m.created_at limit 1) as org_id
+              where m.user_id = u.id order by m.created_at limit 1) as org_id,
+            (select o.slug from membership m join org o on o.id = m.org_id
+              where m.user_id = u.id order by m.created_at limit 1) as org_slug
        from app_user u where u.email = $1`,
     [email],
   );
   const user = rows[0];
-  if (!user?.password_hash || !verifyPassword(password, user.password_hash)) {
-    /* Same response for unknown user and wrong password. */
+  if (
+    !user?.password_hash ||
+    !verifyPassword(password, user.password_hash) ||
+    /* A disabled account answers exactly like a wrong password. */
+    user.disabled_at
+  ) {
     return NextResponse.json({ ok: false }, { status: 401 });
+  }
+
+  /* A demo workspace greets every sign-in pristine: worked state is
+     cleared and the certified engine re-evaluates on first load. */
+  if (user.org_slug && (await isDemoOrg(user.org_slug))) {
+    await resetDemoOrg(user.org_slug);
   }
 
   const token = await createSession(user.id, user.org_id ?? null);

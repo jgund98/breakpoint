@@ -18,7 +18,8 @@
  * swap is the `authorized` function and nothing else.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { requireStaff } from "@/lib/auth";
+import { hashPassword, requireStaff } from "@/lib/auth";
+import { resetDemoOrg } from "@/lib/demo-reset";
 import { db } from "@/lib/db";
 import { orgBySlug, sanitizeSlug, PORTFOLIOS } from "@/lib/orgs";
 import { rowById } from "@/lib/portfolio";
@@ -266,12 +267,27 @@ export async function GET(request: NextRequest) {
     ),
   ]);
 
+  /* Internal staff roster: everyone holding the platform_admin key. */
+  const staffRows = await db().query(
+    `select id, email, name, title, disabled_at, created_at
+       from app_user where platform_admin = true
+      order by (disabled_at is not null), name`,
+  );
+
+  /* Demo workspaces, so the registry can badge them. */
+  const demoRows = await db().query(
+    `select org_slug from org_settings where demo_mode = true`,
+  );
+  const demoSlugs = new Set(demoRows.rows.map((r) => r.org_slug));
+
   return NextResponse.json({
     orgs: orgs.rows.map((o) => ({
       ...o,
       locations: PORTFOLIOS[o.slug]?.locations ?? null,
       centers: PORTFOLIOS[o.slug]?.centers ?? null,
+      demo_mode: demoSlugs.has(o.slug),
     })),
+    staff: staffRows.rows,
     submissions: submissions.rows,
     directives: directives.rows,
     requestsAll: requestsAll.rows,
@@ -299,7 +315,7 @@ export async function POST(request: NextRequest) {
   const action = clip(payload.action, 32);
 
   /* ---- org-scoped actions name their org, always ---- */
-  const ORG_SCOPED = ["org_schedule", "location", "request_handled", "finding_move"];
+  const ORG_SCOPED = ["org_schedule", "location", "request_handled", "finding_move", "demo_mode"];
   let org: Awaited<ReturnType<typeof orgBySlug>> = null;
   if (ORG_SCOPED.includes(action)) {
     org = await orgBySlug(clip(payload.org, 64));
@@ -754,6 +770,132 @@ export async function POST(request: NextRequest) {
     const id = clip(payload.id, 64);
     if (!id) return NextResponse.json({ error: "No directive." }, { status: 400 });
     await db().query(`delete from agent_directive where id = $1`, [id]);
+    return NextResponse.json({ ok: true });
+  }
+
+  /* ---- internal staff management ----
+     Everyone holding platform_admin can manage the roster; the guards
+     below keep the console from locking itself out. No emails are
+     sent: the person adding an account hands the temporary password
+     over directly and the teammate changes it on first use. */
+  if (action === "staff_add") {
+    const name = clip(payload.name, 120);
+    const email = clip(payload.email, 200).toLowerCase();
+    const title = clip(payload.title, 120);
+    const password = String(payload.password ?? "").slice(0, 200);
+    if (!name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
+      return NextResponse.json(
+        { error: "A name and a real email are required." },
+        { status: 400 },
+      );
+    const existing = await db().query(
+      `select id, platform_admin from app_user where email = $1`,
+      [email],
+    );
+    if (existing.rows[0]?.platform_admin)
+      return NextResponse.json(
+        { error: "Already on the internal team." },
+        { status: 409 },
+      );
+    if (existing.rows[0]) {
+      /* A client-side user joining the company keeps their account and
+         password; they simply gain the staff key. */
+      await db().query(
+        `update app_user set platform_admin = true, title = coalesce(nullif($2, ''), title)
+          where id = $1`,
+        [existing.rows[0].id, title],
+      );
+      await audit("staff_add", null, email, `promoted existing account (${staff.email})`);
+      return NextResponse.json({ ok: true, promoted: true });
+    }
+    if (password.length < 10)
+      return NextResponse.json(
+        { error: "A new account needs a temporary password of 10+ characters." },
+        { status: 400 },
+      );
+    await db().query(
+      `insert into app_user (email, name, title, password_hash, platform_admin)
+       values ($1, $2, nullif($3, ''), $4, true)`,
+      [email, name, title, hashPassword(password)],
+    );
+    await audit("staff_add", null, email, `internal account created (${staff.email})`);
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "staff_disable" || action === "staff_enable") {
+    const id = clip(payload.id, 64);
+    if (!id) return NextResponse.json({ error: "No account." }, { status: 400 });
+    const target = await db().query(
+      `select id, email, platform_admin, disabled_at from app_user where id = $1`,
+      [id],
+    );
+    if (!target.rows[0]?.platform_admin)
+      return NextResponse.json({ error: "Not an internal account." }, { status: 404 });
+    if (action === "staff_disable") {
+      if (target.rows[0].email === staff.email)
+        return NextResponse.json(
+          { error: "You cannot disable your own account." },
+          { status: 400 },
+        );
+      const others = await db().query(
+        `select count(*)::int as n from app_user
+          where platform_admin = true and disabled_at is null and id <> $1`,
+        [id],
+      );
+      if ((others.rows[0]?.n ?? 0) < 1)
+        return NextResponse.json(
+          { error: "At least one active internal account must remain." },
+          { status: 400 },
+        );
+      await db().query(`update app_user set disabled_at = now() where id = $1`, [id]);
+      /* The door closes now, not at next sign-in. */
+      await db().query(`delete from auth_session where user_id = $1`, [id]);
+      await audit("staff_disable", null, target.rows[0].email, `by ${staff.email}`);
+    } else {
+      await db().query(`update app_user set disabled_at = null where id = $1`, [id]);
+      await audit("staff_enable", null, target.rows[0].email, `by ${staff.email}`);
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  if (action === "staff_password") {
+    const id = clip(payload.id, 64);
+    const password = String(payload.password ?? "").slice(0, 200);
+    if (!id || password.length < 10)
+      return NextResponse.json(
+        { error: "A temporary password of 10+ characters is required." },
+        { status: 400 },
+      );
+    const target = await db().query(
+      `select email, platform_admin from app_user where id = $1`,
+      [id],
+    );
+    if (!target.rows[0]?.platform_admin)
+      return NextResponse.json({ error: "Not an internal account." }, { status: 404 });
+    await db().query(`update app_user set password_hash = $2 where id = $1`, [
+      id,
+      hashPassword(password),
+    ]);
+    /* Old sessions die with the old password. */
+    await db().query(`delete from auth_session where user_id = $1`, [id]);
+    await audit("staff_password", null, target.rows[0].email, `reset by ${staff.email}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  /* ---- demo mode ----
+     While on, every sign-in to the org restores the pristine evaluated
+     state (see lib/demo-reset). Turning it on resets immediately so
+     the very next walkthrough is clean. */
+  if (action === "demo_mode" && org) {
+    const on = payload.on === true;
+    await db().query(
+      `insert into org_settings (org_slug, demo_mode, updated_at)
+       values ($1, $2, now())
+       on conflict (org_slug) do update set demo_mode = $2, updated_at = now()`,
+      [org.slug, on],
+    );
+    if (on) await resetDemoOrg(org.slug);
+    await audit("demo_mode", org.slug, org.slug, on ? "on (reset ran)" : "off");
     return NextResponse.json({ ok: true });
   }
 

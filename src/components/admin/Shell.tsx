@@ -11,6 +11,7 @@ import {
   BrainCircuit,
   FileSearch,
   SlidersHorizontal,
+  ShieldCheck,
   ChevronRight,
   Bell,
   Plus,
@@ -42,6 +43,7 @@ const NAV = [
   { href: "/admin/requests", label: "Requests", sub: "Everything clients filed", icon: MessageSquareDot, exact: true, badge: "open" as const },
   { href: "/admin/extraction", label: "Extraction", sub: "Records awaiting approval", icon: FileSearch, exact: true, badge: "pipeline" as const },
   { href: "/admin/agent", label: "Agent canon", sub: "System-wide programming", icon: BrainCircuit, exact: true },
+  { href: "/admin/team", label: "Team", sub: "Internal staff access", icon: ShieldCheck, exact: true },
   { href: "/admin/system", label: "System", sub: "Health & configuration", icon: SlidersHorizontal, exact: true },
 ];
 
