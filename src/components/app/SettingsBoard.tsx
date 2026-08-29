@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   Building2,
@@ -63,7 +63,37 @@ const ROLE_SHORT: Record<RoleId, string> = {
 export function SettingsBoard() {
   const [tab, setTab] = useState<TabId>("team");
   const [members, setMembers] = useState<Member[]>(seedMembers);
-  const [routing, setRouting] = useState<RoutingRule[]>(defaultRouting);
+  /* Alert routing is org policy on the record: loaded from and saved
+     to /app/api/preferences, editable by owner/admin, enforced by the
+     in-app bell. */
+  const [routing, setRoutingState] = useState<RoutingRule[]>(defaultRouting);
+  const [canEditRouting, setCanEditRouting] = useState(false);
+  const [routingSavedAt, setRoutingSavedAt] = useState<string | null>(null);
+  useEffect(() => {
+    fetch("/app/api/preferences")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.routing) setRoutingState(d.routing);
+        if (d) setCanEditRouting(!!d.canEdit);
+      })
+      .catch(() => {});
+  }, []);
+  const setRouting = (r: RoutingRule[]) => {
+    setRoutingState(r);
+    fetch("/app/api/preferences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ routing: r }),
+    })
+      .then((res) =>
+        setRoutingSavedAt(
+          res.ok
+            ? new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : null,
+        ),
+      )
+      .catch(() => {});
+  };
   const [inviting, setInviting] = useState(false);
 
 
@@ -122,7 +152,7 @@ export function SettingsBoard() {
             />
           )}
           {tab === "alerts" && (
-            <AlertsTab routing={routing} onChange={setRouting} members={members} />
+            <AlertsTab routing={routing} onChange={setRouting} members={members} canEdit={canEditRouting} savedAt={routingSavedAt} />
           )}
           {tab === "account" && <AccountTab />}
           {tab === "security" && <SecurityTab />}
@@ -320,10 +350,14 @@ function AlertsTab({
   routing,
   onChange,
   members,
+  canEdit,
+  savedAt,
 }: {
   routing: RoutingRule[];
   onChange: (r: RoutingRule[]) => void;
   members: Member[];
+  canEdit: boolean;
+  savedAt: string | null;
 }) {
   const set = (kind: AlertKind, patch: Partial<RoutingRule>) =>
     onChange(routing.map((r) => (r.kind === kind ? { ...r, ...patch } : r)));
@@ -333,10 +367,13 @@ function AlertsTab({
 
   return (
     <>
-      <Note tone="petrol" title="Delivery is not wired yet">
-        Routing is captured here and will drive email and SMS once those
-        channels are connected. Until then every alert still lands in the
-        product and is recorded on the Activity page.
+      <Note tone="petrol" title="Org policy, on the record">
+        Routing is saved to your account and audited. The in-app lane is
+        enforced now: turn it off for an alert and that alert leaves the
+        bell for everyone here. Email and SMS are stored and activate the
+        moment a delivery channel is connected.
+        {savedAt ? ` Saved ${savedAt}.` : ""}
+        {canEdit ? "" : " Changing routing requires an owner or admin."}
       </Note>
 
       <Panel flush>
@@ -387,7 +424,8 @@ function AlertsTab({
                       <button
                         key={key}
                         type="button"
-                        onClick={() => set(rule.kind, { [key]: !on })}
+                        onClick={() => canEdit && set(rule.kind, { [key]: !on })}
+                        disabled={!canEdit}
                         aria-pressed={on}
                         aria-label={`${key} for ${meta.label}`}
                         className={cn(

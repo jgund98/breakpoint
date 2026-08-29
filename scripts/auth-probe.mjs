@@ -188,6 +188,51 @@ check("platform staff reaches /admin/api", staffAdmin.status === 200);
 const viewerAdmin = await viewer.get("/admin/api");
 check("A&F viewer (not staff) gets 403 on /admin/api", viewerAdmin.status === 403);
 
+console.log("--- alert routing: org policy on the record ---");
+const prefGet = await viewer.get("/app/api/preferences").then((r) => r.json());
+check(
+  "viewer reads routing but cannot edit",
+  Array.isArray(prefGet.routing) && prefGet.canEdit === false,
+);
+const prefViewerPost = await viewer.post("/app/api/preferences", {
+  routing: prefGet.routing,
+});
+check("viewer cannot save routing (403)", prefViewerPost.status === 403);
+const originalRouting = await demo
+  .get("/app/api/preferences")
+  .then((r) => r.json());
+const flipped = originalRouting.routing.map((r) =>
+  r.kind === "anchor_dark" ? { ...r, inApp: false } : r,
+);
+const prefSave = await demo.post("/app/api/preferences", { routing: flipped });
+check("owner saves a routing change", prefSave.status === 200);
+const prefReload = await demo.get("/app/api/preferences").then((r) => r.json());
+check(
+  "routing change persisted",
+  prefReload.routing.find((r) => r.kind === "anchor_dark")?.inApp === false,
+);
+const prefBad = await demo.post("/app/api/preferences", {
+  routing: [{ kind: "not_a_kind", inApp: true }],
+});
+check("invalid routing refused (400)", prefBad.status === 400);
+await demo.post("/app/api/preferences", { routing: originalRouting.routing });
+const prefRestored = await demo.get("/app/api/preferences").then((r) => r.json());
+check(
+  "routing restored to original",
+  prefRestored.routing.find((r) => r.kind === "anchor_dark")?.inApp === true,
+);
+
+console.log("--- scheduled reevaluation ---");
+const cronAnon = await fetch(`${BASE}/api/cron/evaluate`, {
+  headers: { cookie: GATE },
+});
+check("cron without secret or staff is 401", cronAnon.status === 401);
+const cronStaff = await demo.get("/api/cron/evaluate").then((r) => r.json());
+check(
+  `staff manual run works (${cronStaff.flagsChecked ?? "?"} flags checked, ${cronStaff.newFlags ?? "?"} new)`,
+  cronStaff.ok === true && typeof cronStaff.flagsChecked === "number",
+);
+
 console.log("--- notice workflow: separation of duties ---");
 const REF = "AF-9999-PROBE";
 const wAssemble = await demo.post("/app/api/notice-workflow", {
@@ -274,6 +319,9 @@ const del3 = await sql.query(
 );
 const del4 = await sql.query(
   `delete from notice_workflow where location_ref = 'AF-9999-PROBE'`,
+);
+await sql.query(
+  `delete from audit_log where action in ('alert_routing', 'evaluation_run') and created_at > now() - interval '15 minutes'`,
 );
 const del5 = await sql.query(
   `delete from audit_log where action = 'notice_stage' and subject = 'AF-9999-PROBE'`,

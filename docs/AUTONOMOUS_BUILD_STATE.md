@@ -3,12 +3,15 @@
 Updated: 2026-08-28 (session: inbox/notices/Theo shipped; auth build begun)
 
 ## Current phase
-**Phase 2 COMPLETE: notice workflow as a system of record.**
-Phase 1 (auth/roles/isolation, commit b50f40e) and Phase 2 (migration
-011 notice_workflow + /app/api/notice-workflow + NoticeDesk rewired,
-separation of duties server-enforced) are done: auth-probe 36/36,
-db-loop-probe 41/41. Next phase: client alert preferences persisted
-(gap #4), then scheduled reevaluation cron (gap #6).
+**Phases 1-4 COMPLETE.** Auth/roles/isolation (b50f40e), notice
+workflow as a system of record (11e7505), alert routing persisted as
+org policy + enforced by the bell (migration 012, /app/api/preferences,
+SettingsBoard wired), and the scheduled reevaluation (lib/evaluate-run,
+/api/cron/evaluate daily via vercel.json, CRON_SECRET in Vercel
+prod+dev, staff manual trigger on /admin/system). auth-probe 44/44,
+db-loop-probe 41/41. Next: the per-org portfolio seam (gap #2 — the
+big one), then user management UI on the invitation table, then the
+document ingestion pipeline (gap #5).
 
 ## Environment facts a resuming session must know
 - Stack: Next.js 16 (Turbopack), React 19, Tailwind 4, `pg` against Neon

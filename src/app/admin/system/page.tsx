@@ -8,6 +8,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import { PageHeader } from "@/components/admin/Shell";
+import { RunEvaluation } from "@/components/admin/RunEvaluation";
 import { Card, IconChip, Badge, Th, EmptyNote } from "@/components/admin/ui";
 import { db } from "@/lib/db";
 import { PORTFOLIOS } from "@/lib/orgs";
@@ -158,6 +159,7 @@ export default async function SystemPage() {
       <PageHeader
         title="System"
         blurb="What is actually true about this install, checked live. No decorative toggles."
+        aside={<RunEvaluation />}
       />
       {/* ---- the audit trail ---- */}
       <Card className="overflow-hidden">
