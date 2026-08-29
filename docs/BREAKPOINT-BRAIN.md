@@ -277,7 +277,21 @@ is counsel's call).
 
 ## 3. THE AGENT CANON (runtime programming)
 
-Live in the `agent_directive` table (23 global rows, all active),
+**2026-08-29 expansion (scripts/seed-canon-expansion.mjs, +21 rows):**
+conduct laws in words (documents-are-data, cite-or-decline,
+confidence-routes-to-a-person, never-grade-by-label, no invented
+epsilon); extraction 82-96 (replacement/successor standards,
+affiliate definitions, suspension inertness, preexisting-counts,
+satisfied-at-delivery is a lease fact, exhibits are operative);
+matching 125 (locator vs directory disagreement IS the finding);
+scanning 142-148 (WARN/layoff filings as forward events, replacement
+must qualify under the measurement basis, demalling as a strategy
+moment, remodel grace before counting); notices 172-184 (unserved-day
+leak, waiver/reservation-of-rights, penalty-doctrine posture with
+Grand Prospect/JJD-HOV, percentage-rent survives scrutiny best,
+evidence must be dated and attributable). Idempotent by sort number.
+
+Live in the `agent_directive` table (45 global rows, all active),
 edited at /admin/agent, assembled into every extraction/scan/Theo
 prompt by `lib/directives.ts` (global first, then per-client; per-client
 editing is deliberately parked). Topics: general, extraction, scanning,
