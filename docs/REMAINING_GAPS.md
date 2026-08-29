@@ -5,7 +5,11 @@ Honest list, dependency-ordered. Updated 2026-08-28.
 1. ~~Auth & tenancy~~ DONE (b50f40e + f1bbb7c): sessions, roles,
    org scoping, staff gate, viewer read-only, page-level tenancy gate,
    58 adversarial checks green against production.
-2. **Per-org portfolio seam.** `lib/portfolio` is a build-time constant
+2. ~~Per-org portfolio seam~~ DONE (60dafe4): factory + server-only
+   registry + Meridian live from the round-2 dataset; client bundle
+   carries no portfolio. Remaining sliver: lib/theo full index per
+   bundle (non-pilot orgs get a live own-numbers digest + tasks).
+   Originally: `lib/portfolio` is a build-time constant
    (A&F). repo.ts documents the migration order: derived modules take a
    portfolio argument, pages await getPortfolio(org). Until then the
    workspace UI shows the sample portfolio for non-A&F orgs; all

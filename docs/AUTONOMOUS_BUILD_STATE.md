@@ -18,11 +18,21 @@ until email connects). auth-probe 55/55. Phase 6 COMPLETE: the workspace UI resp
 tenancy — every portfolio page calls requirePortfolio() (lib/
 portfolio-gate.ts) and redirects non-imported orgs to /app/setup,
 which renders that org honest own-state (papers, extraction, the
-onboarding door) keyed on the SESSION org. auth-probe 58/58. KNOWN
-LIMIT (documented): the A&F portfolio JSON still ships in the client
-bundle for any authenticated user; the full server-only seam (gap #2)
-removes that. Next: the per-org portfolio seam, then the document
-ingestion pipeline (gap #5).
+onboarding door) keyed on the SESSION org. auth-probe 58/58. PHASE 7 COMPLETE: THE PER-ORG
+PORTFOLIO SEAM (60dafe4). lib/portfolio.ts = buildPortfolio factory;
+lib/portfolios.ts = server-only registry (client import is a build
+error); scripts/meridian-import.ts imports the round-2 65-mall dataset
+as Meridian Outfitters with every certified round-2 mechanic mapped;
+requirePortfolio() returns the SESSION bundle; all live pages + the
+findings/theo/notice-package APIs + the cron consume it; coverage/
+activity/deadlines/findings are bundle-parameterized (coverageFor/
+activityFor/portfolioDeadlines(b)/expectedFlagsFor) with memoized A&F
+legacy exports; the shell fetches /app/api/workspace-lite so NO
+portfolio data rides in the client bundle. Meridian is LIVE: 65
+locations, 18 flags, own packages, own Theo digest. auth-probe 60/60,
+db-loop 44/44, round-1 key perfect. Next: full Theo index threading
+per bundle (lib/theo.ts askFor), then the document ingestion pipeline
+(gap #5).
 
 ## Environment facts a resuming session must know
 - Stack: Next.js 16 (Turbopack), React 19, Tailwind 4, `pg` against Neon
