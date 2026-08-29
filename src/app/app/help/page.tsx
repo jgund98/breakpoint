@@ -64,18 +64,18 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
         </p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
           <li>
-            <strong>Signal</strong>: one secondary source: a directory
-            delisting, a maps listing, a press mention. Enough to tighten the
-            watch, never enough to act on.
+            <strong>Signal</strong>: a single secondary source (a directory
+            delisting, a maps listing, a press mention). Enough to tighten
+            the watch, never enough to act on.
           </li>
           <li>
             <strong>Corroborated</strong>: two independent secondary sources
             agreeing. Enough to open a file and start preparing.
           </li>
           <li>
-            <strong>Verified</strong>: primary evidence: dated photographs
+            <strong>Verified</strong>: primary evidence (dated photographs
             from the premises, posted signage, your own store report, or a
-            landlord statement. Only verified evidence enters a notice
+            landlord statement). Only verified evidence enters a notice
             package.
           </li>
         </ul>
