@@ -49,3 +49,6 @@ next-env.d.ts
 /raw-assets/video/
 .vercel
 .env*
+
+# local server logs
+*.log
