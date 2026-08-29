@@ -75,7 +75,8 @@ function useIdentity() {
   };
 }
 import { useScrollLock } from "@/lib/useScrollLock";
-import { Monogram, PovToggle } from "@/components/admin/ui";
+import { Monogram } from "@/components/admin/ui";
+import { ViewAs } from "@/components/app/ViewAs";
 import { NotificationBell } from "./NotificationBell";
 import { ScanStatus } from "./ScanStatus";
 
@@ -447,7 +448,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
             <div className="ml-auto flex items-center gap-2">
               <div className="hidden md:block">
-                <PovToggle current="client" />
+                <ViewAs />
               </div>
               <span className="hidden h-10 items-center gap-2 whitespace-nowrap rounded-full bg-amber-50 px-3.5 text-[0.75rem] font-semibold text-amber-700 ring-1 ring-inset ring-amber-600/10 xl:inline-flex">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 anim-pulse-dot" />

@@ -35,13 +35,21 @@ export async function sessionOrgSlug(): Promise<string | null> {
       return rows[0]?.slug ?? null;
     }
     if (!/^[a-f0-9]{48}$/.test(token)) return null;
+    /* The acting org wins when the user is a member of it — or is
+       platform staff, who may view any client's workspace (the
+       view-as switcher). Otherwise, first membership. */
     const { rows } = await db().query(
-      `select o.slug from auth_session s
-         join membership m on m.user_id = s.user_id
-          and (s.org_id is null or m.org_id = s.org_id)
-         join org o on o.id = m.org_id
-        where s.token = $1 and s.expires_at > now()
-        order by m.created_at limit 1`,
+      `select coalesce(
+                (select o.slug from org o
+                  where o.id = s.org_id
+                    and (u.platform_admin
+                         or exists (select 1 from membership m
+                                     where m.user_id = u.id and m.org_id = s.org_id))),
+                (select o.slug from membership m join org o on o.id = m.org_id
+                  where m.user_id = u.id order by m.created_at limit 1)
+              ) as slug
+         from auth_session s join app_user u on u.id = s.user_id
+        where s.token = $1 and s.expires_at > now() and u.disabled_at is null`,
       [token],
     );
     return rows[0]?.slug ?? null;

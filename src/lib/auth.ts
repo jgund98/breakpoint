@@ -116,6 +116,37 @@ async function identityFor(
     [userRow.id, preferredOrgId],
   );
   const m = mem[0] ?? null;
+  /* Staff view any client's workspace: when the session's acting org
+     is not one of their memberships, resolve it directly and act with
+     a write-capable role. Client users never reach this branch — their
+     org comes only from membership. */
+  if (
+    userRow.platform_admin &&
+    preferredOrgId &&
+    m?.org_id !== preferredOrgId
+  ) {
+    const { rows: acting } = await db().query(
+      `select id, slug, name from org where id = $1`,
+      [preferredOrgId],
+    );
+    if (acting[0]) {
+      const staffRole = (userRow.staff_role as StaffRole) ?? "admin";
+      return {
+        userId: userRow.id,
+        email: userRow.email,
+        name: userRow.name,
+        title: userRow.title,
+        platformAdmin: userRow.platform_admin,
+        staffRole,
+        orgId: acting[0].id,
+        orgSlug: acting[0].slug,
+        orgName: acting[0].name,
+        /* observers stay read-only even inside a client workspace */
+        role: staffRole === "observer" ? "viewer" : "admin",
+        legacy,
+      };
+    }
+  }
   return {
     userId: userRow.id,
     email: userRow.email,
