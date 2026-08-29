@@ -22,8 +22,34 @@ import {
   Store,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { org, rows, summary } from "@/lib/portfolio";
 import { DEMO_USER } from "@/lib/session";
+
+/* The shell's org-scoped data, from /app/api/workspace-lite: identity,
+   the search index, the claim chip. Fetched per session so the client
+   bundle carries no portfolio data at all. */
+type WorkspaceLite = {
+  org: { name: string; watched: number; centers: number };
+  locations: { id: string; center: string; place: string }[];
+  triggered: number;
+  today: string | null;
+};
+let liteCache: WorkspaceLite | null = null;
+function useWorkspaceLite(): WorkspaceLite | null {
+  const [lite, setLite] = useState<WorkspaceLite | null>(liteCache);
+  useEffect(() => {
+    if (liteCache) return;
+    fetch("/app/api/workspace-lite")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.org) {
+          liteCache = d;
+          setLite(d);
+        }
+      })
+      .catch(() => {});
+  }, []);
+  return lite;
+}
 
 /* The signed-in identity from the session, demo fallback until it
    loads (and for the legacy demo cookie, which resolves to the same
@@ -45,7 +71,7 @@ function useIdentity() {
       .replace(/[^A-Za-z]/g, "")
       .slice(0, 2)
       .toUpperCase(),
-    orgName: me?.orgName ?? org.name,
+    orgName: me?.orgName ?? "Breakpoint",
   };
 }
 import { useScrollLock } from "@/lib/useScrollLock";
@@ -116,16 +142,18 @@ function BrandHeader({ sub, bare = false }: { sub: string; bare?: boolean }) {
 }
 
 function AccountRow() {
+  const lite = useWorkspaceLite();
+  const name = lite?.org.name ?? "";
   return (
     <div className="border-b border-slate-100 px-4 py-3">
       <div className="flex items-center gap-3">
-        <Monogram name={org.name} size="sm" />
+        <Monogram name={name || "Breakpoint"} size="sm" />
         <div className="min-w-0">
           <p className="truncate text-[0.8125rem] font-semibold text-slate-900">
-            {org.name}
+            {name || " "}
           </p>
           <p className="text-[0.6875rem] text-slate-400">
-            {org.watched} locations monitored
+            {lite ? `${lite.org.watched} locations monitored` : " "}
           </p>
         </div>
       </div>
@@ -252,15 +280,8 @@ function LocationSearch() {
   const [open, setOpen] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  const index = useMemo(
-    () =>
-      rows.map((r) => ({
-        id: r.id,
-        center: r.center.name,
-        place: `${r.center.city}, ${r.center.state}`,
-      })),
-    [],
-  );
+  const lite = useWorkspaceLite();
+  const index = useMemo(() => lite?.locations ?? [], [lite]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -379,9 +400,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     router.refresh();
   };
 
-  const claimable =
-    (summary.byState.get("claimable") ?? 0) +
-    (summary.byState.get("election_open") ?? 0);
+  const claimable = useWorkspaceLite()?.triggered ?? 0;
 
   const sidebarBody = (onNavigate?: () => void) => (
     <>

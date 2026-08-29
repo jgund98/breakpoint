@@ -24,7 +24,7 @@ import {
 } from "@/lib/team";
 import { PERMISSION_LABEL } from "@/lib/team";
 import { prettyDate, shortDate } from "@/lib/clause";
-import { org } from "@/lib/portfolio";
+
 import { contract } from "@/lib/value";
 import { cn } from "@/lib/cn";
 import {
@@ -163,6 +163,17 @@ export function SettingsBoard() {
       .catch(() => {});
   };
   const [inviting, setInviting] = useState(false);
+  /* The account tab shows the SESSION org's facts, fetched — never a
+     baked-in portfolio's. */
+  const [accountLite, setAccountLite] = useState<AccountLite | null>(null);
+  useEffect(() => {
+    fetch("/app/api/workspace-lite")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.org) setAccountLite(d.org);
+      })
+      .catch(() => {});
+  }, []);
 
 
   return (
@@ -288,7 +299,7 @@ export function SettingsBoard() {
           {tab === "alerts" && (
             <AlertsTab routing={routing} onChange={setRouting} members={members} canEdit={canEditRouting} savedAt={routingSavedAt} />
           )}
-          {tab === "account" && <AccountTab />}
+          {tab === "account" && <AccountTab lite={accountLite} />}
           {tab === "security" && <SecurityTab />}
         </motion.div>
       </AnimatePresence>
@@ -633,7 +644,18 @@ function AlertsTab({
    account and security
    ================================================================== */
 
-function AccountTab() {
+type AccountLite = {
+  name: string;
+  watched: number;
+  centers: number;
+  descriptor: string;
+  totalDoors: number;
+  plan: string;
+  contractStart: string;
+};
+
+function AccountTab({ lite }: { lite: AccountLite | null }) {
+  if (!lite) return <div className="shimmer h-40 rounded-2xl" />;
   return (
     <div className="grid gap-3 lg:grid-cols-2">
       <Panel>
@@ -641,10 +663,10 @@ function AccountTab() {
         <KeyValue
           className="mt-3"
           items={[
-            { k: "Trade name", v: org.name },
-            { k: "Sector", v: org.descriptor },
-            { k: "Doors under contract", v: org.totalDoors.toLocaleString("en-US") },
-            { k: "Doors with co-tenancy language", v: org.watched },
+            { k: "Trade name", v: lite.name },
+            { k: "Sector", v: lite.descriptor },
+            { k: "Doors under contract", v: lite.totalDoors.toLocaleString("en-US") },
+            { k: "Doors with co-tenancy language", v: lite.watched },
           ]}
         />
       </Panel>
@@ -654,8 +676,8 @@ function AccountTab() {
         <KeyValue
           className="mt-3"
           items={[
-            { k: "Plan", v: org.plan },
-            { k: "Watching since", v: prettyDate(contract.startedOn) },
+            { k: "Plan", v: lite.plan },
+            { k: "Watching since", v: prettyDate(lite.contractStart) },
             {
               k: "Rate",
               v: `$${contract.perDoorAnnual} per watched door, per year`,

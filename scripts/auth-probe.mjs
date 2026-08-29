@@ -148,18 +148,31 @@ const merMe = await mer.get("/app/api/me").then((r) => r.json());
 check("meridian session scopes to meridian", merMe.orgSlug === "meridian-outfitters");
 const merFlags = await mer.get("/app/api/findings").then((r) => r.json());
 check(
-  `meridian inbox is meridian-only (${merFlags.flags?.length ?? "?"} flags, none A&F)`,
-  Array.isArray(merFlags.flags) && merFlags.flags.length === 0,
+  `meridian inbox holds ITS OWN flags (${merFlags.flags?.length ?? "?"}, all MER-)`,
+  Array.isArray(merFlags.flags) &&
+    merFlags.flags.length > 0 &&
+    merFlags.flags.every((f) => String(f.location_ref).startsWith("MER-")),
 );
 const merPkg = await mer.get("/app/api/notice-package?location=AF-1007");
 check("meridian cannot download an A&F notice package (404)", merPkg.status === 404);
+const merOwnRef = merFlags.flags?.find((f) => f.kind === "triggered")?.location_ref;
+if (merOwnRef) {
+  const ownPkg = await mer.get(`/app/api/notice-package?location=${merOwnRef}`);
+  const ownText = await ownPkg.text();
+  check(
+    `meridian downloads ITS OWN notice package (${merOwnRef})`,
+    ownPkg.status === 200 &&
+      ownText.includes("Meridian Outfitters") &&
+      !ownText.includes("AF-10"),
+  );
+}
 const merTheo = await mer.post("/app/api/theo", { question: "What is flagged?" });
 const merTheoBody = await merTheo.json();
 check(
-  "theo gives meridian an honest no-portfolio answer, no A&F data",
+  "theo answers meridian from MERIDIAN's numbers, no A&F data",
   merTheo.status === 200 &&
     !JSON.stringify(merTheoBody).includes("AF-1") &&
-    /not imported/i.test(merTheoBody.answer?.lead ?? ""),
+    /65 watched locations/i.test(merTheoBody.answer?.lead ?? ""),
 );
 const merReq = await mer.post("/app/api/requests", {
   kind: "manual_scan",
@@ -302,23 +315,21 @@ console.log("--- workspace pages respect tenancy ---");
 const merTok2 = await login("owner@meridian.test", "breakpoint-demo-1");
 const pageRes = await fetch(`${BASE}/app`, {
   headers: { cookie: `${GATE}; bp_session=${merTok2}` },
-  redirect: "manual",
 });
+const merOverview = await pageRes.text();
 check(
-  "meridian browsing /app is redirected off the A&F portfolio",
-  pageRes.status >= 300 &&
-    pageRes.status < 400 &&
-    (pageRes.headers.get("location") ?? "").includes("/app/setup"),
+  "meridian's /app renders MERIDIAN's own portfolio",
+  pageRes.status === 200 &&
+    merOverview.includes("Meridian Outfitters") &&
+    merOverview.includes("MER-") &&
+    !merOverview.includes("AF-10"),
 );
-const setupRes = await fetch(`${BASE}/app/setup`, {
+const merLocations = await fetch(`${BASE}/app/locations`, {
   headers: { cookie: `${GATE}; bp_session=${merTok2}` },
-});
-const setupBody = await setupRes.text();
+}).then((r) => r.text());
 check(
-  "meridian's setup page shows its own honest state, no A&F data",
-  setupRes.status === 200 &&
-    setupBody.includes("not in the evaluation engine") &&
-    !setupBody.includes("Ala Moana"),
+  "meridian's locations table lists MER doors only",
+  merLocations.includes("MER-1003") && !merLocations.includes("AF-10"),
 );
 const afPage = await fetch(`${BASE}/app`, {
   headers: { cookie: `${GATE}; bp_session=${demoTok}` },

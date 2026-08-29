@@ -8,8 +8,8 @@
  * Called by the daily cron and by the console's "Run evaluation now".
  */
 import { db } from "@/lib/db";
-import { PORTFOLIOS } from "@/lib/orgs";
-import { expectedFlags } from "@/lib/findings";
+import { PORTFOLIO_SLUGS, portfolioFor } from "@/lib/portfolios";
+import { expectedFlagsFor } from "@/lib/findings";
 
 export type EvaluationRunResult = {
   orgs: number;
@@ -26,8 +26,8 @@ export async function runEvaluation(
   let newFlags = 0;
   let notified = 0;
 
-  for (const slug of Object.keys(PORTFOLIOS)) {
-    const flags = expectedFlags();
+  for (const slug of PORTFOLIO_SLUGS) {
+    const flags = expectedFlagsFor(portfolioFor(slug)!);
     flagsChecked += flags.length;
     for (const f of flags) {
       const { rows } = await db().query(
@@ -74,7 +74,7 @@ export async function runEvaluation(
     .catch(() => {});
 
   return {
-    orgs: Object.keys(PORTFOLIOS).length,
+    orgs: PORTFOLIO_SLUGS.length,
     flagsChecked,
     newFlags,
     notified,

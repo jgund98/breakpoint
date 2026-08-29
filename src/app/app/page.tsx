@@ -12,7 +12,7 @@ import {
   usd,
   verificationOf,
 } from "@/lib/clause";
-import { org, rows, signalFeed, summary, TODAY } from "@/lib/portfolio";
+
 import {
   KeyValue,
   LinkButton,
@@ -30,10 +30,12 @@ import {
   ThresholdRail,
   type RailPoint,
 } from "@/components/app/ThresholdRail";
-import { sweeps } from "@/lib/activity";
+import { activityFor } from "@/lib/activity";
 
 export default async function OverviewPage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  const { org, rows, signalFeed, summary, TODAY } = p;
+  const { sweeps } = activityFor(p);
   const decisions = rows
     .filter(
       (r) =>

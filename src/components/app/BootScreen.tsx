@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LogoWord } from "@/components/brand/Logo";
 import { BrandMark } from "@/components/brand/BrandMark";
-import { org, summary } from "@/lib/portfolio";
 
 /**
  * THE BOOT SEQUENCE
@@ -28,8 +27,8 @@ export function BootScreen() {
   const [step, setStep] = useState(0);
 
   const steps = [
-    `Restoring workspace for ${org.name}`,
-    `Loading ${org.watched} leases and ${summary.centers} center rent rolls`,
+    "Restoring your workspace",
+    "Loading your leases and center rent rolls",
     `Recomputing occupancy for each clause on its own terms`,
     `Applying deemed-open rules and tenant preconditions`,
     `Checking duration clocks and election windows`,

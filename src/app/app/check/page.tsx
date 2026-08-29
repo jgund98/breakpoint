@@ -1,4 +1,5 @@
 import { requirePortfolio } from "@/lib/portfolio-gate";
+import { redirect } from "next/navigation";
 import { Building2, ClipboardCheck, Radar, Store } from "lucide-react";
 import { rows, TODAY } from "@/lib/portfolio";
 import { activitySummary } from "@/lib/activity";
@@ -14,7 +15,10 @@ import { PageHead } from "@/components/app/ui";
  * is the screen that person works from.
  */
 export default async function CheckPage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  /* Legacy page, cut from the nav: still A&F-shaped internally, so
+     any other org is sent home rather than shown pilot data. */
+  if (p.org.slug !== "abercrombie-fitch") redirect("/app");
   const centers: CheckCenter[] = rows.map((r) => {
     /* The stores this clause actually turns on. They sort to the top of
        the change list, because a named anchor going missing is the job

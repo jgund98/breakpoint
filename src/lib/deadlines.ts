@@ -1,5 +1,5 @@
-import { TODAY, rows } from "@/lib/portfolio";
-import { coverage } from "@/lib/coverage";
+import { afBundle, type PortfolioBundle } from "@/lib/portfolio";
+import { coverageFor } from "@/lib/coverage";
 
 /**
  * Every date on the portfolio that demands something of a person,
@@ -20,12 +20,14 @@ export type Deadline = {
   locationId: string | null;
 };
 
-const daysFrom = (iso: string) =>
-  Math.round(
-    (Date.parse(iso + "T00:00:00Z") - Date.parse(TODAY + "T00:00:00Z")) / 86400000,
-  );
-
-export function portfolioDeadlines(): Deadline[] {
+export function portfolioDeadlines(b: PortfolioBundle = afBundle): Deadline[] {
+  const { TODAY, rows } = b;
+  const coverage = coverageFor(b);
+  const daysFrom = (iso: string) =>
+    Math.round(
+      (Date.parse(iso + "T00:00:00Z") - Date.parse(TODAY + "T00:00:00Z")) /
+        86400000,
+    );
   const items: Deadline[] = [];
 
   for (const r of rows) {

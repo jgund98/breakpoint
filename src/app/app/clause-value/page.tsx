@@ -1,4 +1,5 @@
 import { requirePortfolio } from "@/lib/portfolio-gate";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { usd } from "@/lib/clause";
 import {
@@ -25,7 +26,10 @@ import {
  * is the reason it would not.
  */
 export default async function ClauseValuePage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  /* Legacy page, cut from the nav: still A&F-shaped internally, so
+     any other org is sent home rather than shown pilot data. */
+  if (p.org.slug !== "abercrombie-fitch") redirect("/app");
   const money = (n: number) => (n > 0 ? usd(Math.round(n)) : "None");
 
   return (

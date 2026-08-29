@@ -5,7 +5,7 @@ import {
   formatCoTenancyRent,
   verificationOf,
 } from "@/lib/clause";
-import { rows } from "@/lib/portfolio";
+
 import { PageHead, type Tone } from "@/components/app/ui";
 import {
   LocationsTable,
@@ -13,7 +13,7 @@ import {
 } from "@/components/app/LocationsTable";
 
 export default async function LocationsPage() {
-  await requirePortfolio();
+  const { rows } = await requirePortfolio();
   const data: TableRow[] = rows.map((r) => {
     const v = verificationOf(r.evidence);
     const failing = r.evaluation.triggers.filter((t) => t.failing);

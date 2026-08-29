@@ -1,4 +1,5 @@
 import { requirePortfolio } from "@/lib/portfolio-gate";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SOURCE_META, TIER_META, prettyDate, verificationOf } from "@/lib/clause";
 import { rows, signalFeed } from "@/lib/portfolio";
@@ -13,7 +14,10 @@ import {
 } from "@/components/app/ui";
 
 export default async function SignalsPage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  /* Legacy page, cut from the nav: still A&F-shaped internally, so
+     any other org is sent home rather than shown pilot data. */
+  if (p.org.slug !== "abercrombie-fitch") redirect("/app");
   const byMonth = new Map<string, typeof signalFeed>();
   for (const s of signalFeed) {
     const key = s.observedAt.slice(0, 7);

@@ -19,7 +19,9 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { canWrite, requireMember } from "@/lib/auth";
-import { hasPortfolio } from "@/lib/orgs";
+import { portfolioFor } from "@/lib/portfolios";
+import type { PortfolioBundle, Row } from "@/lib/portfolio";
+import { compactUsd } from "@/lib/clause";
 import { assembleDirectives } from "@/lib/directives";
 import { ask, theo } from "@/lib/theo";
 import { STATE_META, formatCoTenancyRent } from "@/lib/clause";
@@ -42,16 +44,17 @@ export type TheoLink = { label: string; href: string };
 
 const fold = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
-function resolveLocation(question: string) {
-  const idMatch = /af[- ]?(\d{4})/i.exec(question);
+function resolveLocation(b: PortfolioBundle, question: string) {
+  const idMatch = /\b([a-z]{2,3})[- ]?(\d{4})\b/i.exec(question);
   if (idMatch) {
-    const hit = rows.find((r) => r.id.toLowerCase() === `af-${idMatch[1]}`);
+    const wanted = `${idMatch[1]}-${idMatch[2]}`.toLowerCase();
+    const hit = b.rows.find((r) => r.id.toLowerCase() === wanted);
     if (hit) return hit;
   }
   const q = ` ${fold(question)} `;
-  let best: (typeof rows)[number] | null = null;
+  let best: Row | null = null;
   let bestLen = 0;
-  for (const r of rows) {
+  for (const r of b.rows) {
     const name = fold(r.center.name);
     if (name.length > bestLen && q.includes(` ${name} `)) {
       best = r;
@@ -70,7 +73,7 @@ function resolveLocation(question: string) {
   return best;
 }
 
-const locLink = (r: (typeof rows)[number]): TheoLink => ({
+const locLink = (r: Row): TheoLink => ({
   label: `Open ${r.id} · ${r.center.name}`,
   href: `/app/locations/${r.id}`,
 });
@@ -81,9 +84,13 @@ type TaskOutcome = {
   links: TheoLink[];
 } | null;
 
-async function tryTask(question: string, slug: string): Promise<TaskOutcome> {
+async function tryTask(
+  b: PortfolioBundle,
+  question: string,
+  slug: string,
+): Promise<TaskOutcome> {
   const q = question.toLowerCase();
-  const loc = resolveLocation(question);
+  const loc = resolveLocation(b, question);
 
   const wantsScan =
     /(request|run|order|schedule|start|get)[^.?!]*\bscan\b|\bscan\b[^.?!]*\b(request|now|please)\b/.test(q);
@@ -96,7 +103,7 @@ async function tryTask(question: string, slug: string): Promise<TaskOutcome> {
   const needsLocation =
     wantsScan || wantsEstoppel || wantsReview || wantsHandled || wantsPackage;
   if (needsLocation && !loc) {
-    const flagged = rows.filter(
+    const flagged = b.rows.filter(
       (r) =>
         r.evaluation.state === "claimable" ||
         r.evaluation.state === "election_open",
@@ -204,14 +211,14 @@ async function tryTask(question: string, slug: string): Promise<TaskOutcome> {
 }
 
 /** Jump buttons derived from any answer: every location it cites. */
-function deriveLinks(texts: string[]): TheoLink[] {
+function deriveLinks(b: PortfolioBundle, texts: string[]): TheoLink[] {
   const joined = texts.join(" ");
   const seen = new Set<string>();
   const links: TheoLink[] = [];
-  for (const m of joined.matchAll(/AF-(\d{4})/gi)) {
-    const id = `AF-${m[1]}`;
+  for (const m of joined.matchAll(/\b([A-Z]{2,3})-(\d{4})\b/g)) {
+    const id = `${m[1]}-${m[2]}`;
     if (seen.has(id)) continue;
-    const r = rows.find((x) => x.id === id);
+    const r = b.rows.find((x) => x.id === id);
     if (r) {
       seen.add(id);
       links.push(locLink(r));
@@ -394,9 +401,9 @@ export async function POST(request: NextRequest) {
       }))
     : [];
 
-  /* Tenancy: Theo reasons over the imported portfolio, which belongs
-     to one org. Another org gets an honest answer, never A&F data. */
-  if (!hasPortfolio(session.orgSlug)) {
+  /* Tenancy: Theo reasons over the SESSION org's own portfolio. */
+  const bundle = portfolioFor(session.orgSlug);
+  if (!bundle) {
     return NextResponse.json({
       engine: "index",
       answer: {
@@ -415,7 +422,9 @@ export async function POST(request: NextRequest) {
      with a receipt. Evaluated fresh on every request; nothing cached.
      Viewers are read-only: they get answers, never writes. */
   try {
-    const task = canWrite(session) ? await tryTask(question, session.orgSlug!) : null;
+    const task = canWrite(session)
+      ? await tryTask(bundle, question, session.orgSlug!)
+      : null;
     if (task) {
       return NextResponse.json({
         engine: "action",
@@ -434,6 +443,31 @@ export async function POST(request: NextRequest) {
     }
   } catch {
     /* a task failure falls through to a normal answer; Theo is never down */
+  }
+
+  /* The full analyst index is threaded to the pilot portfolio today.
+     Other imported orgs get an honest live digest of their own numbers
+     plus tasks and jump links — never another client's data. */
+  if (bundle.org.slug !== "abercrombie-fitch") {
+    const s = bundle.summary;
+    const triggered =
+      (s.byState.get("claimable") ?? 0) + (s.byState.get("election_open") ?? 0);
+    const lead = `Across your ${bundle.rows.length} watched locations: ${triggered} ${triggered === 1 ? "is" : "are"} triggered and MAY qualify for co-tenancy rent, ${s.watchCount} ${s.watchCount === 1 ? "sits" : "sit"} inside the watch band, and cumulative potential co-tenancy rent on reported sales stands at ${compactUsd(Math.round(s.cumulativeAtRisk))}. The inbox carries each flagged location with its dates; ask me to open one, request a scan, or hand you a notice package. Deeper question-answering over your portfolio is being trained now.`;
+    return NextResponse.json({
+      engine: "index",
+      answer: {
+        interpreted: question,
+        lead,
+        provenance: `Computed from your portfolio, evaluated through ${bundle.TODAY}.`,
+        blocks: [],
+        followUps: [
+          "Open the inbox",
+          "Request a scan of one of my centers",
+          "Download a notice package",
+        ],
+      },
+      links: [{ label: "Open the inbox", href: "/app/inbox" }],
+    });
   }
 
   /* Layer 1: the engine. Always. */
@@ -481,13 +515,13 @@ export async function POST(request: NextRequest) {
            and the engine's apology block would contradict it. */
         blocks: routerMissed ? [] : answer.blocks,
       },
-      links: deriveLinks([lead, blocksText]),
+      links: deriveLinks(bundle, [lead, blocksText]),
     });
   }
 
   return NextResponse.json({
     engine: "index",
     answer,
-    links: deriveLinks([answer.lead ?? "", blocksText]),
+    links: deriveLinks(bundle, [answer.lead ?? "", blocksText]),
   });
 }

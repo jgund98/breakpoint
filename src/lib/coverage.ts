@@ -26,7 +26,7 @@ import {
   daysBetween,
   iso,
 } from "./clause";
-import { TODAY, rows, type Row } from "./portfolio";
+import { TODAY, afBundle, rows, type PortfolioBundle, type Row } from "./portfolio";
 
 /* ------------------------------------------------------------------
    sources
@@ -134,7 +134,7 @@ function hash(s: string) {
   return h >>> 0;
 }
 
-export function watchTargets(data: Row[] = rows): WatchTarget[] {
+export function watchTargets(data: Row[] = rows, today: string = TODAY): WatchTarget[] {
   const byKey = new Map<string, WatchTarget>();
 
   for (const r of data) {
@@ -167,7 +167,7 @@ export function watchTargets(data: Row[] = rows): WatchTarget[] {
         dependents: [r.id],
         sources,
         // Every target is swept weekly; stagger the last pass across the week.
-        lastCheckedISO: iso(addDays(new Date(TODAY), -(h % 7))),
+        lastCheckedISO: iso(addDays(new Date(today), -(h % 7))),
         agreement: suite.status === "open" ? sources.length : 1 + (h % 3),
       });
     }
@@ -245,8 +245,8 @@ export type EntitlementRow = {
   responseDueOn: string | null;
 };
 
-export function entitlementRows(data: Row[] = rows): EntitlementRow[] {
-  const today = new Date(TODAY);
+export function entitlementRows(data: Row[] = rows, asOf: string = TODAY): EntitlementRow[] {
+  const today = new Date(asOf);
   const out: EntitlementRow[] = [];
 
   for (const r of data) {
@@ -286,10 +286,12 @@ export function entitlementRows(data: Row[] = rows): EntitlementRow[] {
    the headline
    ------------------------------------------------------------------ */
 
-export const coverage = (() => {
-  const targets = watchTargets();
-  const limbs = limbVisibility();
-  const ents = entitlementRows();
+const coverageMemo = new WeakMap<PortfolioBundle, ReturnType<typeof computeCoverage>>();
+
+function computeCoverage(b: PortfolioBundle) {
+  const targets = watchTargets(b.rows, b.TODAY);
+  const limbs = limbVisibility(b.rows);
+  const ents = entitlementRows(b.rows, b.TODAY);
 
   const counts = { observable: 0, entitled: 0, blind: 0 };
   for (const l of limbs) counts[l.visibility] += 1;
@@ -311,6 +313,19 @@ export const coverage = (() => {
        a UTC build said "next report Aug 16" and an Eastern browser
        recomputed "Aug 17", which is a hydration mismatch on every page
        carrying the sidebar. */
-    nextSweepISO: iso(addDays(new Date(TODAY), 7 - new Date(TODAY).getUTCDay())),
+    nextSweepISO: iso(
+      addDays(new Date(b.TODAY), 7 - new Date(b.TODAY).getUTCDay()),
+    ),
   };
-})();
+}
+
+/** Coverage for one org's portfolio, memoized per bundle. */
+export function coverageFor(b: PortfolioBundle) {
+  const hit = coverageMemo.get(b);
+  if (hit) return hit;
+  const v = computeCoverage(b);
+  coverageMemo.set(b, v);
+  return v;
+}
+
+export const coverage = coverageFor(afBundle);

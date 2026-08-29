@@ -17,7 +17,7 @@ import {
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
 import { analystBrief, nextStepsFor } from "@/lib/findings";
 import { Sparkles } from "lucide-react";
-import { TODAY, rowById, rows } from "@/lib/portfolio";
+import { rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
 import { ScanHistory } from "@/components/app/ScanHistory";
@@ -44,7 +44,8 @@ export default async function LocationPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  const { TODAY, rowById } = p;
   const { id } = await params;
   const row = rowById(id);
   if (!row) notFound();

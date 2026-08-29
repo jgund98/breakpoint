@@ -13,7 +13,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { hasPortfolio } from "@/lib/orgs";
+import { portfolioFor } from "@/lib/portfolios";
+import type { PortfolioBundle } from "@/lib/portfolio";
 import { SESSION_COOKIE, SESSION_TOKEN, DEMO_EMAIL } from "@/lib/session";
 
 /** The signed-in org's slug, from the session cookie. Null if none. */
@@ -51,9 +52,15 @@ export async function sessionOrgSlug(): Promise<string | null> {
   }
 }
 
-/** Call at the top of any page that renders the imported portfolio. */
-export async function requirePortfolio(): Promise<string> {
+/**
+ * Call at the top of any page that renders portfolio data. Returns the
+ * SESSION org's own evaluated bundle; an org with nothing imported is
+ * sent to /app/setup. No page ever falls back to another client's
+ * portfolio.
+ */
+export async function requirePortfolio(): Promise<PortfolioBundle> {
   const slug = await sessionOrgSlug();
-  if (!slug || !hasPortfolio(slug)) redirect("/app/setup");
-  return slug;
+  const bundle = portfolioFor(slug);
+  if (!bundle) redirect("/app/setup");
+  return bundle;
 }

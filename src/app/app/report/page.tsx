@@ -1,9 +1,8 @@
 import { requirePortfolio } from "@/lib/portfolio-gate";
 import type { Metadata } from "next";
 import { STATE_META, prettyDate } from "@/lib/clause";
-import { TODAY, org, rows, summary } from "@/lib/portfolio";
-import { activitySummary, sweeps } from "@/lib/activity";
-import { coverage } from "@/lib/coverage";
+import { activityFor } from "@/lib/activity";
+import { coverageFor } from "@/lib/coverage";
 import { portfolioDeadlines } from "@/lib/deadlines";
 import { PageHead, Panel, Pill, type Tone } from "@/components/app/ui";
 import { PrintButton } from "@/components/app/PrintButton";
@@ -21,14 +20,17 @@ const compactUsd = (n: number) =>
  * reader who was not in the room — a VP hands this to a CFO.
  */
 export default async function ReportPage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  const { TODAY, org, rows, summary } = p;
+  const { activitySummary, sweeps } = activityFor(p);
+  const coverage = coverageFor(p);
   const decisions =
     (summary.byState.get("claimable") ?? 0) +
     (summary.byState.get("election_open") ?? 0);
   const running = summary.byState.get("remedy_active") ?? 0;
   const quarter = sweeps.slice(0, 12);
   const quarterChanges = quarter.reduce((n, s) => n + s.changes, 0);
-  const deadlines = portfolioDeadlines().slice(0, 6);
+  const deadlines = portfolioDeadlines(p).slice(0, 6);
 
   const stateRows = [...summary.byState.entries()].sort((a, b) => b[1] - a[1]);
 

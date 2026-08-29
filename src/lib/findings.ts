@@ -22,7 +22,7 @@ import {
   verificationOf,
   TIER_META,
 } from "@/lib/clause";
-import { rows, TODAY } from "@/lib/portfolio";
+import { afBundle, type PortfolioBundle, type Row } from "@/lib/portfolio";
 
 export type ExpectedFlag = {
   locationRef: string;
@@ -39,7 +39,7 @@ export type ExpectedFlag = {
  * knows exactly what happens now. Ordered the way the work actually
  * runs, and tailored to this location's own facts.
  */
-export function nextStepsFor(r: (typeof rows)[number]): string[] {
+export function nextStepsFor(r: Row, b: PortfolioBundle = afBundle): string[] {
   const ev = r.evaluation;
   const v = verificationOf(r.evidence);
   const steps: string[] = [];
@@ -97,8 +97,9 @@ export function nextStepsFor(r: (typeof rows)[number]): string[] {
   return steps;
 }
 
-/** The flags the current evaluation implies, one per live episode. */
-export function expectedFlags(): ExpectedFlag[] {
+/** The flags one org's current evaluation implies, one per live episode. */
+export function expectedFlagsFor(b: PortfolioBundle): ExpectedFlag[] {
+  const { rows, TODAY } = b;
   const flags: ExpectedFlag[] = [];
 
   for (const r of rows) {
@@ -173,7 +174,7 @@ export type AnalystBrief = {
   highlights: { point: string; why: string }[];
 };
 
-export function analystBrief(r: (typeof rows)[number]): AnalystBrief | null {
+export function analystBrief(r: Row): AnalystBrief | null {
   const ev = r.evaluation;
   if (
     ev.state !== "claimable" &&
@@ -269,6 +270,11 @@ export function analystBrief(r: (typeof rows)[number]): AnalystBrief | null {
         : `I flagged ${r.center.name} because the failure stopped being weather and became a season: the condition has now persisted long enough to satisfy the clause's own qualifying period. This location MAY qualify for co-tenancy rent. Here is my read.`;
 
   return { lead, highlights };
+}
+
+/** Legacy A&F wrapper; new callers resolve a bundle by org. */
+export function expectedFlags(): ExpectedFlag[] {
+  return expectedFlagsFor(afBundle);
 }
 
 export const FLAG_KIND_META: Record<

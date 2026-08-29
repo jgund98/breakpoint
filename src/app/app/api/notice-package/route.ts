@@ -10,8 +10,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { requireMember } from "@/lib/auth";
-import { hasPortfolio } from "@/lib/orgs";
-import { org, rows } from "@/lib/portfolio";
+import { portfolioFor } from "@/lib/portfolios";
 import { buildNoticeLetter } from "@/lib/notice-letter";
 import {
   SOURCE_META,
@@ -32,13 +31,15 @@ export async function GET(request: NextRequest) {
   if (!session)
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  /* Tenancy: the imported portfolio belongs to one org. Another org's
-     member gets a 404, indistinguishable from a wrong id. */
-  if (!hasPortfolio(session.orgSlug))
+  /* Tenancy: each org's package assembles from ITS portfolio. An org
+     with nothing imported, or a foreign id, gets the same 404. */
+  const bundle = portfolioFor(session.orgSlug);
+  if (!bundle)
     return NextResponse.json({ error: "No such location." }, { status: 404 });
+  const org = bundle.org;
 
   const id = (request.nextUrl.searchParams.get("location") ?? "").slice(0, 32);
-  const r = rows.find((x) => x.id === id);
+  const r = bundle.rows.find((x) => x.id === id);
   if (!r) return NextResponse.json({ error: "No such location." }, { status: 404 });
 
   const now = new Date();

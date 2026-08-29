@@ -7,14 +7,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { SOURCE_META, prettyDate, shortDate } from "@/lib/clause";
-import {
-  REPORT_META,
-  activitySummary,
-  notifications,
-  reports,
-  sweeps,
-} from "@/lib/activity";
-import { signalFeed } from "@/lib/portfolio";
+import { REPORT_META, activityFor } from "@/lib/activity";
 import {
   EmptyState,
   LinkButton,
@@ -33,7 +26,9 @@ const SEVERITY: Record<string, { label: string; tone: Tone }> = {
 };
 
 export default async function ActivityPage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  const { signalFeed } = p;
+  const { activitySummary, notifications, reports, sweeps } = activityFor(p);
   const a = activitySummary;
 
   return (

@@ -8,8 +8,8 @@ import { portfolioDeadlines } from "@/lib/deadlines";
  * a person, exportable to the calendar they actually live in.
  */
 export default async function DeadlinesPage() {
-  await requirePortfolio();
-  const items = portfolioDeadlines();
+  const p = await requirePortfolio();
+  const items = portfolioDeadlines(p);
   const cures = items.filter((d) => d.kind === "cure").length;
   const elections = items.filter((d) => d.kind === "election").length;
   const soonest = items[0];

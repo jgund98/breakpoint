@@ -7,9 +7,9 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { canWrite, requireMember } from "@/lib/auth";
-import { hasPortfolio } from "@/lib/orgs";
+import { portfolioFor } from "@/lib/portfolios";
 import { db } from "@/lib/db";
-import { expectedFlags } from "@/lib/findings";
+import { expectedFlagsFor } from "@/lib/findings";
 
 export const runtime = "nodejs";
 
@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
      portfolio; flags derive from it only for the org that owns it.
      Any other org sees exactly its own (empty) inbox — never another
      client's flags. */
-  for (const f of hasPortfolio(org.slug) ? expectedFlags() : []) {
+  const bundle = portfolioFor(org.slug);
+  for (const f of bundle ? expectedFlagsFor(bundle) : []) {
     await db().query(
       `insert into finding_alert
          (org_slug, location_ref, center_name, kind, episode, headline, detail, flagged_on)

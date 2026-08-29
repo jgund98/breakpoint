@@ -8,7 +8,7 @@ import {
   usd,
   verificationOf,
 } from "@/lib/clause";
-import { org, rows, TODAY } from "@/lib/portfolio";
+
 import { buildNoticeLetter } from "@/lib/notice-letter";
 import { nextStepsFor } from "@/lib/findings";
 import {
@@ -34,7 +34,7 @@ import {
  * client and the document.
  */
 export default async function NoticesPage() {
-  await requirePortfolio();
+  const { org, rows, TODAY } = await requirePortfolio();
   const candidates = rows
     .filter(
       (r) =>

@@ -17,8 +17,7 @@ import {
   answerToPrintable,
   hasTabularContent,
 } from "@/lib/theo-export";
-import { org, TODAY } from "@/lib/portfolio";
-import { prettyDate } from "@/lib/clause";
+
 import { Panel, Pill } from "./ui";
 
 /**
@@ -57,6 +56,22 @@ export function Theo() {
   const [engine, setEngine] = useState<"model" | "index" | "action" | null>(
     null,
   );
+  const [exportMeta, setExportMeta] = useState<{ org: string; asOf: string }>({
+    org: "Breakpoint",
+    asOf: "",
+  });
+  useEffect(() => {
+    fetch("/app/api/workspace-lite")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.org)
+          setExportMeta({
+            org: d.org.name,
+            asOf: d.today ? `Evaluated through ${d.today}` : "",
+          });
+      })
+      .catch(() => {});
+  }, []);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -256,8 +271,8 @@ export function Theo() {
                           if (!w) return;
                           w.document.write(
                             answerToPrintable(t.answer!, {
-                              org: org.name,
-                              asOf: `Evaluated ${prettyDate(TODAY)}`,
+                              org: exportMeta.org,
+                              asOf: exportMeta.asOf,
                             }),
                           );
                           w.document.close();

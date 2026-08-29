@@ -1,8 +1,8 @@
 import { requirePortfolio } from "@/lib/portfolio-gate";
 import Link from "next/link";
 import { ENTITLEMENT_META, prettyDate, shortDate } from "@/lib/clause";
-import { SOURCE_INFO, type SourceId, coverage } from "@/lib/coverage";
-import { TODAY, pendingMatches, rows } from "@/lib/portfolio";
+import { SOURCE_INFO, type SourceId, coverageFor } from "@/lib/coverage";
+
 import { MatchQueue } from "@/components/app/MatchQueue";
 import { Building2, FileText, Radar, Store } from "lucide-react";
 import { StatCard } from "@/components/admin/ui";
@@ -17,7 +17,9 @@ import {
 } from "@/components/app/ui";
 
 export default async function CoveragePage() {
-  await requirePortfolio();
+  const p = await requirePortfolio();
+  const { TODAY, pendingMatches, rows } = p;
+  const coverage = coverageFor(p);
   const c = coverage;
 
   /*

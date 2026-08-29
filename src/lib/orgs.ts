@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { rows } from "@/lib/portfolio";
+import { portfolioFor, PORTFOLIO_SLUGS } from "@/lib/portfolios";
 
 /**
  * The client registry, database-backed.
@@ -25,12 +25,19 @@ export type OrgRow = {
 };
 
 /** Datasets wired into the engine so far, keyed by org slug. */
-export const PORTFOLIOS: Record<string, { locations: number; centers: number }> = {
-  "abercrombie-fitch": {
-    locations: rows.length,
-    centers: new Set(rows.map((r) => r.center.id)).size,
-  },
-};
+export const PORTFOLIOS: Record<string, { locations: number; centers: number }> =
+  Object.fromEntries(
+    PORTFOLIO_SLUGS.map((slug) => {
+      const b = portfolioFor(slug)!;
+      return [
+        slug,
+        {
+          locations: b.rows.length,
+          centers: new Set(b.rows.map((r) => r.center.id)).size,
+        },
+      ];
+    }),
+  );
 
 /** Whether this org's roster is imported into the evaluation engine. */
 export function hasPortfolio(slug: string | null | undefined): boolean {
