@@ -7,7 +7,10 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   X,
   Activity,
+  AlertTriangle,
+  Building2,
   CalendarClock,
+  LifeBuoy,
   ChevronRight,
   FileBarChart2,
   FileSignature,
@@ -97,6 +100,8 @@ const NAV = [
       { href: "/app/theo", label: "Ask Theo", sub: "Answers from your portfolio", Icon: Sparkles },
       { href: "/app/locations", label: "Locations", sub: "Every watched door", Icon: Store },
       { href: "/app/clauses", label: "Clause library", sub: "What your leases say", Icon: FileText },
+      { href: "/app/exposure", label: "Anchor risk", sub: "One closure from a trigger", Icon: AlertTriangle },
+      { href: "/app/landlords", label: "Landlords", sub: "Your book, by owner", Icon: Building2 },
       { href: "/app/coverage", label: "Coverage", sub: "Where we look", Icon: Radar },
       { href: "/app/activity", label: "Activity", sub: "Scans and alerts", Icon: Activity },
     ],
@@ -115,6 +120,7 @@ const NAV = [
     items: [
       { href: "/app/setup", label: "Portfolio setup", sub: "Papers to live", Icon: Settings2 },
       { href: "/app/settings", label: "Settings", sub: "Team and alerts", Icon: SlidersHorizontal },
+      { href: "/app/help", label: "Help center", sub: "How everything works", Icon: LifeBuoy },
     ],
   },
 ] as const;

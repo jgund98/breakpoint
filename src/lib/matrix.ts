@@ -57,7 +57,7 @@ function dependencies(r: Row): Set<string> {
   return out;
 }
 
-export function buildMatrix(data: Row[] = rows): Matrix {
+export function buildMatrix(data: Row[] = rows, today?: string): Matrix {
   const centerMeta = new Map<string, { city: string; doors: number }>();
   for (const r of data) {
     const e = centerMeta.get(r.center.name);
@@ -142,7 +142,7 @@ export function buildMatrix(data: Row[] = rows): Matrix {
      * overstate the exposure by an order of magnitude. So the number
      * comes from the same cascade the reader can run below it.
      */
-    const cascade = runCascade(row.operator);
+    const cascade = runCascade(row.operator, data, today);
     row.monthlyAtStake = cascade.monthlyDelta;
     row.wouldTrip = cascade.hits.length;
     return row;

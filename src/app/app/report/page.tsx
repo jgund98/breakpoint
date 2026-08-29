@@ -6,6 +6,7 @@ import { coverageFor } from "@/lib/coverage";
 import { portfolioDeadlines } from "@/lib/deadlines";
 import { PageHead, Panel, Pill, type Tone } from "@/components/app/ui";
 import { PrintButton } from "@/components/app/PrintButton";
+import { db } from "@/lib/db";
 
 export const metadata: Metadata = { title: "Portfolio report" };
 
@@ -22,6 +23,32 @@ const compactUsd = (n: number) =>
 export default async function ReportPage() {
   const p = await requirePortfolio();
   const { TODAY, org, rows, summary } = p;
+
+  /* the value record: what the watch found, what was acted on, and how
+     landlords responded — the section a VP reads to a CFO */
+  const [flagStats, noticeStats] = await Promise.all([
+    db().query(
+      `select status, count(*)::int as n from finding_alert
+        where org_slug = $1 group by status`,
+      [org.slug],
+    ),
+    db().query(
+      `select stage, count(*)::int as n from notice_status
+        where org_slug = $1 group by stage`,
+      [org.slug],
+    ),
+  ]);
+  const flagCount = (s: string) =>
+    flagStats.rows.find((r: { status: string }) => r.status === s)?.n ?? 0;
+  const noticed = noticeStats.rows.reduce(
+    (n: number, r: { n: number }) => n + r.n,
+    0,
+  );
+  const answered = noticeStats.rows
+    .filter((r: { stage: string }) =>
+      ["acknowledged", "cured", "resolved"].includes(r.stage),
+    )
+    .reduce((n: number, r: { n: number }) => n + r.n, 0);
   const { activitySummary, sweeps } = activityFor(p);
   const coverage = coverageFor(p);
   const decisions =
@@ -108,6 +135,38 @@ export default async function ReportPage() {
               <p className="mt-1.5 text-[0.6875rem] leading-snug text-slate-400">{sub}</p>
             </div>
           ))}
+        </div>
+
+        {/* ---- the value record ---- */}
+        <div className="mt-6 rounded-xl border border-slate-200 p-4">
+          <h2 className="text-[0.9375rem] font-semibold text-slate-900">
+            The value record
+          </h2>
+          <p className="mt-0.5 text-[0.75rem] text-slate-500">
+            What the watch surfaced and what became of it. Amounts state what
+            MAY qualify under each lease&apos;s mechanics; realized relief is
+            a matter between you, counsel, and the landlord.
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {(
+              [
+                ["Findings flagged", flagCount("new") + flagCount("in_review") + flagCount("handled"), "Dated, evidenced, on the record"],
+                ["Worked to a decision", flagCount("handled"), "Reviewed and dispositioned by your team"],
+                ["Positions noticed", noticed, "Packages served by your signatory"],
+                ["Landlord responses", answered, "Acknowledged, cured, or resolved"],
+              ] as const
+            ).map(([k, v, sub]) => (
+              <div key={k}>
+                <p className="tnum text-[1.25rem] font-bold leading-none text-slate-900">
+                  {v}
+                </p>
+                <p className="mt-1 text-[0.75rem] font-medium text-slate-600">{k}</p>
+                <p className="mt-0.5 text-[0.6875rem] leading-snug text-slate-400">
+                  {sub}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ---- the watch itself ---- */}

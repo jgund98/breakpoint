@@ -53,9 +53,9 @@ function darken(row: Row, names: Set<string>): Suite[] {
 }
 
 /** Every anchor and junior operator open across the portfolio. */
-export function operators(): { name: string; centers: number; locations: number }[] {
+export function operators(data: Row[] = rows): { name: string; centers: number; locations: number }[] {
   const map = new Map<string, { centers: Set<string>; locations: number }>();
-  for (const r of rows) {
+  for (const r of data) {
     for (const s of r.center.suites) {
       if (s.kind !== "anchor" && s.kind !== "junior") continue;
       if (s.status !== "open") continue;
@@ -76,7 +76,7 @@ export function operators(): { name: string; centers: number; locations: number 
     .sort((a, b) => b.locations - a.locations);
 }
 
-export function runCascade(operator: string): CascadeResult {
+export function runCascade(operator: string, data: Row[] = rows, today: string = TODAY): CascadeResult {
   const names = new Set([operator]);
   const hits: WaveHit[] = [];
   let monthlyBeforeTotal = 0;
@@ -85,7 +85,7 @@ export function runCascade(operator: string): CascadeResult {
   const centers = new Set<string>();
   let locationsExposed = 0;
 
-  for (const r of rows) {
+  for (const r of data) {
     const present = r.center.suites.some(
       (s) => names.has(s.name) && s.status === "open",
     );
@@ -104,7 +104,7 @@ export function runCascade(operator: string): CascadeResult {
       { ...r.center, suites },
       r.econ,
       r.claim,
-      TODAY,
+      today,
     );
 
     const mBefore = before.anyFailing ? (before.monthlyDelta ?? 0) : 0;
