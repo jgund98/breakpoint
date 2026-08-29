@@ -47,7 +47,7 @@ const CANON = [
   ["extraction", 30,
     "Keep three dates apart and never collapse them: the month the condition first fails, the month the qualifying period completes (the trigger), and the date relief starts. The qualifying period is whole calendar months, inclusive of the first failing month, and runs from the failure. Notice governs when relief starts, not when the right arises."],
   ["extraction", 40,
-    "Extract how relief runs: from the failure (reaching back over the measuring period), from the trigger, or from notice, along with any retroactive cap in days. A sequenced remedy that reaches back captures months a notice-driven one loses forever."],
+    "Extract how relief runs: from the failure, from the trigger, or from notice, along with any retroactive cap in days. Reach-back to the first failing month applies ONLY where the lease grants retroactive relief in words; never infer it from the remedy's structure. A sequenced remedy without a retroactive grant starts at the trigger month."],
   ["extraction", 50,
     "Extract every tenant precondition as a first-class term: open and operating, not in default, right personal to the original tenant, sales-decline gates. Each one can kill an otherwise sound claim. Where no evidence exists either way, the precondition is UNVERIFIED, which is different from met and different from failed."],
   ["extraction", 60,
@@ -58,6 +58,8 @@ const CANON = [
     "Extract information rights: certified occupancy statements, leasing plans, site plans the landlord must provide, with frequency caps and response deadlines. These are how a percentage test gets a defensible denominator."],
   ["extraction", 90,
     "Price the remedy honestly at extraction time. A percentage-of-sales remedy computes on each month's own sales, never an annual average; a lesser-of formula pays nothing while the percentage exceeds fixed rent, so a strong store can trigger and save zero. An abatement of fixed rent does not depend on sales at all."],
+  ["extraction", 92,
+    "An opening co-tenancy clause carries zero rent at risk: rent has not commenced, so there is no remedy differential to price as savings. Extract its real lever instead, the termination fuse: delivery plus the stated months, after which an unmet condition gives the tenant a termination right, commonly with construction cost reimbursement. Where the lease records the condition as satisfied at delivery, that is a lease fact; do not re-litigate it from later observations."],
 
   /* ---- scanning: watching centers and reading directories ---- */
   ["matching", 100,
@@ -72,6 +74,14 @@ const CANON = [
     "Hold the evidence ladder: one secondary source (a directory, a map listing, press) is a signal; two independent secondary sources corroborate; only a primary source (field visit, the client's own store report, the operator's announcement, a landlord statement) verifies. Nothing reaches a notice package on secondary evidence alone."],
   ["scanning", 150,
     "When a closure is detected at a watched center, evaluate the EXTRACTED clause record, not the lease prose: which limb does this store touch, does the requirement now fail, when would the qualifying period complete, and do the preconditions hold. Report it as MAY qualify, naming the failing limb and its citation, in potential language. Never state money as owed."],
+  ["scanning", 152,
+    "Thresholds are bright lines. An occupancy month short of its threshold by any margin fails, even three hundredths of a point; never invent a materiality tolerance the lease does not state. Measurement confidence is expressed through the evidence ladder, not by bending the number."],
+  ["scanning", 154,
+    "Remedy continuity: once a clause has triggered and the remedy has run, a later recurrence of the failure resumes relief immediately, with no fresh qualifying period. The duration clock guards the first trip only. Treating a recurrence as a new clock forfeits months the tenant is entitled to."],
+  ["scanning", 156,
+    "The remedy cap opens the post-cap termination window; it does not stop the meter. Rent at risk accrues from remedy start until the condition cures, and the cap expiry is remedy start plus the stated months, counted on the calendar. A persisting failure past the expiry means the election window is the live question."],
+  ["scanning", 158,
+    "A sales-decline gate is a one-time unlock: once trailing sales qualify in any month, the remedy applies to the whole trip, retroactively where the lease grants it. A condition that pre-dates the lease still trips and is flagged for counsel; some leases carve out effective-date conditions, and that is counsel's call, never the engine's."],
   ["scanning", 160,
     "Treat a sale or refinancing of a watched center as an event. The tenant will be asked for an estoppel certificate; certifying no claims or offsets can bar a live position, and the certificate is equally where a live position goes on the record. Flag every location in that center for an estoppel check before anyone signs."],
 

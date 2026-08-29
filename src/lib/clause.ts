@@ -534,6 +534,15 @@ export type Clause = {
   effectiveTo?: string;
   /** Set where a later instrument replaced or killed this version. */
   supersededBy?: string;
+  /**
+   * The failing condition pre-dates the lease (or the observation
+   * window). Round-2 law: it still trips — the clock runs
+   * conservatively from window start — but the flag is surfaced for
+   * counsel, because real leases sometimes carve out conditions
+   * existing as of the Effective Date. A counsel question, never an
+   * engine waiver.
+   */
+  preexistingCondition?: boolean;
 };
 
 export type ClauseStatus = "in_force" | "not_yet_effective" | "superseded";
@@ -745,6 +754,14 @@ export type ClaimStatus = {
   firstObservedAt?: string;
   /** When the tenant actually served written notice, if it has. */
   noticeServedAt?: string;
+  /**
+   * REMEDY CONTINUITY (proven by the expert's round-2 key): once a
+   * clause has triggered and relief has run, a later failure resumes
+   * the remedy immediately — there is no fresh qualifying period. The
+   * duration clock guards the first trip only. Set this when a prior
+   * trip is on record and the current failure is a recurrence.
+   */
+  previouslyTriggered?: boolean;
   /** Preconditions that are currently not met. */
   failedPreconditions: TenantPrecondition[];
   /**
@@ -787,6 +804,22 @@ export type Evaluation = {
   daysUntilElection: number | null;
   /** Worst computability across the failing tests. */
   evidenceCeiling: Computability;
+  /**
+   * Remedy start + capMonths, CALENDAR months. Round-2 law: the cap
+   * does not stop the money meter — rent at risk accrues until cure or
+   * today — it opens the post-cap termination window at this date.
+   */
+  capExpiresOn: string | null;
+  /**
+   * Opening co-tenancy: rent has not commenced, so there is no remedy
+   * differential and the money fields are zeroed. The lever is the
+   * termination fuse instead.
+   */
+  rentNotCommenced: boolean;
+  /** Delivery + capMonths for an opening clause, where derivable. */
+  openingFuse: string | null;
+  /** The clause carries a preexisting condition — flag it for counsel. */
+  preexistingFlag: boolean;
 };
 
 const WATCH_BAND = 0.03;
@@ -1035,7 +1068,9 @@ export function evaluateClause(
     /* Sits ahead of the cure and notice branches on purpose. Until the
        tenant's own standing is confirmed, no clock is worth counting. */
     state = "precondition_unverified";
-  } else if (!cureElapsed && clockStart) {
+  } else if (!cureElapsed && clockStart && !claim.previouslyTriggered) {
+    /* Remedy continuity: a recurrence after a prior trip skips the
+       qualifying period entirely — the right already arose once. */
     state = "curing";
   } else if (!noticeServed) {
     state = "claimable";
@@ -1148,25 +1183,68 @@ export function evaluateClause(
         : "observable"
     : "observable";
 
+  /*
+   * The cap opens the post-cap termination window; it does not stop the
+   * money meter (cumulativeAtRisk above runs to today regardless). It
+   * counts CALENDAR months from remedy start: notice where relief runs
+   * from notice and notice is served, the completed qualifying period
+   * otherwise.
+   */
+  const remedyStartsAt =
+    noticeServed &&
+    (r.reliefRunsFrom === "notice" ||
+      r.reliefRunsFrom === "first_of_month_after_notice")
+      ? noticeServed
+      : cureEnds;
+  const capExpires =
+    r.capMonths && remedyStartsAt && (cureElapsed || noticeServed)
+      ? addMonths(remedyStartsAt, r.capMonths)
+      : null;
+
+  /*
+   * OPENING CO-TENANCY CARRIES $0 RENT AT RISK. Rent has not commenced,
+   * so there is no remedy differential to count as savings; showing
+   * deferred rent as money identified overstates the position (round-2
+   * law, confirmed by the expert's key). The lever is the termination
+   * fuse: delivery + capMonths, after which an unmet condition gives
+   * the tenant a termination right, commonly with construction cost
+   * reimbursement.
+   */
+  const isOpening = clause.type === "opening";
+  const openingFuse =
+    isOpening && r.capMonths
+      ? (() => {
+          const delivery = econ.commencement ?? clause.effectiveFrom;
+          return delivery
+            ? iso(addMonths(new Date(delivery), r.capMonths))
+            : null;
+        })()
+      : null;
+
   return {
     triggers,
     anyFailing,
     requirementText,
     requirementMet,
     state,
-    monthlyDelta,
+    monthlyDelta: isOpening ? null : monthlyDelta,
     monthsBeforeNotice,
     recoverableMonths: Number.isFinite(recoverableMonths)
       ? Math.round(recoverableMonths * 10) / 10
       : monthsBeforeNotice,
-    potentialMissed,
-    forwardTwelveMonths: monthlyDelta == null ? null : monthlyDelta * 12,
-    cumulativeAtRisk,
+    potentialMissed: isOpening ? null : potentialMissed,
+    forwardTwelveMonths:
+      isOpening || monthlyDelta == null ? null : monthlyDelta * 12,
+    cumulativeAtRisk: isOpening ? 0 : cumulativeAtRisk,
     cureEndsOn: cureEnds ? iso(cureEnds) : null,
     daysUntilCureEnds: cureEnds ? daysBetween(asOf, cureEnds) : null,
     electionDeadline: electionDeadline ? iso(electionDeadline) : null,
     daysUntilElection: electionDeadline ? daysBetween(asOf, electionDeadline) : null,
     evidenceCeiling,
+    capExpiresOn: capExpires ? iso(capExpires) : null,
+    rentNotCommenced: isOpening,
+    openingFuse,
+    preexistingFlag: clause.preexistingCondition === true,
   };
 }
 

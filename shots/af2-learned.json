@@ -1,5 +1,5 @@
 {
- "generated": "learned engine over af_portfolio_dataset (2).json; conventions corrected from the round-2 key",
+ "generated": "product timeline engine (src/lib/timeline.ts) over af_portfolio_dataset (2).json",
  "timeline": "2024-09..2026-08",
  "malls": 65,
  "predictions": {
@@ -1018,7 +1018,7 @@
       "2026-07",
       "2026-08"
      ],
-     "value": 362635.3333333334
+     "value": 362635.3333333333
     }
    ],
    "resumptions": [],
@@ -1742,13 +1742,13 @@
       "2026-07",
       "2026-08"
      ],
-     "value": 70881.33333333334
+     "value": 70881.33333333333
     }
    ],
    "resumptions": [],
    "opening": null,
    "stateAtEnd": "remedy_active",
-   "monthlySavingAtEnd": 35536.66666666667,
+   "monthlySavingAtEnd": 35536.666666666664,
    "cumulativeSavings": 70881,
    "postCapRight": null
   },
@@ -1963,7 +1963,7 @@
       "2026-07",
       "2026-08"
      ],
-     "value": 70786.66666666669
+     "value": 70786.6666666667
     }
    ],
    "resumptions": [],

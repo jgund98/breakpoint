@@ -250,11 +250,34 @@ run was WRONG:
   round; the current round's key stays sealed until predictions are
   committed.
 
+**POURED INTO THE PRODUCT (same day):** the laws live in
+`src/lib/timeline.ts` — the certified month-series engine (streaks,
+trips, notices, remedy continuity, caps, opening fuse, money by
+month). `scripts/af2-engine.ts` is now a thin adapter mapping the
+round-2 dataset onto it, so the answer key is the product engine's
+permanent regression test: after ANY change to timeline.ts run
+`node --experimental-strip-types scripts/af2-engine.ts` then
+`... scripts/af2-score.ts shots/af2-learned.json` (must stay
+1040/1040 / 65/65 / 26/26×3) AND `... scripts/af-score.ts` (round-1,
+must stay 480/480 / 7/7 / 7/7 / 89/89). `evaluateClause` (clause.ts)
+gained the point-in-time versions: `ClaimStatus.previouslyTriggered`
+(continuity skips the curing wait), `Clause.preexistingCondition` →
+`Evaluation.preexistingFlag`, opening clauses zero their money fields
+(`rentNotCommenced`, `openingFuse` — null until a delivery date is a
+fact), and `Evaluation.capExpiresOn` (calendar months from remedy
+start). Both live opening locations were already compliant, so the
+pilot headline stayed $383,565. The canon grew to 23 directives:
+extraction 40 rewritten (retroactive-only reach-back), extraction 92
+(opening = $0 + fuse + lease-fact satisfaction), scanning 152
+(bright-line thresholds), 154 (remedy continuity), 156 (cap opens the
+window, never stops the meter), 158 (sales gate unlock + preexisting
+is counsel's call).
+
 ---
 
 ## 3. THE AGENT CANON (runtime programming)
 
-Live in the `agent_directive` table (16 global rows, all active),
+Live in the `agent_directive` table (23 global rows, all active),
 edited at /admin/agent, assembled into every extraction/scan/Theo
 prompt by `lib/directives.ts` (global first, then per-client; per-client
 editing is deliberately parked). Topics: general, extraction, scanning,
