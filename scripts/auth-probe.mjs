@@ -298,6 +298,83 @@ check(
   (afFlows.workflows ?? []).every((w) => !String(w.location_ref).startsWith("MER-")),
 );
 
+console.log("--- team: invite, join, role, remove ---");
+const tViewerInvite = await viewer.post("/app/api/team", {
+  action: "invite",
+  email: "x@y.test",
+  role: "viewer",
+});
+check("viewer cannot invite (403)", tViewerInvite.status === 403);
+const inviteRes = await demo
+  .post("/app/api/team", {
+    action: "invite",
+    email: "probe-invitee@breakpoint.test",
+    name: "P. Invitee",
+    title: "Probe Counsel",
+    role: "counsel",
+  })
+  .then((r) => r.json());
+check("owner creates an invitation with a join link", !!inviteRes.joinPath);
+const dupInvite = await demo.post("/app/api/team", {
+  action: "invite",
+  email: "counsel@abercrombie.test",
+  role: "counsel",
+});
+check("inviting an existing member is refused (409)", dupInvite.status === 409);
+const joinToken = String(inviteRes.joinPath ?? "").split("/").pop();
+const joinRes = await fetch(`${BASE}/join/api`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json", cookie: GATE },
+  body: JSON.stringify({
+    token: joinToken,
+    name: "P. Invitee",
+    password: "probe-password-1",
+  }),
+});
+const joinCookie = /bp_session=([a-f0-9]{48})/.exec(
+  joinRes.headers.get("set-cookie") ?? "",
+)?.[1];
+check("invitee joins and is signed in", joinRes.status === 200 && !!joinCookie);
+const joined = api(joinCookie);
+const joinedMe = await joined.get("/app/api/me").then((r) => r.json());
+check(
+  `joined member lands in the right org with the right role (${joinedMe.role})`,
+  joinedMe.orgSlug === "abercrombie-fitch" && joinedMe.role === "counsel",
+);
+const reuse = await fetch(`${BASE}/join/api`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json", cookie: GATE },
+  body: JSON.stringify({ token: joinToken, name: "X", password: "whatever-else-1" }),
+});
+check("a used invitation cannot be reused (404)", reuse.status === 404);
+const teamList = await demo.get("/app/api/team").then((r) => r.json());
+const inviteeRow = (teamList.members ?? []).find(
+  (m) => m.email === "probe-invitee@breakpoint.test",
+);
+check("new member appears in the team list", !!inviteeRow);
+const roleChange = await demo.post("/app/api/team", {
+  action: "role",
+  userId: inviteeRow?.id,
+  role: "viewer",
+});
+check("owner changes the member's role", roleChange.status === 200);
+const lastOwner = await demo.post("/app/api/team", {
+  action: "role",
+  userId: me.email && (teamList.members ?? []).find((m) => m.role === "owner")?.id,
+  role: "viewer",
+});
+check("the last owner cannot be demoted (400)", lastOwner.status === 400);
+const removal = await demo.post("/app/api/team", {
+  action: "remove",
+  userId: inviteeRow?.id,
+});
+check("owner removes the member", removal.status === 200);
+const deadJoined = await joined.get("/app/api/me");
+check(
+  "removed member's session no longer reaches the org (401)",
+  deadJoined.status === 401,
+);
+
 console.log("--- sign-out ---");
 const out = await fetch(`${BASE}/login/api`, {
   method: "DELETE",
@@ -322,6 +399,15 @@ const del4 = await sql.query(
 );
 await sql.query(
   `delete from audit_log where action in ('alert_routing', 'evaluation_run') and created_at > now() - interval '15 minutes'`,
+);
+await sql.query(
+  `delete from app_user where email = 'probe-invitee@breakpoint.test'`,
+);
+await sql.query(
+  `delete from invitation where email in ('probe-invitee@breakpoint.test', 'counsel@abercrombie.test')`,
+);
+await sql.query(
+  `delete from audit_log where action like 'team_%' and created_at > now() - interval '15 minutes'`,
 );
 const del5 = await sql.query(
   `delete from audit_log where action = 'notice_stage' and subject = 'AF-9999-PROBE'`,

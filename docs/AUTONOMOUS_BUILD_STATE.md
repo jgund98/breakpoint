@@ -9,9 +9,14 @@ org policy + enforced by the bell (migration 012, /app/api/preferences,
 SettingsBoard wired), and the scheduled reevaluation (lib/evaluate-run,
 /api/cron/evaluate daily via vercel.json, CRON_SECRET in Vercel
 prod+dev, staff manual trigger on /admin/system). auth-probe 44/44,
-db-loop-probe 41/41. Next: the per-org portfolio seam (gap #2 — the
-big one), then user management UI on the invitation table, then the
-document ingestion pipeline (gap #5).
+db-loop-probe 41/41. Phase 5 COMPLETE:
+real team management (migration 013; /app/api/team invite/role/remove/
+revoke with last-owner and self-removal guards; /join/[token] page +
+/join/api accepting invitations, creating the user, signing them in;
+Settings team tab on the real membership table with join-link delivery
+until email connects). auth-probe 55/55. Next: the per-org portfolio
+seam (gap #2 — the big one), then the document ingestion pipeline
+(gap #5).
 
 ## Environment facts a resuming session must know
 - Stack: Next.js 16 (Turbopack), React 19, Tailwind 4, `pg` against Neon

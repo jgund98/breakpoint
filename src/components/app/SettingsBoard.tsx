@@ -21,7 +21,6 @@ import {
   type RoutingRule,
   ROLES,
   defaultRouting,
-  members as seedMembers,
 } from "@/lib/team";
 import { PERMISSION_LABEL } from "@/lib/team";
 import { prettyDate, shortDate } from "@/lib/clause";
@@ -62,7 +61,76 @@ const ROLE_SHORT: Record<RoleId, string> = {
 
 export function SettingsBoard() {
   const [tab, setTab] = useState<TabId>("team");
-  const [members, setMembers] = useState<Member[]>(seedMembers);
+  /* The team is the real membership table now: loaded from and
+     changed through /app/api/team, guards and audit server-side. */
+  const [members, setMembers] = useState<Member[]>([]);
+  const [invitations, setInvitations] = useState<
+    { id: number; email: string; role: string; joinPath: string }[]
+  >([]);
+  const [teamErr, setTeamErr] = useState<string | null>(null);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const loadTeam = async () => {
+    try {
+      const r = await fetch("/app/api/team", { cache: "no-store" });
+      if (!r.ok) return;
+      const d = await r.json();
+      const DB_TO_UI: Record<string, RoleId> = {
+        owner: "owner",
+        admin: "real_estate",
+        analyst: "lease_admin",
+        counsel: "counsel",
+        viewer: "viewer",
+        real_estate: "real_estate",
+        lease_admin: "lease_admin",
+        signatory: "signatory",
+      };
+      setMembers(
+        (d.members ?? []).map(
+          (m: {
+            id: string;
+            name: string;
+            email: string;
+            title: string | null;
+            role: string;
+            last_active: string | null;
+          }) => ({
+            id: m.id,
+            name: m.name,
+            email: m.email,
+            title: m.title ?? "",
+            role: DB_TO_UI[m.role] ?? "viewer",
+            status: "active" as const,
+            lastActive: m.last_active ? m.last_active.slice(0, 10) : null,
+            initials:
+              m.name
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((s: string) => s[0]?.toUpperCase())
+                .join("") || "??",
+          }),
+        ),
+      );
+      setInvitations(d.invitations ?? []);
+    } catch {
+      /* the tab renders empty rather than wrong */
+    }
+  };
+  useEffect(() => {
+    void loadTeam();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const teamPost = async (body: Record<string, unknown>) => {
+    const r = await fetch("/app/api/team", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json().catch(() => null);
+    setTeamErr(r.ok ? null : (d?.error ?? "That was refused."));
+    await loadTeam();
+    return r.ok ? d : null;
+  };
   /* Alert routing is org policy on the record: loaded from and saved
      to /app/api/preferences, editable by owner/admin, enforced by the
      in-app bell. */
@@ -140,16 +208,82 @@ export function SettingsBoard() {
           className="space-y-4"
         >
           {tab === "team" && (
-            <TeamTab
-              members={members}
-              onRole={(id, role) =>
-                setMembers((m) =>
-                  m.map((x) => (x.id === id ? { ...x, role } : x)),
-                )
-              }
-              onInvite={() => setInviting(true)}
-              onRemove={(id) => setMembers((m) => m.filter((x) => x.id !== id))}
-            />
+            <>
+              {teamErr && (
+                <p className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-[0.8125rem] text-rose-700">
+                  {teamErr}
+                </p>
+              )}
+              {inviteLink && (
+                <Note tone="open" title="Invitation created">
+                  Email delivery is not connected, so send the join link
+                  yourself:{" "}
+                  <span className="font-mono text-[0.75rem] break-all">
+                    {inviteLink}
+                  </span>
+                </Note>
+              )}
+              <TeamTab
+                members={members}
+                onRole={(id, role) =>
+                  void teamPost({ action: "role", userId: id, role })
+                }
+                onInvite={() => setInviting(true)}
+                onRemove={(id) => void teamPost({ action: "remove", userId: id })}
+              />
+              {invitations.length > 0 && (
+                <Panel flush>
+                  <div className="px-5 pt-5">
+                    <PanelHead
+                      title="Open invitations"
+                      hint="Waiting to be accepted. The link is the delivery channel until email connects."
+                    />
+                  </div>
+                  <ul className="mt-3 divide-y divide-slate-100">
+                    {invitations.map((i) => (
+                      <li
+                        key={i.id}
+                        className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
+                      >
+                        <div>
+                          <p className="text-[0.8125rem] font-semibold text-slate-900">
+                            {i.email}
+                          </p>
+                          <p className="text-[0.6875rem] text-slate-400">
+                            as {i.role}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            className="text-[0.75rem] font-semibold text-indigo-700 hover:underline"
+                            onClick={() =>
+                              void navigator.clipboard?.writeText(
+                                window.location.origin + i.joinPath,
+                              )
+                            }
+                          >
+                            Copy link
+                          </button>
+                          <button
+                            type="button"
+                            className="text-[0.75rem] font-semibold text-slate-400 hover:text-rose-600"
+                            onClick={() =>
+                              void teamPost({
+                                action: "revoke",
+                                invitationId: i.id,
+                              })
+                            }
+                          >
+                            Revoke
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </Panel>
+              )}
+            </>
           )}
           {tab === "alerts" && (
             <AlertsTab routing={routing} onChange={setRouting} members={members} canEdit={canEditRouting} savedAt={routingSavedAt} />
@@ -163,7 +297,16 @@ export function SettingsBoard() {
         open={inviting}
         onClose={() => setInviting(false)}
         onSave={(m) => {
-          setMembers((prev) => [...prev, m]);
+          void teamPost({
+            action: "invite",
+            email: m.email,
+            name: m.name,
+            title: m.title,
+            role: m.role,
+          }).then((d) => {
+            if (d?.joinPath)
+              setInviteLink(window.location.origin + d.joinPath);
+          });
           setInviting(false);
         }}
       />
@@ -631,8 +774,10 @@ function InviteDrawer({
           >
             <h2 className="text-[1.125rem] font-semibold text-slate-900">Invite someone</h2>
             <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-slate-500">
-              They receive an email to set a password. Pick the role carefully:
-              it decides whether they can approve or serve a notice.
+              You get a join link to send them — email delivery connects
+              later. The link sets their password and signs them in. Pick
+              the role carefully: it decides whether they can approve or
+              serve a notice.
             </p>
 
             <div className="mt-6 space-y-4">
