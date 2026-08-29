@@ -194,11 +194,7 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
         <p className="mt-2">
           After service, record the landlord&apos;s response on the location
           page (acknowledged, disputed, cured, resolved) — the response
-          history becomes negotiating leverage on{" "}
-          <Link href="/app/landlords" className="text-indigo-600 font-semibold">
-            Landlords
-          </Link>
-          .
+          history is negotiating leverage at renewal time.
         </p>
       </>
     ),
