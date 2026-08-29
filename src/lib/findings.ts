@@ -18,6 +18,7 @@
 import {
   formatCoTenancyRent,
   prettyDate,
+  usd,
   verificationOf,
   TIER_META,
 } from "@/lib/clause";
@@ -156,6 +157,118 @@ export function expectedFlags(): ExpectedFlag[] {
   }
 
   return flags;
+}
+
+/**
+ * THEO'S READ — the analyst brief on a flagged location.
+ *
+ * Written the way a sharp analyst annotates a file: a lead that says
+ * what happened and why it matters, then highlights, each one a point
+ * with its reasoning. Every figure and date comes from the engine;
+ * the voice is the only thing added. MAY-qualify language throughout —
+ * Theo flags, counsel decides.
+ */
+export type AnalystBrief = {
+  lead: string;
+  highlights: { point: string; why: string }[];
+};
+
+export function analystBrief(r: (typeof rows)[number]): AnalystBrief | null {
+  const ev = r.evaluation;
+  if (
+    ev.state !== "claimable" &&
+    ev.state !== "election_open" &&
+    ev.state !== "precondition_unverified"
+  )
+    return null;
+
+  const failing = ev.triggers.filter((t) => t.failing);
+  const v = verificationOf(r.evidence);
+  const first = r.claim.firstObservedAt;
+  const money = formatCoTenancyRent(ev.monthlyDelta);
+  const runsFromNotice =
+    r.clause.remedy.reliefRunsFrom === "notice" ||
+    r.clause.remedy.reliefRunsFrom === "first_of_month_after_notice";
+  const highlights: { point: string; why: string }[] = [];
+
+  /* 1 — what tripped */
+  if (failing.length) {
+    const t = failing[0];
+    highlights.push({
+      point: `${t.label} went over the line: ${t.observed.toLowerCase()} against a requirement of ${t.requirement.toLowerCase()} (${t.cite}).`,
+      why: t.culprits.length
+        ? `The damage is ${t.culprits.slice(0, 3).join(", ")} — ${
+            t.culprits.length === 1 ? "that door is" : "those doors are"
+          } what the clause was written to watch.`
+        : "The condition is carried by the occupancy math, not one nameable door — which is exactly the kind of slow bleed a floor exists to catch.",
+    });
+  }
+
+  /* 2 — the clock */
+  if (ev.state === "claimable" && ev.cureEndsOn) {
+    highlights.push({
+      point: `The qualifying period is done. ${
+        first ? `First failed ${prettyDate(first)}, ` : ""
+      }completed ${prettyDate(ev.cureEndsOn)} — this stopped being a watch item and became a decision on that date.`,
+      why: runsFromNotice
+        ? "And this lease only pays from your notice: every month you sit on it is a month the clause never gives back. This is the one to move on, not admire."
+        : "Relief here reaches back once notice is served, so the record matters more than speed — but the record has to be kept.",
+    });
+  }
+  if (ev.state === "election_open" && ev.electionDeadline) {
+    highlights.push({
+      point: `The remedy cap has run and the election window is open until ${prettyDate(ev.electionDeadline)}.`,
+      why: "A lapsed election is the most avoidable loss in this practice. This is a calendar item now, not an analysis item.",
+    });
+  }
+  if (ev.state === "precondition_unverified") {
+    highlights.push({
+      point: "The center-side condition fails, but I cannot confirm your own store is open and operating here.",
+      why: "A dark store usually cannot claim, so I will not count a clock I cannot stand behind. Confirm the store on Coverage and this file scores immediately.",
+    });
+  }
+
+  /* 3 — the money */
+  highlights.push(
+    money === "No saving at current sales"
+      ? {
+          point: "At current reported sales the alternative-rent formula produces no saving.",
+          why: "That is the lesser-of mechanics doing what they were drafted to do, not a dead file: sales soften, the same clause starts paying. The record is the asset — keep it.",
+        }
+      : money === "Sales needed"
+        ? {
+            point: "I cannot price this one yet — no monthly sales on file for this store.",
+            why: "The remedy computes on each month's own sales. One reporting feed and the number appears.",
+          }
+        : {
+            point: `Worth about ${money} at reported sales${
+              ev.cumulativeAtRisk ? `, and roughly ${usd(ev.cumulativeAtRisk)} accumulated since the right arose` : ""
+            }.`,
+            why: "Computed month by month on each month's own sales — a strong December is allowed to wipe out what a weak February produces. No annualized guesses.",
+          },
+  );
+
+  /* 4 — the evidence */
+  highlights.push(
+    v.tier === "verified"
+      ? {
+          point: "Evidence is verified: a primary source stands behind the closure.",
+          why: "This file can carry a notice as it sits. That is the standard a landlord's response gets tested against.",
+        }
+      : {
+          point: `Evidence is ${v.tier === "corroborated" ? "corroborated — two independent secondary sources agree" : "a single-source signal"} so far.`,
+          why: "I do not put a listing screenshot in front of a landlord. One field visit or a store manager's dated report gets this to a servable standard.",
+        },
+  );
+
+  const lead =
+    ev.state === "election_open"
+      ? `This one is past analysis and into the calendar: the substitute-rent period has run its cap at ${r.center.name}, and the lease now demands a choice inside a window that lapses.`
+      : ev.state === "precondition_unverified"
+        ? `Something real is happening at ${r.center.name} — the center-side test fails — but the file is stuck on your side of the lease until the store's standing is confirmed. Here is my read.`
+        : `I flagged ${r.center.name} because the failure stopped being weather and became a season: the condition has now persisted long enough to satisfy the clause's own qualifying period. This location MAY qualify for co-tenancy rent. Here is my read.`;
+
+  return { lead, highlights };
 }
 
 export const FLAG_KIND_META: Record<

@@ -58,6 +58,8 @@ const CANON = [
     "Extract information rights: certified occupancy statements, leasing plans, site plans the landlord must provide, with frequency caps and response deadlines. These are how a percentage test gets a defensible denominator."],
   ["extraction", 90,
     "Price the remedy honestly at extraction time. A percentage-of-sales remedy computes on each month's own sales, never an annual average; a lesser-of formula pays nothing while the percentage exceeds fixed rent, so a strong store can trigger and save zero. An abatement of fixed rent does not depend on sales at all."],
+  ["extraction", 95,
+    "Nothing tenant-critical found while reading a lease is discarded because the errand was co-tenancy. Notice provisions and notice addresses, term and renewal options, estoppel obligations, exclusive-use and radius provisions, assignment and transfer conditions, kick-out rights, information rights, percentage-rent breakpoints: capture each with its citation when encountered. The client paid for the read; the read keeps everything a tenant would pay to know."],
   ["extraction", 92,
     "An opening co-tenancy clause carries zero rent at risk: rent has not commenced, so there is no remedy differential to price as savings. Extract its real lever instead, the termination fuse: delivery plus the stated months, after which an unmet condition gives the tenant a termination right, commonly with construction cost reimbursement. Where the lease records the condition as satisfied at delivery, that is a lease fact; do not re-litigate it from later observations."],
 

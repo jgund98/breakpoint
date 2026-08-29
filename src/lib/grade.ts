@@ -41,21 +41,41 @@ export function gradeClause(clause: Clause): Grade {
 
   /* 1. Breadth of trigger. More independent ways to trip is stronger. */
   const triggerCount = clause.triggers.length;
+  const hasNamed = clause.triggers.some(
+    (t) => t.kind === "named_tenant" || t.kind === "tenant_count",
+  );
+  const hasPct = clause.triggers.some((t) => t.kind === "occupancy_pct");
+  /* Conjunctive failure: the requirement holds if ANY limb holds, so
+     every limb must fail at once to trip. Read the logic tree when one
+     exists; the legacy switch encodes it as "all". */
+  const conjunctive =
+    triggerCount > 1 &&
+    (clause.logic
+      ? clause.logic.kind === "group" && clause.logic.op === "or"
+      : clause.triggerLogic === "all");
   dials.push({
     key: "breadth",
     label: "Trigger breadth",
     weight: 1.1,
-    score: Math.min(1, triggerCount / 3),
-    verdict:
-      triggerCount >= 3
-        ? "Three or more independent tests."
+    score: Math.min(1, triggerCount / 3) * (conjunctive ? 0.55 : 1),
+    verdict: conjunctive
+      ? `${triggerCount} test${triggerCount === 1 ? "" : "s"}, but they combine conjunctively: every one must fail at once before anything trips. That is the landlord-favorable rarity, and in practice it almost never pays.`
+      : triggerCount >= 3
+        ? "Three or more independent tests, any one of which trips the clause. The broadest protection drafted."
         : triggerCount === 2
-          ? "Two tests. Reasonable coverage."
-          : "A single test. Everything rests on one condition.",
-    advice:
-      triggerCount >= 2
-        ? "Hold this at renewal."
-        : "Ask for an occupancy floor alongside the named test.",
+          ? hasNamed && hasPct
+            ? "A named-tenant test and an occupancy floor, either sufficient. The standard two-legged structure: the named test catches the anchor event, the floor catches the slow bleed."
+            : "Two tests of the same kind. Coverage is real but one-dimensional."
+          : hasPct
+            ? "A single occupancy floor. It catches general decline but is silent when one critical anchor goes dark above the floor."
+            : "A single named test. If the center empties around a surviving anchor, this clause never speaks.",
+    advice: conjunctive
+      ? "At renewal, break the conjunction: each condition should trip on its own. As drafted, a dark anchor plus 70% occupancy still pays nothing if the second limb technically holds."
+      : triggerCount >= 2
+        ? "Hold this structure at renewal; it is at or above market."
+        : hasPct
+          ? "At renewal, add a named-anchor test alongside the floor. Market drafting pairs them so a single critical departure cannot hide above the percentage."
+          : "At renewal, add an occupancy floor alongside the named test; 80 to 85 percent of inline floor area is the market range. Without it, general decline around a surviving anchor never trips.",
   });
 
   /*
@@ -74,22 +94,30 @@ export function gradeClause(clause: Clause): Grade {
    * extracted fields with no judgment call hidden inside it.
    */
 
-  /* 3. Cure length. Shorter is stronger for the tenant. */
+  /* 3. Qualifying period. Shorter is stronger for the tenant. */
   const cure = r.cureDays;
+  const cureMonths = r.cureMonths ?? null;
   const cureScore = cure <= 60 ? 1 : cure <= 120 ? 0.75 : cure <= 180 ? 0.5 : 0.25;
+  const noPeriod = cure === 0 && !cureMonths;
+  const cureText =
+    cureMonths && cureMonths > 0
+      ? `${cureMonths} consecutive month${cureMonths === 1 ? "" : "s"}`
+      : `${cure} ${r.cureBasis} days`;
   dials.push({
     key: "cure",
-    label: "Cure window",
+    label: "Qualifying period",
     weight: 1,
     score: cureScore,
     verdict:
-      cure === 0
-        ? "No cure period. Relief is available on failure."
-        : `${cure} ${r.cureBasis} days before relief begins.`,
+      noPeriod
+        ? "No qualifying period: the remedy is available the day the condition fails. Rare, and the strongest drafting there is."
+        : `The condition must persist ${cureText} before the remedy accrues. Operating co-tenancy market range is roughly 90 to 180 days; ${
+            cureScore >= 0.75 ? "this sits at the tenant-favorable end" : cureScore >= 0.5 ? "this sits mid-market" : "this is at the landlord-favorable edge"
+          }.`,
     advice:
       cureScore >= 0.75
-        ? "Inside market. Hold it."
-        : "Market is sixty to one hundred twenty days. Anything longer is landlord-favorable.",
+        ? "Inside market. Hold it at renewal."
+        : `At renewal, shorten the qualifying period toward 90 days. Every extra month is a month of a failing center at full rent, worth the full monthly spread each time it runs.`,
   });
 
   /* 4. When the clock starts. From notice is materially worse. */
@@ -101,18 +129,19 @@ export function gradeClause(clause: Clause): Grade {
     score: clockScore,
     verdict:
       r.clockStartsAt === "failure"
-        ? "The cure clock runs from the failure itself."
-        : "The cure clock runs from your written notice.",
+        ? "The qualifying period runs from the failure itself, whether or not anyone has noticed it. Months of undetected failure still count."
+        : "The qualifying period runs only from your written notice. A failure detected late starts a clock late: the months before your notice never existed as far as this clause is concerned, and relief begins later still.",
     advice:
       clockScore === 1
-        ? "Correct. Detection speed still governs relief, not the clock."
-        : "This is the most expensive sentence in the clause. A failure nobody notices never starts a clock at all.",
+        ? "Tenant-favorable and worth holding. Detection speed still decides how much of the accrued period you capture, but the clock itself is safe."
+        : "At renewal, move the clock to run from the failure, or add retroactive relief reaching back to it. As drafted, every month between the condition failing and your notice is unrecoverable, which converts detection speed directly into money and makes continuous monitoring the difference between a paid clause and a theoretical one.",
   });
 
   /* 5. Remedy shape. A floor protects enforceability; percentage-only pays more. */
   const hasFloor = r.altRent?.monthlyFloor != null;
   const pct = r.altRent?.pctOfGrossSales;
   const abate = r.abatementPct;
+  const lesserOf = r.altRent?.selector === "lesser_of";
   const remedyScore = pct != null ? (pct <= 4 ? 0.9 : 0.7) : abate != null ? (abate >= 50 ? 0.75 : 0.5) : 0.5;
   dials.push({
     key: "remedy",
@@ -121,13 +150,22 @@ export function gradeClause(clause: Clause): Grade {
     score: remedyScore,
     verdict:
       pct != null
-        ? `${pct}% of gross sales${hasFloor ? ", with a monthly floor" : ", no floor"}.`
+        ? `Alternative rent of ${pct}% of gross sales${hasFloor ? " over a monthly floor" : ", no floor"}${
+            lesserOf ? ", payable only where it beats fixed rent (a lesser-of formula)" : ""
+          }. Market runs 2 to 6 percent of gross or 33 to 50 percent of fixed rent${
+            pct <= 4 ? "; this is at the strong end" : "; this is inside market but not aggressive"
+          }.${lesserOf ? " On a strong-selling store a lesser-of formula can produce no saving at all — the right is still worth preserving on the record." : ""}`
         : abate != null
-          ? `${abate}% abatement of minimum rent.`
-          : "Remedy shape not resolved.",
-    advice: hasFloor
-      ? "A floor lowers the value slightly and materially strengthens enforceability."
-      : "No floor maximizes relief. Note that a remedy which can fall toward zero attracts the most scrutiny.",
+          ? `A ${abate}% abatement of fixed minimum rent. Sales-independent: it pays the same in a strong December as a weak February, which makes it the most predictable remedy drafted${
+              abate >= 50 ? " and at the favorable end of the 33-to-50-percent market range" : ""
+            }.`
+          : "The remedy shape could not be resolved from the extraction; counsel should read it directly.",
+    advice:
+      pct != null && !hasFloor
+        ? "No floor maximizes relief, and percentage-of-sales alternative rent framed as the parties' agreed rent adjustment is the formulation that has survived penalty challenges in the published cases. A remedy bearing no relation to actual harm is the kind courts have struck."
+        : hasFloor
+          ? "The floor trades a little value for enforceability: it is the strongest answer to a penalty attack, because the rent never falls out of proportion to the premises."
+          : "An abatement needs no sales reporting to enforce; keep the payment record clean and it is nearly attack-proof.",
   });
 
   /* 6. Exit. A termination right is the sturdiest remedy in the clause. */
@@ -138,27 +176,46 @@ export function gradeClause(clause: Clause): Grade {
     weight: 1.1,
     score: exitScore,
     verdict: r.capMonths
-      ? `Termination available after ${r.capMonths} months${r.unamortizedReimbursement ? ", with unamortized improvements reimbursed" : ""}.`
-      : "No termination right. Relief only.",
+      ? `Termination accrues after ${r.capMonths} months of alternative rent${
+          r.electionWindowDays ? `, exercisable inside a ${r.electionWindowDays}-day election window` : ""
+        }${r.unamortizedReimbursement ? ", with unamortized improvements reimbursed" : ""}. Market typically grants this after 12 months.`
+      : "No termination right: alternative rent is the ceiling. If the center never recovers, this lease has no exit on co-tenancy grounds.",
     advice: r.unamortizedReimbursement
-      ? "Best in class. Most leases do not carry the reimbursement."
-      : "Ask for reimbursement of unamortized leasehold improvements on a co-tenancy termination.",
+      ? "Best in class — most leases do not carry the construction-cost reimbursement. Calendar the election window the day the cap runs; the right lapses if unexercised."
+      : r.capMonths
+        ? "At renewal, add reimbursement of unamortized leasehold improvements on a co-tenancy termination, and watch the election window — a lapsed election is the most avoidable loss in this practice."
+        : "At renewal, add a termination right after 12 months of alternative rent. Without one, a permanently failed center still holds you to term.",
   });
 
   /* 7. Preconditions. Every one is a way the claim dies. */
   const preCount = clause.preconditions.length;
   const preScore = preCount <= 1 ? 1 : preCount === 2 ? 0.75 : preCount === 3 ? 0.5 : 0.3;
+  const preList = clause.preconditions
+    .map((p) =>
+      p === "tenant_open_and_operating"
+        ? "your store open and operating"
+        : p === "not_in_default"
+          ? "no default outstanding"
+          : p === "original_tenant_only"
+            ? "the right personal to the original tenant"
+            : p === "no_radius_breach"
+              ? "no radius restriction breach"
+              : "a documented sales decline",
+    )
+    .join(", ");
   dials.push({
     key: "preconditions",
     label: "Preconditions",
     weight: 1.2,
     score: preScore,
-    verdict: `${preCount} condition${preCount === 1 ? "" : "s"} must be satisfied before you may claim.`,
+    verdict: preCount === 0
+      ? "No tenant preconditions: the right arises from the center's condition alone."
+      : `${preCount} condition${preCount === 1 ? "" : "s"} must hold on your side before the right arises: ${preList}. Each one is a way an otherwise perfect claim pays nothing.`,
     advice: clause.preconditions.includes("sales_decline_required")
-      ? "A documented sales decline is the hardest of these to satisfy. Keep sales reporting current or the right is theoretical."
+      ? "The sales-decline gate is the hardest of these to satisfy and the easiest to lose by sloppy reporting: keep monthly sales current, because the gate is proven from your own certified numbers."
       : clause.preconditions.includes("original_tenant_only")
-        ? "This right does not survive assignment. Flag it in any transfer."
-        : "Standard set. Keep the store open and stay out of default.",
+        ? "This right dies on assignment. Any corporate restructuring or transfer needs this clause on the checklist before signing."
+        : "A standard set. The discipline is operational: keep the store trading and the account clean, and the preconditions look after themselves.",
   });
 
   const weighted =
@@ -187,9 +244,17 @@ export function gradeClause(clause: Clause): Grade {
       : null,
     headline:
       letter === "A"
-        ? "Strong protection. Little to change at renewal."
-        : `Weakest dial is ${weakest.label.toLowerCase()}. ${weakest.advice}`,
+        ? "Strong protection across every term. Hold this drafting at renewal."
+        : `The weakest term is the ${weakest.label.toLowerCase()}: ${firstSentence(
+            weakest.verdict,
+          )}`,
   };
+}
+
+/** The first sentence of a verdict, for the one-line headline. */
+function firstSentence(s: string): string {
+  const i = s.indexOf(". ");
+  return i > 0 ? s.slice(0, i + 1) : s;
 }
 
 export const GRADE_TONE: Record<Grade["letter"], "open" | "watch" | "clay"> = {

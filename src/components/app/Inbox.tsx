@@ -197,7 +197,7 @@ export function InboxList() {
                       </p>
                     )}
                     <p className="tnum mt-1.5 text-[0.6875rem] text-slate-400">
-                      Flagged {prettyDate(f.flagged_on)}
+                      Flagged {prettyDate(f.flagged_on.slice(0, 10))}
                       {f.status === "handled" && f.handled_at && (
                         <>
                           {" "}

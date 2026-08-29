@@ -26,8 +26,201 @@ import { STATE_META, formatCoTenancyRent } from "@/lib/clause";
 import { TODAY, org, rows, summary } from "@/lib/portfolio";
 import { sweeps } from "@/lib/activity";
 import { portfolioDeadlines } from "@/lib/deadlines";
+import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
+
+/* ------------------------------------------------------------------
+   Theo's hands: tasks on the write-paths the product actually has.
+   Nothing invented: a scan request files to the same ops queue the
+   location page files to; a flag moves through the same inbox
+   lifecycle; a notice package is the same download counsel gets. A
+   task Theo cannot ground in a real location is not performed.
+   ------------------------------------------------------------------ */
+
+export type TheoLink = { label: string; href: string };
+
+const fold = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+function resolveLocation(question: string) {
+  const idMatch = /af[- ]?(\d{4})/i.exec(question);
+  if (idMatch) {
+    const hit = rows.find((r) => r.id.toLowerCase() === `af-${idMatch[1]}`);
+    if (hit) return hit;
+  }
+  const q = ` ${fold(question)} `;
+  let best: (typeof rows)[number] | null = null;
+  let bestLen = 0;
+  for (const r of rows) {
+    const name = fold(r.center.name);
+    if (name.length > bestLen && q.includes(` ${name} `)) {
+      best = r;
+      bestLen = name.length;
+    }
+    /* also try without generic words: "danbury" finds Danbury Fair */
+    const distinct = name
+      .split(" ")
+      .filter((w) => !["the", "mall", "center", "at", "shops", "of"].includes(w))
+      .join(" ");
+    if (distinct && distinct.length > bestLen && q.includes(` ${distinct} `)) {
+      best = r;
+      bestLen = distinct.length;
+    }
+  }
+  return best;
+}
+
+const locLink = (r: (typeof rows)[number]): TheoLink => ({
+  label: `Open ${r.id} · ${r.center.name}`,
+  href: `/app/locations/${r.id}`,
+});
+
+type TaskOutcome = {
+  interpreted: string;
+  lead: string;
+  links: TheoLink[];
+} | null;
+
+async function tryTask(question: string): Promise<TaskOutcome> {
+  const q = question.toLowerCase();
+  const loc = resolveLocation(question);
+  const slug = currentOrg().slug;
+
+  const wantsScan =
+    /(request|run|order|schedule|start|get)[^.?!]*\bscan\b|\bscan\b[^.?!]*\b(request|now|please)\b/.test(q);
+  const wantsEstoppel = /\bestoppel\b[^.?!]*\b(check|review|request|run)\b|\b(check|review|request|run)\b[^.?!]*\bestoppel\b/.test(q);
+  const wantsReview = /\b(start|begin|open)\b[^.?!]*\breview\b/.test(q);
+  const wantsHandled = /\bmark\b[^.?!]*\bhandled\b|\bhandled\b[^.?!]*\bflag\b/.test(q);
+  const wantsPackage = /\b(assemble|draft|download|prepare|build)\b[^.?!]*\b(notice|package)\b/.test(q);
+  const wantsJump = /\b(open|show me|take me to|go to|pull up)\b/.test(q);
+
+  const needsLocation =
+    wantsScan || wantsEstoppel || wantsReview || wantsHandled || wantsPackage;
+  if (needsLocation && !loc) {
+    const flagged = rows.filter(
+      (r) =>
+        r.evaluation.state === "claimable" ||
+        r.evaluation.state === "election_open",
+    );
+    return {
+      interpreted: "A task, but the location is ambiguous",
+      lead: "Tell me which location and I will do it. These are the ones currently flagged:",
+      links: flagged.slice(0, 4).map(locLink),
+    };
+  }
+
+  if (wantsScan && loc) {
+    await db().query(
+      `insert into client_request (org_slug, location_ref, center_name, kind, body)
+       values ($1, $2, $3, 'manual_scan', $4)`,
+      [slug, loc.id, loc.center.name, "Requested through Theo."],
+    );
+    await db().query(
+      `insert into audit_log (actor, action, org_slug, subject, detail)
+       values ('client', 'theo_task', $1, $2, 'manual_scan requested')`,
+      [slug, loc.id],
+    );
+    return {
+      interpreted: `Task: request a scan of ${loc.center.name}`,
+      lead: `Done. A scan of ${loc.center.name} is on the operations queue, marked as requested through me. The pass reads every watched storefront there and files what it finds to your activity record. You will see it in Scan history when it lands.`,
+      links: [locLink(loc), { label: "Activity", href: "/app/activity" }],
+    };
+  }
+
+  if (wantsEstoppel && loc) {
+    await db().query(
+      `insert into client_request (org_slug, location_ref, center_name, kind, body)
+       values ($1, $2, $3, 'estoppel_review', $4)`,
+      [slug, loc.id, loc.center.name, "Requested through Theo."],
+    );
+    await db().query(
+      `insert into audit_log (actor, action, org_slug, subject, detail)
+       values ('client', 'theo_task', $1, $2, 'estoppel_review requested')`,
+      [slug, loc.id],
+    );
+    return {
+      interpreted: `Task: estoppel review at ${loc.center.name}`,
+      lead: `Done. An estoppel review for ${loc.center.name} is on the operations queue. Before anyone signs an estoppel certificate there, the live position gets checked against it, because certifying "no claims or offsets" can bar a position this clause is carrying.`,
+      links: [locLink(loc)],
+    };
+  }
+
+  if ((wantsReview || wantsHandled) && loc) {
+    const to = wantsHandled ? "handled" : "in_review";
+    const fromCond = wantsHandled ? `status <> 'handled'` : `status = 'new'`;
+    const { rowCount } = await db().query(
+      `update finding_alert
+          set status = $1, actor = 'client',
+              handled_at = case when $1 = 'handled' then now() else null end,
+              updated_at = now()
+        where org_slug = $2 and location_ref = $3 and ${fromCond}`,
+      [to, slug, loc.id],
+    );
+    if (!rowCount)
+      return {
+        interpreted: `Task: move the flag on ${loc.center.name}`,
+        lead: `There is no flag on ${loc.center.name} in a state I can move ${
+          wantsHandled ? "to handled" : "into review"
+        }. The inbox has the live picture.`,
+        links: [{ label: "Open the inbox", href: "/app/inbox" }, locLink(loc)],
+      };
+    await db().query(
+      `insert into audit_log (actor, action, org_slug, subject, detail)
+       values ('client', 'theo_task', $1, $2, $3)`,
+      [slug, loc.id, `flag moved to ${to}`],
+    );
+    return {
+      interpreted: `Task: ${wantsHandled ? "mark handled" : "start review"} at ${loc.center.name}`,
+      lead: wantsHandled
+        ? `Done. The flag on ${loc.center.name} is marked handled, on the record with a timestamp. If the condition recurs later, a fresh flag files with a new date.`
+        : `Done. The flag on ${loc.center.name} is in review under your name. When the decision is made, mark it handled and it leaves the queue but stays in the ledger.`,
+      links: [{ label: "Open the inbox", href: "/app/inbox" }, locLink(loc)],
+    };
+  }
+
+  if (wantsPackage && loc) {
+    return {
+      interpreted: `Task: the notice package for ${loc.center.name}`,
+      lead: `The package for ${loc.center.name} is assembled from the live record: the counsel-ready letter, the clause extract with its citation, the dated evidence chain, and the computation. Download it below, stamped with its assembly time.`,
+      links: [
+        {
+          label: "Download the package",
+          href: `/app/api/notice-package?location=${loc.id}`,
+        },
+        { label: "Notice desk", href: "/app/notices" },
+        locLink(loc),
+      ],
+    };
+  }
+
+  if (wantsJump && loc) {
+    return {
+      interpreted: `Jump to ${loc.center.name}`,
+      lead: `${loc.center.name} is ${STATE_META[loc.evaluation.state].label.toLowerCase()}. The full file is one click away.`,
+      links: [locLink(loc)],
+    };
+  }
+
+  return null;
+}
+
+/** Jump buttons derived from any answer: every location it cites. */
+function deriveLinks(texts: string[]): TheoLink[] {
+  const joined = texts.join(" ");
+  const seen = new Set<string>();
+  const links: TheoLink[] = [];
+  for (const m of joined.matchAll(/AF-(\d{4})/gi)) {
+    const id = `AF-${m[1]}`;
+    if (seen.has(id)) continue;
+    const r = rows.find((x) => x.id === id);
+    if (r) {
+      seen.add(id);
+      links.push(locLink(r));
+    }
+    if (links.length >= 4) break;
+  }
+  return links;
+}
 
 const MODEL = process.env.THEO_MODEL || "claude-fable-5";
 
@@ -200,6 +393,31 @@ export async function POST(request: NextRequest) {
       }))
     : [];
 
+  /* Layer 0: tasks. When the client asks Theo to DO something the
+     product can do, he does it on the real write-path and confirms
+     with a receipt. Evaluated fresh on every request; nothing cached. */
+  try {
+    const task = await tryTask(question);
+    if (task) {
+      return NextResponse.json({
+        engine: "action",
+        answer: {
+          interpreted: task.interpreted,
+          lead: task.lead,
+          blocks: [],
+          followUps: [
+            "What else is flagged right now?",
+            "What changed in the last sweep?",
+            "Which deadlines are closest?",
+          ],
+        },
+        links: task.links,
+      });
+    }
+  } catch {
+    /* a task failure falls through to a normal answer; Theo is never down */
+  }
+
   /* Layer 1: the engine. Always. */
   const answer = ask(question);
   const routerMissed = answer.lead?.startsWith("I am not sure") ?? false;
@@ -229,12 +447,13 @@ export async function POST(request: NextRequest) {
   );
 
   if (polish) {
+    const lead = polish.lead?.trim() || answer.lead || "";
     return NextResponse.json({
       engine: "model",
       answer: {
         ...answer,
         interpreted: polish.interpreted?.trim() || answer.interpreted,
-        lead: polish.lead?.trim() || answer.lead,
+        lead,
         followUps:
           Array.isArray(polish.followUps) && polish.followUps.length
             ? polish.followUps.slice(0, 3).map((f) => String(f).slice(0, 120))
@@ -243,8 +462,13 @@ export async function POST(request: NextRequest) {
            and the engine's apology block would contradict it. */
         blocks: routerMissed ? [] : answer.blocks,
       },
+      links: deriveLinks([lead, blocksText]),
     });
   }
 
-  return NextResponse.json({ engine: "index", answer });
+  return NextResponse.json({
+    engine: "index",
+    answer,
+    links: deriveLinks([answer.lead ?? "", blocksText]),
+  });
 }

@@ -14,7 +14,8 @@ import {
   verificationOf,
 } from "@/lib/clause";
 import { GRADE_TONE, gradeClause } from "@/lib/grade";
-import { nextStepsFor } from "@/lib/findings";
+import { analystBrief, nextStepsFor } from "@/lib/findings";
+import { Sparkles } from "lucide-react";
 import { TODAY, rowById, rows } from "@/lib/portfolio";
 import { ClauseSimulator } from "@/components/app/ClauseSimulator";
 import { EstoppelCheck, LocationActions } from "@/components/app/RequestPanels";
@@ -116,6 +117,51 @@ export default async function LocationPage({
           )}
         </div>
       </div>
+
+      {/* ---- Theo's read: the analyst brief on a flagged file. Every
+              figure is the engine's; the voice is the product showing
+              its work the way a person would — a lead, then
+              highlights with the reasoning attached. ---- */}
+      {(() => {
+        const brief = analystBrief(row);
+        if (!brief) return null;
+        return (
+          <Panel flush className="border-l-4 border-l-indigo-600">
+            <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
+                <Sparkles className="h-4 w-4 text-white" />
+              </span>
+              <div>
+                <h2 className="text-[0.9375rem] font-semibold text-slate-900">
+                  Theo&#8217;s read
+                </h2>
+                <p className="text-[0.75rem] text-slate-500">
+                  Composed from this file&#8217;s own record. Flags, never
+                  conclusions — counsel decides.
+                </p>
+              </div>
+            </div>
+            <div className="px-5 py-4 sm:px-6">
+              <p className="text-[0.875rem] leading-relaxed text-slate-800">
+                {brief.lead}
+              </p>
+              <ul className="mt-4 space-y-3">
+                {brief.highlights.map((h, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+                    <p className="text-[0.8125rem] leading-relaxed text-slate-700">
+                      <span className="font-semibold text-slate-900">
+                        {h.point}
+                      </span>{" "}
+                      {h.why}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Panel>
+        );
+      })()}
 
       {/* ---- when this location is flagged, the path is spelled out.
               A reader who has never worked a co-tenancy claim leaves
@@ -377,13 +423,8 @@ export default async function LocationPage({
               </Note>
             )}
           </Panel>
-        </div>
-
-        <div className="space-y-4">
-          {/* ---- the watch, on this door ---- */}
-          <ScanHistory centerName={center.name} centerRef={center.id} />
-
-          {/* ---- clause strength ---- */}
+          {/* ---- clause strength: substantive analysis, so it lives
+                  in the main column, not the rail ---- */}
           <Panel>
             <PanelHead
               title="Clause strength"
@@ -441,21 +482,35 @@ export default async function LocationPage({
               ))}
             </ul>
 
-            <Note tone="petrol" title="At renewal">
-              {grade.dials.sort((a, b) => a.score - b.score)[0].advice}
-            </Note>
-
-            {grade.replacementStandard && (
-              <Note tone="muted" title="Replacement standard, not scored">
-                <span className="block italic">
-                  &#8220;{grade.replacementStandard.text}&#8221;
-                </span>
-                <span className="mt-1.5 block">
-                  {grade.replacementStandard.note}
-                </span>
-              </Note>
-            )}
+            {(() => {
+              const weakest = [...grade.dials].sort((a, b) => a.score - b.score)[0];
+              return (
+                <div className="mt-4 space-y-3">
+                  <Note
+                    tone="petrol"
+                    title={`At renewal: ${weakest.label.toLowerCase()}`}
+                  >
+                    {weakest.advice}
+                  </Note>
+                  {grade.replacementStandard && (
+                    <Note tone="muted" title="Replacement standard, not scored">
+                      <span className="block italic">
+                        &#8220;{grade.replacementStandard.text}&#8221;
+                      </span>
+                      <span className="mt-1.5 block">
+                        {grade.replacementStandard.note}
+                      </span>
+                    </Note>
+                  )}
+                </div>
+              );
+            })()}
           </Panel>
+        </div>
+
+        <div className="space-y-4">
+          {/* ---- the watch, on this door ---- */}
+          <ScanHistory centerName={center.name} centerRef={center.id} />
 
           {/* ---- money ---- */}
           <Panel>
@@ -609,29 +664,30 @@ export default async function LocationPage({
 
           {/* ---- the papers we hold ---- */}
           <PapersOnFile locationId={row.id} />
-
-          {/* ---- the estoppel moment ---- */}
-          <EstoppelCheck
-            locationId={row.id}
-            centerName={center.name}
-            live={ev.anyFailing || ev.state === "remedy_active"}
-            asOf={prettyDate(TODAY)}
-            failing={ev.triggers
-              .filter((t) => t.failing)
-              .map((t) => ({ label: t.label, cite: t.cite, observed: t.observed }))}
-          />
-
-          {/* ---- what the tenant can start themselves ---- */}
-          <LocationActions
-            locationId={row.id}
-            centerName={center.name}
-            suites={center.suites.map((s) => ({
-              id: s.id,
-              name: s.name,
-              status: s.status,
-            }))}
-          />
         </div>
+      </div>
+
+      {/* ---- the two things a tenant can start from here, side by
+              side so the rail above stays a rail ---- */}
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <EstoppelCheck
+          locationId={row.id}
+          centerName={center.name}
+          live={ev.anyFailing || ev.state === "remedy_active"}
+          asOf={prettyDate(TODAY)}
+          failing={ev.triggers
+            .filter((t) => t.failing)
+            .map((t) => ({ label: t.label, cite: t.cite, observed: t.observed }))}
+        />
+        <LocationActions
+          locationId={row.id}
+          centerName={center.name}
+          suites={center.suites.map((s) => ({
+            id: s.id,
+            name: s.name,
+            status: s.status,
+          }))}
+        />
       </div>
 
       <p className="rounded-xl border border-slate-200 bg-slate-100 p-5 text-[0.75rem] leading-relaxed text-slate-500">

@@ -507,3 +507,23 @@ h4 {
     0 1px 2px rgba(20, 20, 46, 0.05),
     0 24px 60px -28px rgba(20, 20, 46, 0.22);
 }
+
+/* Sleek scroll surfaces: no permanent gutter, a thin thumb that only
+   asserts itself when there is actually something to scroll. */
+.scroll-sleek {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+.scroll-sleek::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-sleek::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-sleek::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+.scroll-sleek::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}

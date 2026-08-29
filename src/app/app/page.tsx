@@ -216,7 +216,7 @@ export default function OverviewPage() {
             label="Inside the band"
             tone="watch"
             value={summary.watchCount}
-            sub="Within three points of a threshold, or curing."
+            sub="Within three points of a threshold, or the duration clock is running."
             href="/app/locations"
           />
         </Item>
@@ -225,71 +225,6 @@ export default function OverviewPage() {
       <div className="card-enter d-3">
         <ThresholdRail points={railPoints} />
       </div>
-
-      {/* ---- the scan record, so continuity is visible. The label is
-              the data's own figures, never a written-out caption. ---- */}
-      <Panel flush className="card-enter d-4">
-        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
-          <PanelHead
-            title="Scan activity"
-            hint={`${sweeps.length} passes · ${sweeps.reduce((n, s) => n + s.changes, 0)} changes found · ${sweeps[0]?.targetsChecked ?? 0} stores per pass`}
-            right={
-              <span className="flex items-center gap-4">
-                <span className="hidden items-center gap-3 text-[0.6875rem] font-medium text-slate-400 sm:flex">
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-[3px] bg-amber-500" />
-                    changes
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-[3px] bg-emerald-600/35" />
-                    clear
-                  </span>
-                </span>
-                <LinkButton href="/app/activity">Scan history</LinkButton>
-              </span>
-            }
-          />
-        </div>
-        <div className="flex items-end gap-1.5 px-5 pt-5 pb-2 sm:px-6">
-          {[...sweeps].reverse().map((s) => {
-            const height = 8 + Math.min(52, s.changes * 14);
-            return (
-              <div
-                key={s.id}
-                className="group relative flex flex-1 flex-col items-center gap-1.5"
-                title={`${prettyDate(s.ranOn)} · ${s.changes} changed`}
-              >
-                <span
-                  className={`w-full rounded-t-sm transition-colors ${
-                    s.changes > 0
-                      ? "bg-amber-500 group-hover:bg-amber-600"
-                      : "bg-emerald-600/35 group-hover:bg-emerald-600/60"
-                  }`}
-                  style={{ height }}
-                />
-                <span className="h-1 w-full rounded-b-sm bg-slate-100" />
-              </div>
-            );
-          })}
-        </div>
-        {/* the axis: real dates under the run */}
-        <div className="flex gap-1.5 px-5 pb-4 sm:px-6">
-          {[...sweeps].reverse().map((s, i, arr) => (
-            <span
-              key={s.id}
-              className="tnum flex-1 text-center text-[0.625rem] text-slate-400"
-            >
-              {i === 0 || i === arr.length - 1 || i === Math.floor(arr.length / 2)
-                ? new Date(s.ranOn + "T00:00:00Z").toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    timeZone: "UTC",
-                  })
-                : ""}
-            </span>
-          ))}
-        </div>
-      </Panel>
 
       {/* ---- decisions ---- */}
       <Panel flush>
@@ -471,6 +406,71 @@ export default function OverviewPage() {
           </ul>
         </Panel>
       </div>
+
+      {/* ---- the scan record, so continuity is visible. The label is
+              the data's own figures, never a written-out caption. ---- */}
+      <Panel flush className="card-enter d-4">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+          <PanelHead
+            title="Scan activity"
+            hint={`${sweeps.length} passes · ${sweeps.reduce((n, s) => n + s.changes, 0)} changes found · ${sweeps[0]?.targetsChecked ?? 0} stores per pass`}
+            right={
+              <span className="flex items-center gap-4">
+                <span className="hidden items-center gap-3 text-[0.6875rem] font-medium text-slate-400 sm:flex">
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-[3px] bg-amber-500" />
+                    changes
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-[3px] bg-emerald-600/35" />
+                    clear
+                  </span>
+                </span>
+                <LinkButton href="/app/activity">Scan history</LinkButton>
+              </span>
+            }
+          />
+        </div>
+        <div className="flex items-end gap-1.5 px-5 pt-5 pb-2 sm:px-6">
+          {[...sweeps].reverse().map((s) => {
+            const height = 8 + Math.min(52, s.changes * 14);
+            return (
+              <div
+                key={s.id}
+                className="group relative flex flex-1 flex-col items-center gap-1.5"
+                title={`${prettyDate(s.ranOn)} · ${s.changes} changed`}
+              >
+                <span
+                  className={`w-full rounded-t-sm transition-colors ${
+                    s.changes > 0
+                      ? "bg-amber-500 group-hover:bg-amber-600"
+                      : "bg-emerald-600/35 group-hover:bg-emerald-600/60"
+                  }`}
+                  style={{ height }}
+                />
+                <span className="h-1 w-full rounded-b-sm bg-slate-100" />
+              </div>
+            );
+          })}
+        </div>
+        {/* the axis: real dates under the run */}
+        <div className="flex gap-1.5 px-5 pb-4 sm:px-6">
+          {[...sweeps].reverse().map((s, i, arr) => (
+            <span
+              key={s.id}
+              className="tnum flex-1 text-center text-[0.625rem] text-slate-400"
+            >
+              {i === 0 || i === arr.length - 1 || i === Math.floor(arr.length / 2)
+                ? new Date(s.ranOn + "T00:00:00Z").toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    timeZone: "UTC",
+                  })
+                : ""}
+            </span>
+          ))}
+        </div>
+      </Panel>
 
       {/* ---- the honest panels ---- */}
       <div className="grid gap-3 lg:grid-cols-2">

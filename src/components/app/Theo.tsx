@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, Download, FileText, Info, Sparkles } from "lucide-react";
 import {
-  type AnswerBlock,
-  type TheoAnswer,
-  greeting,
-  suggestedQuestions,
-  theo,
-} from "@/lib/theo";
+  ArrowRight,
+  ArrowUp,
+  Download,
+  FileText,
+  Info,
+  Sparkles,
+} from "lucide-react";
+import { type AnswerBlock, type TheoAnswer, greeting, theo } from "@/lib/theo";
 import {
   answerToCsv,
   answerToPrintable,
@@ -18,32 +19,49 @@ import {
 } from "@/lib/theo-export";
 import { org, TODAY } from "@/lib/portfolio";
 import { prettyDate } from "@/lib/clause";
-import { cn } from "@/lib/cn";
-import { ActionButton, Panel, Pill } from "./ui";
+import { Panel, Pill } from "./ui";
 
 /**
  * THEO
  *
- * Not a chat bubble in the corner. A working surface: answers arrive as
- * tables, figures and verbatim lease text rather than paragraphs, each
- * one stamped with where it came from.
+ * The one deliberately dark surface in the workspace: the client is
+ * talking to the intelligence, and the room should feel like it.
+ * Glow is allowed HERE and nowhere else — a halo on the mark, light
+ * behind the conversation — because this is the AI's own seat, not a
+ * marketing hero.
  *
- * The routing is a keyword matcher today and a model tomorrow. Either
- * way the answer comes from a tool in lib/theo.ts, which is what stops
- * it inventing anything.
+ * Still a working surface, not a chat bubble: answers arrive as
+ * tables, figures and verbatim lease text, each stamped with its
+ * source, exportable, and now carrying jump buttons into the file it
+ * cites. Theo also DOES things: a scan request, a flag move, a notice
+ * package — each on the product's real write-path, confirmed with a
+ * receipt.
  */
+
+type TheoLink = { label: string; href: string };
 
 type Turn =
   | { role: "user"; text: string }
-  | { role: "theo"; answer: TheoAnswer };
+  | { role: "theo"; answer: TheoAnswer; links?: TheoLink[] };
+
+/* Questions a co-tenancy professional is actually holding when they
+   open this. The kickstarters respect the reader's expertise. */
+const STARTERS = [
+  "Which locations are closest to tripping, and by how much margin?",
+  "Where does relief run from notice only? Those files cannot sit.",
+  "Which caps or election windows run out next?",
+  "What did the last sweep change, and does any of it touch a named anchor?",
+  "Request a scan of Danbury Fair",
+];
 
 export function Theo() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [thinking, setThinking] = useState(false);
-  const [engine, setEngine] = useState<"model" | "index" | null>(null);
+  const [engine, setEngine] = useState<"model" | "index" | "action" | null>(
+    null,
+  );
   const endRef = useRef<HTMLDivElement>(null);
-  const suggestions = suggestedQuestions();
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -61,7 +79,8 @@ export function Theo() {
     const history = turns
       .reduce<{ q: string; a: string }[]>((acc, t) => {
         if (t.role === "user") acc.push({ q: t.text, a: "" });
-        else if (acc.length) acc[acc.length - 1].a = t.answer.lead ?? t.answer.interpreted;
+        else if (acc.length)
+          acc[acc.length - 1].a = t.answer.lead ?? t.answer.interpreted;
         return acc;
       }, [])
       .slice(-6);
@@ -74,11 +93,15 @@ export function Theo() {
       });
       if (!res.ok) throw new Error();
       const data = (await res.json()) as {
-        engine: "model" | "index";
+        engine: "model" | "index" | "action";
         answer: TheoAnswer;
+        links?: TheoLink[];
       };
       setEngine(data.engine);
-      setTurns((t) => [...t, { role: "theo", answer: data.answer }]);
+      setTurns((t) => [
+        ...t,
+        { role: "theo", answer: data.answer, links: data.links },
+      ]);
     } catch {
       setTurns((t) => [
         ...t,
@@ -105,36 +128,53 @@ export function Theo() {
      screens keep natural flow. */
   return (
     <div className="grid gap-4 lg:h-[calc(100svh-13.5rem)] lg:min-h-[540px] lg:grid-cols-[minmax(0,1fr)_260px]">
-      <Panel flush className="flex min-h-[480px] flex-col lg:h-full lg:min-h-0">
+      <div className="relative flex min-h-[480px] flex-col overflow-hidden rounded-2xl border border-indigo-500/25 bg-[#0c0a1d] shadow-xl shadow-indigo-950/50 lg:h-full lg:min-h-0">
+        {/* the room's light: one soft source above the conversation */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(60% 45% at 50% 0%, rgba(109,88,246,0.28), transparent 70%), radial-gradient(40% 30% at 85% 100%, rgba(139,92,246,0.12), transparent 70%)",
+          }}
+        />
+
         {/* conversation */}
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
+        <div className="scroll-sleek relative min-h-0 flex-1 space-y-5 overflow-y-auto p-5 sm:p-6">
           {turns.length === 0 && (
             <div className="flex min-h-full flex-col justify-center py-6">
-              <div className="flex items-center gap-3">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 shadow-md shadow-indigo-500/30">
-                  <Sparkles className="h-5 w-5 text-white" />
+              <div className="flex items-center gap-4">
+                {/* the mark, haloed */}
+                <span className="relative flex h-12 w-12 items-center justify-center">
+                  <span className="absolute inset-0 rounded-2xl bg-indigo-500/50 blur-xl" />
+                  <span className="absolute -inset-1.5 rounded-2xl border border-indigo-400/20" />
+                  <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/50">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </span>
                 </span>
                 <div>
-                  <p className="text-[0.9375rem] font-semibold text-slate-900">
+                  <p className="text-[1rem] font-semibold text-white">
                     {theo.name}
                   </p>
-                  <p className="text-[0.75rem] text-slate-500">{theo.role}</p>
+                  <p className="text-[0.75rem] text-indigo-200/70">
+                    {theo.role}
+                  </p>
                 </div>
               </div>
-              <p className="mt-5 max-w-xl text-[1rem] leading-relaxed text-slate-900">
+              <p className="mt-6 max-w-xl text-[1.0625rem] leading-relaxed text-white">
                 {greeting()}
               </p>
-              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-slate-500">
+              <p className="mt-3 max-w-lg text-[0.8125rem] leading-relaxed text-indigo-200/70">
                 {theo.charter}
               </p>
 
-              <div className="mt-5 flex flex-wrap gap-2">
-                {suggestions.map((s) => (
+              <div className="mt-6 flex flex-wrap gap-2">
+                {STARTERS.map((s) => (
                   <button
                     key={s}
                     type="button"
                     onClick={() => void send(s)}
-                    className="rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-2 text-left text-[0.8125rem] text-slate-700 transition-colors duration-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-800"
+                    className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-2 text-left text-[0.8125rem] text-indigo-100 backdrop-blur-sm transition-all duration-200 hover:border-indigo-400/50 hover:bg-indigo-500/15 hover:text-white"
                   >
                     {s}
                   </button>
@@ -152,7 +192,7 @@ export function Theo() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-end"
                 >
-                  <p className="max-w-[80%] rounded-xl rounded-br-sm bg-indigo-800 px-3.5 py-2.5 text-[0.875rem] text-white">
+                  <p className="max-w-[80%] rounded-xl rounded-br-sm bg-gradient-to-br from-indigo-500 to-violet-600 px-3.5 py-2.5 text-[0.875rem] text-white shadow-lg shadow-indigo-500/25">
                     {t.text}
                   </p>
                 </motion.div>
@@ -164,21 +204,49 @@ export function Theo() {
                   transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                   className="space-y-3"
                 >
-                  <p className="text-[0.75rem] font-medium text-slate-500">
+                  <p className="text-[0.75rem] font-medium text-indigo-300/70">
                     {t.answer.interpreted}
                   </p>
                   {t.answer.lead && (
-                    <p className="text-[0.9375rem] leading-relaxed text-slate-900">
+                    <p className="text-[0.9375rem] leading-relaxed text-white">
                       {t.answer.lead}
                     </p>
                   )}
                   {t.answer.blocks.map((b, k) => (
                     <Block key={k} block={b} />
                   ))}
+
+                  {/* jump buttons: straight into the file Theo cites */}
+                  {t.links && t.links.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {t.links.map((l) =>
+                        l.href.startsWith("/app/api/") ? (
+                          <a
+                            key={l.href}
+                            href={l.href}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/40 bg-indigo-500/20 px-3 py-2 text-[0.8125rem] font-semibold text-white shadow-md shadow-indigo-900/40 backdrop-blur-sm transition-all hover:bg-indigo-500/35 active:scale-95"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {l.label}
+                          </a>
+                        ) : (
+                          <Link
+                            key={l.href}
+                            href={l.href}
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-400/40 bg-indigo-500/20 px-3 py-2 text-[0.8125rem] font-semibold text-white shadow-md shadow-indigo-900/40 backdrop-blur-sm transition-all hover:bg-indigo-500/35 active:scale-95"
+                          >
+                            {l.label}
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        ),
+                      )}
+                    </div>
+                  )}
+
                   {/* An answer that cannot leave the screen is half an
                       answer. A real request from a regional manager was
                       for "a one pager" to take into a meeting. */}
-                  <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-2.5">
+                  <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-2.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -192,7 +260,7 @@ export function Theo() {
                         );
                         w.document.close();
                       }}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-1.5 text-[0.75rem] font-semibold text-slate-900 transition-colors hover:border-indigo-300 hover:bg-indigo-50"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[0.75rem] font-semibold text-indigo-100 transition-colors hover:border-indigo-400/40 hover:text-white"
                     >
                       <FileText className="h-3 w-3" />
                       One pager
@@ -214,13 +282,13 @@ export function Theo() {
                           a.click();
                           URL.revokeObjectURL(url);
                         }}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white shadow-sm px-3 py-1.5 text-[0.75rem] font-semibold text-slate-900 transition-colors hover:border-indigo-300 hover:bg-indigo-50"
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.06] px-3 py-1.5 text-[0.75rem] font-semibold text-indigo-100 transition-colors hover:border-indigo-400/40 hover:text-white"
                       >
                         <Download className="h-3 w-3" />
                         CSV
                       </button>
                     )}
-                    <p className="flex items-center gap-1.5 text-[0.6875rem] text-slate-400">
+                    <p className="flex items-center gap-1.5 text-[0.6875rem] text-indigo-300/50">
                       <Info className="h-3 w-3" />
                       {t.answer.provenance}
                     </p>
@@ -232,7 +300,7 @@ export function Theo() {
                           key={f}
                           type="button"
                           onClick={() => void send(f)}
-                          className="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[0.75rem] text-slate-500 transition-colors hover:border-indigo-300 hover:text-indigo-700"
+                          className="rounded-lg border border-white/10 px-2.5 py-1.5 text-[0.75rem] text-indigo-200/70 transition-colors hover:border-indigo-400/50 hover:text-white"
                         >
                           {f}
                         </button>
@@ -245,8 +313,11 @@ export function Theo() {
           </AnimatePresence>
 
           {thinking && (
-            <div className="flex items-center gap-2 text-[0.8125rem] text-slate-500">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-600 anim-pulse-dot" />
+            <div className="flex items-center gap-2.5 text-[0.8125rem] text-indigo-200/80">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-400" />
+              </span>
               Reading your portfolio
             </div>
           )}
@@ -259,22 +330,26 @@ export function Theo() {
             e.preventDefault();
             void send(input);
           }}
-          className="flex items-center gap-2 border-t border-slate-200 p-3"
+          className="relative flex items-center gap-2 border-t border-white/10 bg-white/[0.03] p-3 backdrop-blur-sm"
         >
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={`Ask ${theo.name} about your portfolio`}
-            className="flex-1 rounded-xl border border-slate-200 bg-white shadow-sm px-3.5 py-2.5 text-[0.875rem] text-slate-900 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/15 focus:outline-none"
+            placeholder={`Ask ${theo.name}, or tell him to do something`}
+            className="flex-1 rounded-xl border border-white/10 bg-white/[0.07] px-3.5 py-2.5 text-[0.875rem] text-white placeholder:text-indigo-200/40 focus:border-indigo-400/60 focus:ring-2 focus:ring-indigo-400/25 focus:outline-none"
           />
-          <ActionButton type="submit" disabled={!input.trim() || thinking} className="px-3">
+          <button
+            type="submit"
+            disabled={!input.trim() || thinking}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-500/40 transition-all hover:from-indigo-400 hover:to-violet-500 active:scale-95 disabled:opacity-40 disabled:shadow-none"
+          >
             <ArrowUp className="h-4 w-4" />
-          </ActionButton>
+          </button>
         </form>
-      </Panel>
+      </div>
 
-      {/* what he can answer */}
-      <div className="space-y-3 lg:h-full lg:min-h-0 lg:overflow-y-auto">
+      {/* what he can do */}
+      <div className="scroll-sleek space-y-3 lg:h-full lg:min-h-0 lg:overflow-y-auto">
         <Panel>
           <p className="text-[0.8125rem] font-semibold text-slate-900">
             What {theo.name} can answer
@@ -285,7 +360,7 @@ export function Theo() {
               "What is happening at any center",
               "The exact wording of a clause, with its section",
               "When a store was last checked, and by which sources",
-              "What qualifies for co-tenancy rent, and what it is worth",
+              "What may qualify for co-tenancy rent, and what it is worth",
               "Which reporting rights you can exercise",
             ].map((x) => (
               <li key={x} className="flex gap-2">
@@ -297,15 +372,48 @@ export function Theo() {
         </Panel>
 
         <Panel>
+          <p className="text-[0.8125rem] font-semibold text-slate-900">
+            What {theo.name} can do
+          </p>
+          <ul className="mt-3 space-y-2.5 text-[0.8125rem] text-slate-500">
+            {[
+              "Request a scan of any center",
+              "Queue an estoppel review before anyone signs",
+              "Move a flag through the inbox for you",
+              "Hand you the counsel-ready notice package",
+              "Jump you straight to any location's file",
+            ].map((x) => (
+              <li key={x} className="flex gap-2">
+                <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-violet-600" />
+                {x}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 border-t border-slate-100 pt-2.5 text-[0.6875rem] leading-relaxed text-slate-400">
+            Every task lands on the same queue and record the buttons use, on
+            the audit trail.
+          </p>
+        </Panel>
+
+        <Panel>
           <p className="text-[0.8125rem] font-semibold text-slate-900">Engine</p>
           <p className="mt-2 text-[0.8125rem] leading-relaxed text-slate-500">
             {engine === "model"
               ? "Reasoning model over your portfolio index and the operations canon. Figures always come from the index."
-              : "Portfolio index. Every figure is computed from your leases and our observations. The reasoning model joins when connected."}
+              : engine === "action"
+                ? "That was a task: performed on the live record and confirmed with a receipt."
+                : "Portfolio index. Every figure is computed from your leases and our observations. The reasoning model joins when connected."}
           </p>
           {engine && (
-            <Pill tone={engine === "model" ? "petrol" : "muted"} className="mt-2.5">
-              {engine === "model" ? "Model + index" : "Index"}
+            <Pill
+              tone={engine === "index" ? "muted" : "petrol"}
+              className="mt-2.5"
+            >
+              {engine === "model"
+                ? "Model + index"
+                : engine === "action"
+                  ? "Task performed"
+                  : "Index"}
             </Pill>
           )}
         </Panel>
@@ -331,23 +439,31 @@ export function Theo() {
   );
 }
 
+/* Blocks live on the dark surface now; glassy, never washed. */
 function Block({ block }: { block: AnswerBlock }) {
   if (block.type === "text")
     return (
-      <p className="text-[0.875rem] leading-relaxed text-slate-700">{block.body}</p>
+      <p className="text-[0.875rem] leading-relaxed text-indigo-100">
+        {block.body}
+      </p>
     );
 
   if (block.type === "stat")
     return (
       <div className="grid gap-2 sm:grid-cols-3">
         {block.items.map((s) => (
-          <div key={s.label} className="rounded-xl border border-slate-200 bg-slate-100 p-3">
-            <p className="text-[0.75rem] text-slate-500">{s.label}</p>
-            <p className="tnum mt-1 text-[1.25rem] font-bold leading-none text-slate-900">
+          <div
+            key={s.label}
+            className="rounded-xl border border-white/10 bg-white/[0.06] p-3 backdrop-blur-sm"
+          >
+            <p className="text-[0.75rem] text-indigo-200/70">{s.label}</p>
+            <p className="tnum mt-1 text-[1.25rem] font-bold leading-none text-white">
               {s.value}
             </p>
             {s.hint && (
-              <p className="mt-1 text-[0.6875rem] leading-snug text-slate-400">{s.hint}</p>
+              <p className="mt-1 text-[0.6875rem] leading-snug text-indigo-200/50">
+                {s.hint}
+              </p>
             )}
           </div>
         ))}
@@ -356,11 +472,11 @@ function Block({ block }: { block: AnswerBlock }) {
 
   if (block.type === "verbatim")
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-100 p-4">
-        <p className="text-[0.6875rem] font-semibold tracking-wide text-slate-500 uppercase">
+      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
+        <p className="text-[0.6875rem] font-semibold tracking-wide text-indigo-300/80 uppercase">
           {block.cite}
         </p>
-        <p className="mt-2 text-[0.8125rem] leading-[1.8] text-slate-700">
+        <p className="mt-2 text-[0.8125rem] leading-[1.8] text-indigo-100">
           {block.body}
         </p>
       </div>
@@ -368,12 +484,14 @@ function Block({ block }: { block: AnswerBlock }) {
 
   if (block.type === "gap")
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-        <p className="text-[0.8125rem] leading-relaxed text-slate-700">{block.body}</p>
+      <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
+        <p className="text-[0.8125rem] leading-relaxed text-amber-100">
+          {block.body}
+        </p>
         {block.action && (
           <Link
             href={block.action.href}
-            className="mt-2.5 inline-block text-[0.8125rem] font-semibold text-amber-700 hover:underline"
+            className="mt-2.5 inline-block text-[0.8125rem] font-semibold text-amber-300 hover:underline"
           >
             {block.action.label}
           </Link>
@@ -382,29 +500,32 @@ function Block({ block }: { block: AnswerBlock }) {
     );
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200">
+    <div className="overflow-x-auto rounded-xl border border-white/10">
       <table className="w-full border-collapse text-left">
         <thead>
-          <tr className="bg-slate-100">
+          <tr className="bg-white/[0.06]">
             {block.columns.map((c) => (
               <th
                 key={c}
-                className="px-3 py-2 text-[0.6875rem] font-semibold tracking-wide text-slate-400 uppercase"
+                className="px-3 py-2 text-[0.6875rem] font-semibold tracking-wide text-indigo-300/70 uppercase"
               >
                 {c}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-white/[0.07]">
           {block.rows.map((r, i) => (
-            <tr key={i} className="hover:bg-indigo-50/40">
+            <tr key={i} className="hover:bg-white/[0.04]">
               {r.cells.map((cell, j) => (
-                <td key={j} className="px-3 py-2 text-[0.8125rem] text-slate-700">
+                <td
+                  key={j}
+                  className="px-3 py-2 text-[0.8125rem] text-indigo-100"
+                >
                   {j === 0 && r.href ? (
                     <Link
                       href={r.href}
-                      className="font-semibold text-indigo-800 hover:underline"
+                      className="font-semibold text-white underline-offset-2 hover:underline"
                     >
                       {cell}
                     </Link>
@@ -418,7 +539,7 @@ function Block({ block }: { block: AnswerBlock }) {
         </tbody>
       </table>
       {block.caption && (
-        <p className="border-t border-slate-200 px-3 py-2 text-[0.75rem] text-slate-500">
+        <p className="border-t border-white/10 px-3 py-2 text-[0.75rem] text-indigo-200/60">
           {block.caption}
         </p>
       )}

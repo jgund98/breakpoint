@@ -136,7 +136,7 @@ export function Verdict({
                           {f.center_name}
                         </Link>
                         <span className="tnum shrink-0 text-[0.6875rem] font-normal text-indigo-200/70">
-                          {prettyDate(f.flagged_on)}
+                          {prettyDate(f.flagged_on.slice(0, 10))}
                         </span>
                       </p>
                       <p className="mt-0.5 truncate text-[0.75rem] text-indigo-100/90">

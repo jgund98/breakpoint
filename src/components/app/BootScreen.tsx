@@ -32,7 +32,7 @@ export function BootScreen() {
     `Loading ${org.watched} leases and ${summary.centers} center rent rolls`,
     `Recomputing occupancy for each clause on its own terms`,
     `Applying deemed-open rules and tenant preconditions`,
-    `Checking cure clocks and election windows`,
+    `Checking duration clocks and election windows`,
     `Reconciling evidence against every open finding`,
   ];
 
