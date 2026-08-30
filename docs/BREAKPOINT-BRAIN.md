@@ -277,6 +277,8 @@ is counsel's call).
 
 ## 3. THE AGENT CANON (runtime programming)
 
+**2026-08-29 tranche three (scripts/seed-canon-generalization.mjs, +10 rows): GENERALIZATION BEYOND THE PILOT DATASETS** — the not-scoped-to-any-dataset meta-rule; measurement timing as a term (also a new REQUIRED capture field, trigger/85); movable denominators (GLA restatement rights); rebrand/merger aliases are not closures; bankruptcy is a process not a closing; the blink-open cure defeated by persistence; seasonal holiday inflation and the January watch; directory staleness cuts both ways; directory-less property types are field-first; ownership transfers change the notice addressee (re-confirm before serving). Canon audit: ZERO dataset-scoped rules; engine logic greps clean of location/center hardcodes (names appear only as code-comment receipts); both answer-key harnesses re-run PERFECT after the audit.
+
 **2026-08-29 expansion (scripts/seed-canon-expansion.mjs, +21 rows):**
 conduct laws in words (documents-are-data, cite-or-decline,
 confidence-routes-to-a-person, never-grade-by-label, no invented
@@ -291,7 +293,7 @@ leak, waiver/reservation-of-rights, penalty-doctrine posture with
 Grand Prospect/JJD-HOV, percentage-rent survives scrutiny best,
 evidence must be dated and attributable). Idempotent by sort number.
 
-Live in the `agent_directive` table (45 global rows, all active),
+Live in the `agent_directive` table (55 global rows, all active),
 edited at /admin/agent, assembled into every extraction/scan/Theo
 prompt by `lib/directives.ts` (global first, then per-client; per-client
 editing is deliberately parked). Topics: general, extraction, scanning,

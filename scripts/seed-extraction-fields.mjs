@@ -64,6 +64,8 @@ const FIELDS = [
     "open_and_operating, leased, or occupied. The same center passes one basis and fails another; never assume.", G],
   ["trigger", 80, "area_basis", true, "Area basis",
     "What area the percentage measures over: total GLA, inline GLA, or a defined area, with the definition's citation (often an exhibit).", G],
+  ["trigger", 85, "measurement_timing", true, "Measurement timing",
+    "WHEN the occupancy condition is tested: continuously (any day it exists), as a monthly state, on the tenant notice date, or on a defined measurement date. The convention decides whose day counts when a landlord times a cure or a count to a favorable day.", R2],
   ["trigger", 90, "area_exclusions", false, "Area exclusions",
     "Space carved out of the denominator: anchors, outparcels, kiosks, storage, mezzanine. Exclusions swing the math more than the threshold does.", G],
   ["trigger", 100, "deemed_open_rules", true, "Deemed-open rules",
