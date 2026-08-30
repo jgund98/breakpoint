@@ -144,7 +144,7 @@ export default async function ReportPage() {
           </h2>
           <p className="mt-0.5 text-[0.75rem] text-slate-500">
             What the watch surfaced and what became of it. Amounts state what
-            MAY qualify under each lease&apos;s mechanics; realized relief is
+            may qualify under each lease&apos;s mechanics; realized relief is
             a matter between you, counsel, and the landlord.
           </p>
           <div className="mt-3 grid grid-cols-2 gap-4 lg:grid-cols-4">

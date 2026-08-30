@@ -267,7 +267,7 @@ export function analystBrief(r: Row): AnalystBrief | null {
       ? `This one is past analysis and into the calendar: the substitute-rent period has run its cap at ${r.center.name}, and the lease now demands a choice inside a window that lapses.`
       : ev.state === "precondition_unverified"
         ? `Something real is happening at ${r.center.name} — the center-side test fails — but the file is stuck on your side of the lease until the store's standing is confirmed. Here is my read.`
-        : `I flagged ${r.center.name} because the failure stopped being weather and became a season: the condition has now persisted long enough to satisfy the clause's own qualifying period. This location MAY qualify for co-tenancy rent. Here is my read.`;
+        : `I flagged ${r.center.name} because the failure stopped being weather and became a season: the condition has now persisted long enough to satisfy the clause's own qualifying period. This location may qualify for co-tenancy rent. Here is my read.`;
 
   return { lead, highlights };
 }

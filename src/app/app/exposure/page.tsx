@@ -42,7 +42,7 @@ export default async function ExposurePage() {
       <PageHead
         eyebrow="Monitor"
         title="Anchor risk"
-        lede="Every anchor and junior operator at your centers, re-evaluated with that operator dark. Amounts state what MAY qualify under each lease's clocks."
+        lede="Every anchor and junior operator at your centers, re-evaluated with that operator dark. Amounts state what may qualify under each lease's clocks."
       />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -55,7 +55,7 @@ export default async function ExposurePage() {
         <Stat
           label="Single points of failure"
           value={tripping.length}
-          sub="One closure MAY trip at least one lease"
+          sub="One closure may trip at least one lease"
           tone={tripping.length > 0 ? "watch" : "open"}
         />
         <Stat
@@ -69,7 +69,7 @@ export default async function ExposurePage() {
           value={worst ? money(worst.monthlyDelta) : "None"}
           sub={
             worst
-              ? `${worst.operator} · per month, if it MAY qualify`
+              ? `${worst.operator} · per month, if it may qualify`
               : "No single operator trips a lease today"
           }
           tone={worst ? "brass" : "open"}
@@ -125,7 +125,7 @@ export default async function ExposurePage() {
                     </span>
                     <span className="block text-[0.6875rem] text-slate-400">
                       {c.monthlyDelta > 0
-                        ? `${money(c.annualDelta)} annualized MAY qualify`
+                        ? `${money(c.annualDelta)} annualized may qualify`
                         : "no rent change today"}
                     </span>
                   </span>

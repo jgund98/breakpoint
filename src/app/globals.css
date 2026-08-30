@@ -560,26 +560,6 @@ h4 {
   );
   animation: bp-glow-spin 3.6s linear infinite;
 }
-/* the soft halo bleeding outward; its own gradient + animation because
-   the registered angle property does not inherit */
-.bp-ai-glow::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(
-    from var(--bp-glow-angle),
-    #4285f4,
-    #9b72cb,
-    #d96570,
-    #9b72cb,
-    #4285f4
-  );
-  animation: bp-glow-spin 3.6s linear infinite;
-  filter: blur(10px);
-  opacity: 0.45;
-  pointer-events: none;
-}
 .bp-ai-glow > * {
   position: relative;
   border-radius: var(--bp-glow-inner-r);

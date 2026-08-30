@@ -154,14 +154,15 @@ const SECTIONS: { id: string; title: string; body: React.ReactNode }[] = [
   },
   {
     id: "money",
-    title: "How the money is computed, and why we say MAY",
+    title: "How the money is computed, and why we say may",
     body: (
       <>
         <p>
           Every amount in this workspace is computed month by month from
           your lease&apos;s own formula. A percentage-rent remedy computes
           on each month&apos;s own reported sales, never an average. Amounts
-          are labeled <strong>MAY qualify</strong> because money becomes
+          are labeled <strong>may qualify</strong>{" "}
+          because money becomes
           payable only through the lease&apos;s mechanics: the qualifying
           period, notice, and any cure window. Breakpoint states positions;
           your counsel states conclusions.
@@ -265,7 +266,7 @@ const GLOSSARY: { term: string; def: string }[] = [
 
 const FAQ: { q: string; a: string }[] = [
   { q: "Why does a triggered position show $0 or 'No saving at current sales'?", a: "Under a 'lesser of minimum rent or percent of sales' formula, a strong-selling store's percentage rent can exceed its fixed rent. The right is real, the saving today is zero. The position still matters: sales change, and the trigger is on the record." },
-  { q: "Why do you never say the landlord 'owes' us money?", a: "Because money becomes payable only through the lease's own mechanics: qualifying period, notice, cure. We state what MAY qualify and hold the evidence; your counsel states conclusions. That discipline is also what makes our packages hard to attack." },
+  { q: "Why do you never say the landlord 'owes' us money?", a: "Because money becomes payable only through the lease's own mechanics: qualifying period, notice, cure. We state what may qualify and hold the evidence; your counsel states conclusions. That discipline is also what makes our packages hard to attack." },
   { q: "A flag I handled came back. Why?", a: "A location that recovered and then failed again is a new episode, and files a new flag. The old one keeps its history; the new one gets its own dates. Nothing is ever silently merged." },
   { q: "How fresh is what I'm seeing?", a: "Every location page shows its watch record: when the last sweep ran, which sources were read, and what changed. Quiet sweeps are logged too: 'no change' is a finding, not an absence." },
   { q: "We amended a lease. What happens?", a: "Tell us (or upload the amendment on the location page). The clause record returns to extraction, a person re-approves it, and the location shows 'in review' until it is back under watch. A suspended clause is inert until its first active month; the clock never runs during suspension." },

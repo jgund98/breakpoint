@@ -452,7 +452,7 @@ export async function POST(request: NextRequest) {
     const s = bundle.summary;
     const triggered =
       (s.byState.get("claimable") ?? 0) + (s.byState.get("election_open") ?? 0);
-    const lead = `Across your ${bundle.rows.length} watched locations: ${triggered} ${triggered === 1 ? "is" : "are"} triggered and MAY qualify for co-tenancy rent, ${s.watchCount} ${s.watchCount === 1 ? "sits" : "sit"} inside the watch band, and cumulative potential co-tenancy rent on reported sales stands at ${compactUsd(Math.round(s.cumulativeAtRisk))}. The inbox carries each flagged location with its dates; ask me to open one, request a scan, or hand you a notice package. Deeper question-answering over your portfolio is being trained now.`;
+    const lead = `Across your ${bundle.rows.length} watched locations: ${triggered} ${triggered === 1 ? "is" : "are"} triggered and may qualify for co-tenancy rent, ${s.watchCount} ${s.watchCount === 1 ? "sits" : "sit"} inside the watch band, and cumulative potential co-tenancy rent on reported sales stands at ${compactUsd(Math.round(s.cumulativeAtRisk))}. The inbox carries each flagged location with its dates; ask me to open one, request a scan, or hand you a notice package. Deeper question-answering over your portfolio is being trained now.`;
     return NextResponse.json({
       engine: "index",
       answer: {

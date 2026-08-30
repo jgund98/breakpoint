@@ -169,6 +169,29 @@ async function auditRoute(page, route) {
       }
     }
 
+    /* glued inline text: <strong>word</strong>next — JSX newline
+       whitespace collapse eats the separating space */
+    out.glued = [];
+    for (const el of document.querySelectorAll("p strong, p em, li strong, li em, p a, li a")) {
+      const txt = (el.textContent ?? "").trim();
+      if (!txt) continue;
+      const next = el.nextSibling;
+      if (
+        next?.nodeType === 3 &&
+        /^[a-zA-Z]/.test(next.textContent ?? "") &&
+        /[a-zA-Z0-9]$/.test(txt)
+      )
+        out.glued.push(`"…${txt.slice(-18)}" + "${(next.textContent ?? "").slice(0, 14)}…"`);
+      const prev = el.previousSibling;
+      if (
+        prev?.nodeType === 3 &&
+        /[a-zA-Z0-9]$/.test(prev.textContent ?? "") &&
+        /^[a-zA-Z]/.test(txt)
+      )
+        out.glued.push(`"…${(prev.textContent ?? "").slice(-14)}" + "${txt.slice(0, 18)}…"`);
+      if (out.glued.length > 8) break;
+    }
+
     for (const el of document.querySelectorAll("body *")) {
       const s = getComputedStyle(el);
       const fs = parseFloat(s.fontSize);
@@ -208,7 +231,7 @@ async function auditRoute(page, route) {
     }
 
     /* dedupe */
-    for (const k of ["deadAnchors", "deadButtons", "sizeDrift", "tinyText", "overflow"])
+    for (const k of ["deadAnchors", "deadButtons", "sizeDrift", "tinyText", "overflow", "glued"])
       out[k] = [...new Set(out[k])].slice(0, 10);
     return out;
   });
@@ -232,6 +255,7 @@ let flagged = 0;
 for (const route of [...CLIENT_ROUTES, ...ADMIN_ROUTES]) {
   const r = await auditRoute(page, route);
   const issues =
+    (r.glued?.length ?? 0) +
     r.errors.length +
     r.deadAnchors.length +
     r.deadButtons.length +
@@ -252,6 +276,7 @@ for (const route of [...CLIENT_ROUTES, ...ADMIN_ROUTES]) {
   for (const s of r.sizeDrift) console.log(`        size: ${s}`);
   for (const t of r.tinyText) console.log(`        tiny text: ${t}`);
   for (const o of r.overflow) console.log(`        overflow: ${o}`);
+  for (const g of r.glued ?? []) console.log(`        glued text: ${g}`);
 }
 
 await browser.close();

@@ -134,7 +134,14 @@ export function ClientHeader({
                 <span
                   className={`h-2 w-2 rounded-full ${demo ? "animate-pulse bg-violet-300" : "bg-white/40"}`}
                 />
-                {demoBusy ? "Saving…" : demo ? "Demo mode on" : "Demo mode"}
+                Demo mode
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[0.625rem] font-bold uppercase tracking-wide ${
+                    demo ? "bg-violet-300 text-violet-950" : "bg-white/20 text-white/80"
+                  }`}
+                >
+                  {demoBusy ? "…" : demo ? "On" : "Off"}
+                </span>
               </button>
               <select
                 value={current}

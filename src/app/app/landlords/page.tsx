@@ -10,7 +10,7 @@ import { PageHead, Panel, Pill, Stat } from "@/components/app/ui";
  * A head of real estate does not negotiate lease by lease; they sit
  * across from Simon or Brookfield with the whole relationship on the
  * table. This page rolls the portfolio up by ownership family: doors,
- * live positions, what MAY qualify, and how that landlord has behaved
+ * live positions, what may qualify, and how that landlord has behaved
  * when noticed. It is the sheet you carry into a renewal meeting.
  */
 
@@ -73,7 +73,7 @@ export default async function LandlordsPage() {
           tone={totalTriggered > 0 ? "watch" : "open"}
         />
         <Stat
-          label="MAY qualify monthly"
+          label="may qualify monthly"
           value={totalMonthly > 0 ? money(totalMonthly) : "$0"}
           sub="Subject to notice and each lease's clocks"
           tone={totalMonthly > 0 ? "brass" : "open"}
@@ -125,7 +125,7 @@ export default async function LandlordsPage() {
                       {g.monthly > 0 ? `${money(g.monthly)}/mo` : "—"}
                     </span>
                     <span className="block text-[0.6875rem] text-slate-400">
-                      {g.monthly > 0 ? "MAY qualify across positions" : "no live money"}
+                      {g.monthly > 0 ? "may qualify across positions" : "no live money"}
                     </span>
                   </span>
                 </summary>

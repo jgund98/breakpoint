@@ -74,7 +74,7 @@ export default function InboxPage() {
                   Triggered
                 </dt>
                 <dd className="mt-0.5 text-[0.75rem] leading-relaxed text-slate-500">
-                  The qualifying period completed: this location MAY qualify
+                  The qualifying period completed: this location may qualify
                   for co-tenancy rent. Verify the evidence, confirm your
                   store&#8217;s standing, then assemble the notice package for
                   counsel. On notice-driven leases every month before service

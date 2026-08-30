@@ -75,6 +75,17 @@ const api = (token) => ({
     }),
 });
 
+/* demo_mode_probe_guard: a demo-mode A&F would reset itself on every
+   probe login, wiping rows mid-run. Park it off and restore after. */
+const { rows: dmRow } = await sql.query(
+  `select demo_mode from org_settings where org_slug = 'abercrombie-fitch'`,
+);
+const demoWasOn = dmRow[0]?.demo_mode === true;
+if (demoWasOn)
+  await sql.query(
+    `update org_settings set demo_mode = false where org_slug = 'abercrombie-fitch'`,
+  );
+
 console.log("--- credentials ---");
 const bad = await fetch(`${BASE}/login/api`, {
   method: "POST",
@@ -662,6 +673,10 @@ const delStaff = await sql.query(
 await sql.query(
   `delete from audit_log where subject = 'probe-staffer@breakpoint.test'`,
 );
+if (demoWasOn)
+  await sql.query(
+    `update org_settings set demo_mode = true where org_slug = 'abercrombie-fitch'`,
+  );
 console.log(
   `cleaned: requests:${del1.rowCount} logins:${del2.rowCount} sessions:${del3.rowCount} staff:${delStaff.rowCount}`,
 );

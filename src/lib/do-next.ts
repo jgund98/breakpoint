@@ -42,7 +42,7 @@ export async function buildDoNext(p: PortfolioBundle): Promise<DoNextItem[]> {
       sub:
         d.kind === "election"
           ? "Missing it usually forfeits the choice."
-          : "If it stands unfixed, the remedy MAY become claimable.",
+          : "If it stands unfixed, the remedy may become claimable.",
       href: d.locationId ? `/app/locations/${d.locationId}` : "/app/deadlines",
       cta: "Open the file",
       tone: "act",
@@ -81,7 +81,7 @@ export async function buildDoNext(p: PortfolioBundle): Promise<DoNextItem[]> {
           : `${unserved.length} triggered positions have no notice out. ${top.center.name} is the largest.`,
       sub:
         money > 0
-          ? `About $${Math.round(money).toLocaleString("en-US")} a month MAY qualify there. Where relief runs from notice, waiting is losing it.`
+          ? `About $${Math.round(money).toLocaleString("en-US")} a month may qualify there. Where relief runs from notice, waiting is losing it.`
           : "Where relief runs from notice, waiting forfeits the days.",
       href: "/app/notices",
       cta: "Open the notice desk",

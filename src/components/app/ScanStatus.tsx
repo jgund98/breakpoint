@@ -55,8 +55,8 @@ export function ScanStatus({ compact = false }: { compact?: boolean }) {
       </div>
 
       <p className="tnum mt-2 text-[0.8125rem] font-medium text-slate-900">
-        Last scan {daysAgo === 0 ? "today" : `${daysAgo}d ago`}
-        <span className="ml-1.5 font-normal text-slate-500">
+        Last scan{" "}
+        <span className="font-semibold">
           {prettyDate(last?.ranOn ?? activitySummary.lastSweep)}
         </span>
       </p>
