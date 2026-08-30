@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Bell, Radar, FileCheck, MessageSquareDot } from "lucide-react";
@@ -33,19 +34,48 @@ export function NotificationBell() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [unread, setUnread] = useState(0);
   const [open, setOpen] = useState(false);
+  const [toast, setToast] = useState<Alert | null>(null);
   const ref = useRef<HTMLDivElement>(null);
+  /* the newest alert id seen, so a fresh arrival can be told apart
+     from a mere reload */
+  const newestSeen = useRef<string | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
     const res = await fetch("/app/api/notifications", { cache: "no-store" });
     if (!res.ok) return;
     const data = await res.json();
-    setAlerts(data.notifications ?? []);
+    const list: Alert[] = data.notifications ?? [];
+    /* a brand-new unread alert at the top: surface it live */
+    const top = list[0];
+    if (
+      top &&
+      !top.read_at &&
+      newestSeen.current !== null &&
+      top.id !== newestSeen.current
+    ) {
+      setToast(top);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setToast(null), 7000);
+    }
+    if (top) newestSeen.current = top.id;
+    else newestSeen.current = "none";
+    setAlerts(list);
     setUnread(data.unread ?? 0);
   }, []);
 
   useEffect(() => {
     void load();
   }, [load, pathname]);
+
+  /* the bell stays live without a navigation: visibility-aware poll */
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (document.visibilityState === "hidden") return;
+      void load();
+    }, 45_000);
+    return () => clearInterval(t);
+  }, [load]);
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -66,6 +96,41 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
+      {/* a fresh alert slides in the moment the poll sees it; portaled
+          because the blurred topbar is a containing block for fixed */}
+      {toast &&
+        typeof document !== "undefined" &&
+        createPortal(
+        <div className="bp-toast fixed right-4 bottom-4 z-[60] w-[20rem]">
+          <Link
+            href={
+              toast.location_ref
+                ? `/app/locations/${toast.location_ref}`
+                : "/app/inbox"
+            }
+            onClick={() => setToast(null)}
+            className="block overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-2xl shadow-slate-400/30 transition-transform hover:-translate-y-0.5"
+          >
+            <span className="flex items-start gap-3 p-4">
+              <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                {KIND_ICON[toast.kind] ?? <Bell className="h-4 w-4" />}
+                <span className="absolute -top-0.5 -right-0.5 h-2 w-2 animate-ping rounded-full bg-indigo-400" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[0.8125rem] leading-snug font-semibold text-slate-900">
+                  {toast.title}
+                </span>
+                {toast.body && (
+                  <span className="mt-0.5 block truncate text-[0.75rem] text-slate-500">
+                    {toast.body}
+                  </span>
+                )}
+              </span>
+            </span>
+          </Link>
+        </div>,
+        document.body,
+      )}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

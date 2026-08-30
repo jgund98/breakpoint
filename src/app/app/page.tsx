@@ -173,7 +173,8 @@ export default async function OverviewPage() {
             {doNext.map((item, i) => (
               <li
                 key={i}
-                className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3"
+                className="card-enter flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3"
+                style={{ animationDelay: `${0.08 + i * 0.07}s` }}
               >
                 <span
                   className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[0.75rem] font-bold ${

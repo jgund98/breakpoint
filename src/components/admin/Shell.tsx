@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { RouteProgress } from "@/components/app/RouteProgress";
 import {
   LayoutDashboard,
   Building2,
@@ -104,6 +105,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <RouteProgress />
       {/* ---- sidebar ---- */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r border-slate-200/60 bg-white lg:flex">
         <div className="flex h-16 items-center gap-3 border-b border-slate-100 px-5">

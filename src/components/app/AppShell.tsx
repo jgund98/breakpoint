@@ -79,6 +79,7 @@ import { useScrollLock } from "@/lib/useScrollLock";
 import { Monogram } from "@/components/admin/ui";
 import { ViewAs } from "@/components/app/ViewAs";
 import { NotificationBell } from "./NotificationBell";
+import { RouteProgress } from "./RouteProgress";
 import { ScanStatus } from "./ScanStatus";
 
 /**
@@ -426,6 +427,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <BrandHeader sub="Client Workspace" />
         {sidebarBody()}
       </aside>
+
+      <RouteProgress />
 
       {/* ---- content column ---- */}
       <div className="lg:pl-72">
