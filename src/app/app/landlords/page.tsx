@@ -62,7 +62,7 @@ export default async function LandlordsPage() {
         />
         <Stat
           label="Concentration"
-          value={biggest ? `${biggest.doors} doors` : "—"}
+          value={biggest ? `${biggest.doors} stores` : "—"}
           sub={biggest ? `Largest: ${biggest.name}` : undefined}
           tone="petrol"
         />
@@ -114,7 +114,7 @@ export default async function LandlordsPage() {
                     <span className="mt-0.5 block text-[0.75rem] text-slate-500">
                       {g.centers.length}{" "}
                       {g.centers.length === 1 ? "center" : "centers"} ·{" "}
-                      {g.doors} {g.doors === 1 ? "door" : "doors"}
+                      {g.doors} {g.doors === 1 ? "store" : "stores"}
                       {g.tightest
                         ? ` · tightest margin at ${g.tightest.center} (${g.tightest.note})`
                         : ""}
@@ -143,7 +143,7 @@ export default async function LandlordsPage() {
                           </span>
                         </span>
                         <span className="text-[0.75rem] text-slate-500">
-                          {c.doors} {c.doors === 1 ? "door" : "doors"}
+                          {c.doors} {c.doors === 1 ? "store" : "stores"}
                         </span>
                       </li>
                     ))}
@@ -166,7 +166,7 @@ export default async function LandlordsPage() {
                       href="/app/locations"
                       className="font-semibold text-indigo-600 hover:text-indigo-700"
                     >
-                      Open these doors in Locations
+                      Open these stores in Locations
                     </Link>
                   </p>
                 </div>

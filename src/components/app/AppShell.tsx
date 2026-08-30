@@ -6,7 +6,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import {
   X,
-  Activity,
   AlertTriangle,
   CalendarClock,
   LifeBuoy,
@@ -97,11 +96,10 @@ const NAV = [
     items: [
       { href: "/app", label: "Overview", sub: "The whole portfolio", exact: true, Icon: LayoutDashboard },
       { href: "/app/theo", label: "Ask Theo", sub: "Answers from your portfolio", Icon: Sparkles },
-      { href: "/app/locations", label: "Locations", sub: "Every watched door", Icon: Store },
+      { href: "/app/locations", label: "Locations", sub: "Every watched store", Icon: Store },
       { href: "/app/clauses", label: "Clause library", sub: "What your leases say", Icon: FileText },
       { href: "/app/exposure", label: "Anchor risk", sub: "One closure from a trigger", Icon: AlertTriangle },
       { href: "/app/coverage", label: "Coverage", sub: "Where we look", Icon: Radar },
-      { href: "/app/activity", label: "Activity", sub: "Scans and alerts", Icon: Activity },
     ],
   },
   {

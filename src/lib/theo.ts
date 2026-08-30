@@ -191,7 +191,7 @@ export function toolCenter(name: string): TheoAnswer {
     {
       type: "stat",
       items: [
-        { label: "Your doors here", value: String(at.length) },
+        { label: "Your stores here", value: String(at.length) },
         {
           label: "Named tenants dark",
           value: String(dark.length),
@@ -668,10 +668,10 @@ export function greeting(): string {
   if (lapsing > 0)
     return `Worth starting here: ${lapsing} ${lapsing === 1 ? "location has an election window" : "locations have election windows"} closing, and those rights lapse if nobody acts on them. Ask me about those, or anything else in the portfolio.`;
   if (claimable > 0)
-    return `${claimable} ${claimable === 1 ? "location is triggered and MAY qualify" : "locations are triggered and MAY qualify"} for co-tenancy rent. Ask me about those, or anything else across your ${rows.length} watched doors.`;
+    return `${claimable} ${claimable === 1 ? "location is triggered and MAY qualify" : "locations are triggered and MAY qualify"} for co-tenancy rent. Ask me about those, or anything else across your ${rows.length} watched stores.`;
   if (watching > 0)
     return `Nothing qualifies for relief today. ${watching} ${watching === 1 ? "location is" : "locations are"} close to a threshold and worth a look. Ask me anything about the portfolio.`;
-  return `All quiet. Every co-tenancy test across your ${rows.length} watched doors is satisfied. Ask me anything and I will pull what I have.`;
+  return `All quiet. Every co-tenancy test across your ${rows.length} watched stores is satisfied. Ask me anything and I will pull what I have.`;
 }
 
 export const theo = {

@@ -665,8 +665,8 @@ function AccountTab({ lite }: { lite: AccountLite | null }) {
           items={[
             { k: "Trade name", v: lite.name },
             { k: "Sector", v: lite.descriptor },
-            { k: "Doors under contract", v: lite.totalDoors.toLocaleString("en-US") },
-            { k: "Doors with co-tenancy language", v: lite.watched },
+            { k: "Stores under contract", v: lite.totalDoors.toLocaleString("en-US") },
+            { k: "Stores with co-tenancy language", v: lite.watched },
           ]}
         />
       </Panel>
@@ -680,7 +680,7 @@ function AccountTab({ lite }: { lite: AccountLite | null }) {
             { k: "Watching since", v: prettyDate(lite.contractStart) },
             {
               k: "Rate",
-              v: `$${contract.perDoorAnnual} per watched door, per year`,
+              v: `$${contract.perDoorAnnual} per watched store, per year`,
             },
             {
               k: "Annual minimum",

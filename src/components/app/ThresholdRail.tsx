@@ -80,12 +80,12 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
     <Panel flush className="overflow-hidden">
       <div className="px-5 pt-5 sm:px-6 sm:pt-6">
         <PanelHead
-          title="Margin to threshold"
-          hint="Each door by the margin left on its tightest test."
+          title="Room before a trigger"
+          hint="Each store, by how much room is left on its closest test."
           right={
             <span className="text-[0.75rem] text-slate-500">
               <span className="tnum font-semibold text-slate-900">{atRisk}</span> of{" "}
-              {points.length} with no margin left
+              {points.length} failing or one closure away
             </span>
           }
         />
@@ -185,7 +185,7 @@ export function ThresholdRail({ points }: { points: RailPoint[] }) {
           </p>
         ) : (
           <p className="text-[0.8125rem] text-slate-500">
-            Hover any door for its tightest test. Each square is one location.
+            Each square is one store. Hover one to see the test it is closest to failing.
           </p>
         )}
       </div>

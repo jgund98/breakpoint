@@ -199,9 +199,9 @@ export function analystBrief(r: Row): AnalystBrief | null {
       point: `${t.label} went over the line: ${t.observed.toLowerCase()} against a requirement of ${t.requirement.toLowerCase()} (${t.cite}).`,
       why: t.culprits.length
         ? `The damage is ${t.culprits.slice(0, 3).join(", ")} — ${
-            t.culprits.length === 1 ? "that door is" : "those doors are"
+            t.culprits.length === 1 ? "that store is" : "those stores are"
           } what the clause was written to watch.`
-        : "The condition is carried by the occupancy math, not one nameable door — which is exactly the kind of slow bleed a floor exists to catch.",
+        : "The condition is carried by the occupancy math, not one nameable store. This is exactly the kind of slow bleed a floor exists to catch.",
     });
   }
 

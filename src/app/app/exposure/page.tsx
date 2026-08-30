@@ -83,7 +83,7 @@ export default async function ExposurePage() {
           </p>
           <p className="mt-0.5 max-w-[56rem] text-[0.8125rem] leading-snug text-slate-500">
             Wave 1: leases that name the retailer. Wave 2: occupancy floors
-            the closure drags under. Open a row for the doors behind the
+            the closure drags under. Open a row for the stores behind the
             number.
           </p>
         </div>

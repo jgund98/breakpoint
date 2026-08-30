@@ -31,10 +31,12 @@ import {
   type RailPoint,
 } from "@/components/app/ThresholdRail";
 import { activityFor } from "@/lib/activity";
+import { buildDoNext } from "@/lib/do-next";
 
 export default async function OverviewPage() {
   const p = await requirePortfolio();
   const { org, rows, signalFeed, summary, TODAY } = p;
+  const doNext = await buildDoNext(p);
   const { sweeps } = activityFor(p);
   const decisions = rows
     .filter(
@@ -156,6 +158,51 @@ export default async function OverviewPage() {
         lastSweep={prettyDate(TODAY)}
       />
 
+      {/* ---- do next: the analyst's morning, one sentence per item ---- */}
+      {doNext.length > 0 && (
+        <Panel flush>
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+            <p className="text-[0.9375rem] font-semibold text-slate-900">
+              Do next
+            </p>
+            <p className="text-[0.75rem] text-slate-400">
+              Ranked by what it costs to ignore
+            </p>
+          </div>
+          <ol className="divide-y divide-slate-50">
+            {doNext.map((item, i) => (
+              <li
+                key={i}
+                className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3"
+              >
+                <span
+                  className={`grid h-6 w-6 shrink-0 place-items-center rounded-full text-[0.75rem] font-bold ${
+                    item.tone === "act"
+                      ? "bg-amber-400 text-slate-900"
+                      : item.tone === "watch"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[0.875rem] font-medium text-slate-900">
+                    {item.text}
+                  </span>
+                  {item.sub && (
+                    <span className="mt-0.5 block text-[0.75rem] leading-snug text-slate-500">
+                      {item.sub}
+                    </span>
+                  )}
+                </span>
+                <LinkButton href={item.href}>{item.cta}</LinkButton>
+              </li>
+            ))}
+          </ol>
+        </Panel>
+      )}
+
       <PageHead
         eyebrow="Overview"
         title={`${org.name} portfolio`}
@@ -217,10 +264,10 @@ export default async function OverviewPage() {
         </Item>
         <Item>
           <Stat
-            label="Inside the band"
+            label="Close to tripping"
             tone="watch"
             value={summary.watchCount}
-            sub="Within three points of a threshold, or the duration clock is running."
+            sub="Within three points of a test's limit, or the qualifying period is already running."
             href="/app/locations"
           />
         </Item>
