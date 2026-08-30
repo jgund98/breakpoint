@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ClipboardList, MessageSquareDot, Radar, ShieldQuestion } from "lucide-react";
+import Link from "next/link";
+import { Camera, ClipboardList, MessageSquareDot, Radar, ShieldQuestion } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { PageHeader } from "@/components/admin/Shell";
 import {
@@ -25,6 +26,7 @@ const KIND_ICON: Record<string, React.ReactNode> = {
   manual_scan: <Radar className="h-4 w-4" />,
   closure_report: <ClipboardList className="h-4 w-4" />,
   estoppel_review: <ShieldQuestion className="h-4 w-4" />,
+  field_verification: <Camera className="h-4 w-4" />,
 };
 
 type Filter = "all" | "open" | "handled";
@@ -177,6 +179,77 @@ export function RequestsQueue() {
           )}
         </Card>
       </Rise>
+
+      {/* Landlord responses clients recorded on served notices. A
+          dispute logged in a client workspace must reach operations
+          without anyone forwarding an email. */}
+      {(data.landlordResponses?.length ?? 0) > 0 && (
+        <Rise>
+          <Card className="overflow-hidden">
+            <div className="border-b border-slate-100 px-6 py-4">
+              <h2 className="text-[0.9375rem] font-semibold text-slate-900">
+                Landlord responses
+              </h2>
+              <p className="mt-0.5 text-[0.8125rem] text-slate-500">
+                Recorded by clients on served notices, newest first. A
+                dispute is a call to prepare; a cure closes the position.
+              </p>
+            </div>
+            <ul className="divide-y divide-slate-100">
+              {data.landlordResponses.map((n) => (
+                <li
+                  key={`${n.org_slug}-${n.location_ref}-${n.updated_at}`}
+                  className="flex flex-wrap items-center justify-between gap-3 px-6 py-3"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <Badge
+                        tone={
+                          n.stage === "disputed"
+                            ? "rose"
+                            : n.stage === "cured" || n.stage === "resolved"
+                              ? "emerald"
+                              : n.stage === "acknowledged"
+                                ? "sky"
+                                : "indigo"
+                        }
+                        dot
+                      >
+                        {n.stage[0].toUpperCase() + n.stage.slice(1)}
+                      </Badge>
+                      <span className="text-[0.8125rem] font-semibold text-slate-900">
+                        {n.location_ref}
+                      </span>
+                      <span className="text-[0.75rem] text-slate-500">
+                        {n.org_name ?? n.org_slug}
+                      </span>
+                    </span>
+                    {n.response && (
+                      <span className="mt-0.5 block text-[0.75rem] leading-snug text-slate-500">
+                        {n.response}
+                      </span>
+                    )}
+                  </span>
+                  <span className="flex shrink-0 items-center gap-3">
+                    <span className="text-[0.6875rem] text-slate-400">
+                      {new Date(n.updated_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <Link
+                      href={`/admin/clients/${n.org_slug}`}
+                      className="text-[0.75rem] font-semibold text-indigo-600 hover:text-indigo-700"
+                    >
+                      Open the board
+                    </Link>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </Rise>
+      )}
     </div>
   );
 }

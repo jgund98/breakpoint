@@ -283,6 +283,16 @@ export async function GET(request: NextRequest) {
       order by (disabled_at is not null), name`,
   );
 
+  /* Landlord responses clients recorded: served notices whose stage
+     moved. Ops must see a dispute the moment a client logs it. */
+  const landlordResponses = await db().query(
+    `select ns.org_slug, o.name as org_name, ns.location_ref, ns.stage,
+            ns.served_on, ns.response, ns.updated_at
+       from notice_status ns left join org o on o.slug = ns.org_slug
+      order by ns.updated_at desc
+      limit 20`,
+  );
+
   /* Demo workspaces, so the registry can badge them. */
   const demoRows = await db().query(
     `select org_slug from org_settings where demo_mode = true`,
@@ -297,6 +307,7 @@ export async function GET(request: NextRequest) {
       demo_mode: demoSlugs.has(o.slug),
     })),
     staff: staffRows.rows,
+    landlordResponses: landlordResponses.rows,
     yourStaffRole: staff.staffRole ?? "admin",
     yourEmail: staff.email,
     submissions: submissions.rows,

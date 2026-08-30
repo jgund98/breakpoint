@@ -67,6 +67,16 @@ export type RequestRow = {
   handled_at: string | null;
 };
 
+export type LandlordResponse = {
+  org_slug: string;
+  org_name: string | null;
+  location_ref: string;
+  stage: "served" | "acknowledged" | "disputed" | "cured" | "resolved";
+  served_on: string | null;
+  response: string | null;
+  updated_at: string;
+};
+
 export type Coverage = {
   withPlaceByOrg: { org_slug: string; with_place: string | number }[];
   centersWithDirectory: number;
@@ -81,6 +91,7 @@ export type ConsoleData = {
   requestsAll: RequestRow[];
   coverage: Coverage;
   staff: StaffRow[];
+  landlordResponses: LandlordResponse[];
   yourStaffRole: StaffRole;
   yourEmail: string;
 };

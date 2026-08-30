@@ -519,6 +519,18 @@ export async function POST(request: NextRequest) {
     });
   }
 
+  /* The engine could not answer and no model rescued it. That question
+     is signal — it must reach operations, not vanish into a chat. */
+  if (routerMissed) {
+    void db()
+      .query(
+        `insert into audit_log (actor, action, org_slug, subject, detail)
+         values ('client', 'theo_unanswered', $1, $2, 'Theo could not answer; visible on the System audit trail.')`,
+        [session.orgSlug, question.slice(0, 300)],
+      )
+      .catch(() => {});
+  }
+
   return NextResponse.json({
     engine: "index",
     answer,

@@ -24,3 +24,21 @@ Rules:
 - notify()/audit() helpers never throw (delivery must not break the
   operation that produced the event).
 - Per-user channel preferences and digests: gap #4 in REMAINING_GAPS.
+
+
+## Client action → operations surface (the no-lost-triggers map, 2026-08-29 audit)
+
+| Client action | Lands in | Ops surface | Actionable how |
+|---|---|---|---|
+| Request: scan now / closure report / estoppel review / field verification (incl. via Theo) | client_request | /admin/requests + client board queue; sidebar badge | Mark handled → notifies client |
+| Lease/document upload | lease_document + extraction_job | /admin/extraction queue + badge | Approve/reject → notifies client |
+| Onboarding submission | onboarding_submission | /admin/onboarding + badge | Create the account |
+| Lease marked amended | location_pipeline | /admin/extraction re-approval | Approve → back under watch |
+| Landlord response recorded (acknowledged/disputed/cured/resolved) | notice_status + audit | **/admin/requests “Landlord responses” section** (added this audit) | Open the board |
+| Notice workflow step (assemble/review/approve/serve) | notice_workflow + audit | Client board served-notices + System audit | Read record |
+| Flag moves (start/handle/reopen) | finding_alert + audit | Client board flag mirror + System audit | finding_move from board |
+| Theo question the engine cannot answer | audit_log action theo_unanswered (added this audit) | /admin/system audit trail | Teach the canon / index |
+| Alert-routing change | org_settings + audit | System audit | Read record |
+| Team invite / role change | invitation/membership + audit | System audit | Read record |
+
+Rule going forward: a new client-facing control ships WITH its ops surface in the same commit, or it does not ship.
