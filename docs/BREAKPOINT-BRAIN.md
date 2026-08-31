@@ -275,6 +275,67 @@ is counsel's call).
 
 ---
 
+### The 70-lease language corpus (2026-08-31, the expert's third data drop)
+
+Files: `Desktop\af_cotenancy_language_corpus.json` + `Desktop\AF
+Co-Tenancy Language Corpus.xlsx` — NEVER committed; harnesses read the
+Desktop path. 70 REAL retailer precedents across 52 retailers from public
+sources (SEC lease exhibits, court opinions quoting operative clauses,
+CMBS abstracts, 10-K disclosures). Purpose per its README: LANGUAGE
+exposure for the clause-READING model, complementing the 106-clause
+Annapolis/Galleria gold set and the 65-mall monitoring dataset — keep
+reading-training separate from monitoring-training.
+
+Shape: 47/70 verified against source language; evidence tiers
+full_lease 17 / quoted_clause 19 / cmbs_abstract 31 /
+company_disclosure 3; property spread IS the point (30 power-center,
+16 lifestyle, 11 enclosed-mall, 10 strip, 1 street) — everything
+before this was mall-only. 51 form families (F01 = ten Grove at
+Shrewsbury records); the 55/15 train/eval split is stratified BY
+FAMILY so eval language patterns are absent from training. The Excel
+carries what the JSON does not: a 29-rule Labeling Guide (adjudicated
+decision rules + all 21 index discrepancies) and a Gaps & Retries tab
+for the 23 unverified records.
+
+What it taught (all applied):
+- **The index is never the authority.** 21/70 records contradicted
+  their own master index: an AND/OR trigger inverted (R25), a clause
+  attributed to a lease that does not contain it (R03), 'open' vs
+  'leases entered into' basis (R23), 'reduced rent' that was actually
+  $0 abatement struck as a penalty while termination survived (R29 —
+  second penalty-doctrine receipt), and a source filing from the wrong
+  company entirely (R70: 'A&F' filing was Tilly's 10-K). Canon: verify
+  provenance before extracting; unverifiable claims stay unknown;
+  discrepancies are findings.
+- **Summarizer fabrication is real** (Labeling rule 7): automated
+  fetch summarizers FABRICATED lease text on truncated pages twice
+  during his collection. Canon: quote only what two consistent fetches
+  or a full-text source confirm.
+- **New mechanics**: landlord demand-notice elections (R16 — landlord
+  forces tenant to elect termination or full rent by a deadline; NEW
+  required capture field landlord_demand_rights, remedy/95);
+  Required/Inducement/Key-Tenant store-count criteria are replacement
+  standards not name lists (rule 2); defined-area denominators usually
+  exclude the tenant's own premises (rule 3); sales gates attached to
+  occupancy conditions gate the remedy, never a separate trigger (rule
+  4, RYU); opening conditions measured on executed leases / 80 pct
+  under construction (R21); court paraphrase caps confidence at 0.75
+  (rule 5); CMBS footnotes label existence + headline numbers only
+  (rule 6); boolean structure preserved exactly (rule 1).
+- **Form-family fingerprinting**: retailer forms repeat; recognizing a
+  family accelerates reading but every instance is read in full — the
+  deal-by-deal mutation is usually the negotiated term that matters.
+
+Productized: capture checklist now 38 fields (5 instructions upgraded
++ landlord_demand_rights added), canon now 61 directives (tranche four
+= 6 source-fidelity/mechanics rules), and
+`scripts/corpus-score.ts` scores the extraction prompt against the
+corpus eval split (10 scorable records; 5 traps with no operative
+language where the CORRECT behavior is refusing to extract from an
+index). Key-gated: without ANTHROPIC_API_KEY it verifies readiness;
+with it, per-record field-by-field scoring. Run it after any change to
+the extraction prompt, canon reading rules, or capture checklist.
+
 ## 3. THE AGENT CANON (runtime programming)
 
 **2026-08-29 tranche three (scripts/seed-canon-generalization.mjs, +10 rows): GENERALIZATION BEYOND THE PILOT DATASETS** — the not-scoped-to-any-dataset meta-rule; measurement timing as a term (also a new REQUIRED capture field, trigger/85); movable denominators (GLA restatement rights); rebrand/merger aliases are not closures; bankruptcy is a process not a closing; the blink-open cure defeated by persistence; seasonal holiday inflation and the January watch; directory staleness cuts both ways; directory-less property types are field-first; ownership transfers change the notice addressee (re-confirm before serving). Canon audit: ZERO dataset-scoped rules; engine logic greps clean of location/center hardcodes (names appear only as code-comment receipts); both answer-key harnesses re-run PERFECT after the audit.
@@ -293,7 +354,7 @@ leak, waiver/reservation-of-rights, penalty-doctrine posture with
 Grand Prospect/JJD-HOV, percentage-rent survives scrutiny best,
 evidence must be dated and attributable). Idempotent by sort number.
 
-Live in the `agent_directive` table (55 global rows, all active),
+Live in the `agent_directive` table (61 global rows, all active),
 edited at /admin/agent, assembled into every extraction/scan/Theo
 prompt by `lib/directives.ts` (global first, then per-client; per-client
 editing is deliberately parked). Topics: general, extraction, scanning,

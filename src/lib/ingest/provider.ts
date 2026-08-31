@@ -22,7 +22,7 @@
 import { assembleDirectives } from "@/lib/directives";
 import { captureChecklist } from "@/lib/extraction-schema";
 
-export const PROMPT_VERSION = "bp-extract-2026-08-29-1";
+export const PROMPT_VERSION = "bp-extract-2026-08-31-1";
 
 export type ExtractionCitation = {
   field: string;
